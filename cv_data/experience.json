@@ -1,0 +1,14 @@
+[
+    {
+      "post": "Data Engineer",
+      "company": "Renault",
+      "dates": "2023-Présent",
+      "description": "Restructuration de pipelines de données et amélioration de la qualité des données sur GCP."
+    },
+    {
+      "post": "Data Scientist",
+      "company": "TotSA",
+      "dates": "2020-2023",
+      "description": "Mise en place de modèles de machine learning pour optimiser les flux énergétiques."
+    }
+  ]
