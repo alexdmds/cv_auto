@@ -1,0 +1,306 @@
+0 notification au total
+
+Accéder à la recherche
+
+Passer au contenu principal
+
+Raccourcis clavier
+Fermer le menu de navigation
+Recherche
+nouvelles du fil d’actualité nouvelles notifications
+Accueil
+Réseau
+Emplois
+Messagerie
+10
+10 nouvelles notifications
+Notifications
+Alexis de Monts
+Vous
+
+Pour les entreprises
+Essayez Premium pour 0 EUR
+Image d’arrière-plan
+
+Alexis de Monts
+
+Alexis de Monts 
+Data Engineer/Data Scientist
+
+EY
+
+École des Ponts ParisTech
+Paris et périphérie  Coordonnées
+Plus de 500 relations
+Mes objectifs
+
+Ajouter une section au profil
+
+Améliorer le profil
+
+Ressources
+Suggestions personnaliséesSuggestions personnalisées
+ Privé pour vous Privé pour vous
+
+Améliorez votre profil à l’aide de l’IA
+Démarquez-vous pour bénéficier de près de 2x plus d’opportunités avec un profil plus complet.
+
+Essayez Premium pour 0 EUR
+Essai gratuit d’un mois. Nous vous enverrons un rappel 7 jours avant la fin de votre essai.
+
+Ignorer la promo pour Premium
+StatistiquesStatistiques
+ Privé pour vous Privé pour vous
+
+111 vues du profil
+111 vues du profil
+Découvrez qui a vu votre profil.Découvrez qui a vu votre profil.
+0 impression de post
+0 impression de post
+Commencez un post pour renforcer l’engagement.Commencez un post pour renforcer l’engagement.
+Les 7 derniers joursLes 7 derniers jours
+28 apparitions dans les résultats de recherche
+28 apparitions dans les résultats de recherche
+Découvrez la fréquence à laquelle vous apparaissez dans les résultats de recherche.Découvrez la fréquence à laquelle vous apparaissez dans les résultats de recherche.
+Voir toutes les statistiques
+InfosInfos
+Ingénieur des Ponts et Chaussées | Expert Cloud et Data
+
+Fort d’une formation scientifique généraliste et d’une spécialisation en Data Science au Politecnico di Milano, j’aide les entreprises à transformer leurs données en valeur.
+ • Expertise en Cloud (GCP, AWS), DevOps (CI/CD, Docker) et MLOps pour intégrer IA et Machine Learning dans des solutions IT complexes.
+ • Réalisations majeures : création d’un Data Hub centralisé pour Renault et développement d’une application mobile innovante intégrant une IA d’analyse.
+
+Je combine rigueur scientifique, ouverture internationale et expertise technique pour relever les défis des projets IT modernes.Ingénieur des Ponts et Chaussées | Expert Cloud et Data Fort d’une formation scientifique généraliste et d’une spécialisation en Data Science au Politecnico di Milano, j’aide les entreprises à transformer leurs données en valeur. • Expertise en Cloud (GCP, AWS), DevOps (CI/CD, Docker) et MLOps pour intégrer IA et Machine Learning dans des solutions IT complexes. • Réalisations majeures : création d’un Data Hub centralisé pour Renault et développement d’une application mobile innovante intégrant une IA d’analyse. Je combine rigueur scientifique, ouverture internationale et expertise technique pour relever les défis des projets IT modernes.
+Compétences principales
+Compétences principales
+Google Cloud Platform (GCP) • Intelligence artificielle (IA)
+Google Cloud Platform (GCP) • Intelligence artificielle (IA)
+ActivitéActivité
+524 abonnés524 abonnés
+
+Créer un post
+Vous n’avez rien publié pour le moment
+Les posts que vous partagez seront affichés ici.
+Afficher toute l’activité
+ExpérienceExpérience
+
+Logo de EY
+Senior Data Scientist
+Senior Data Scientist
+EY · CDIEY · CDI
+févr. 2023 - aujourd’hui · 1 an 11 moisDe févr. 2023 à aujourd’hui · 1 an 11 mois
+Ville de Paris, Île-de-France, FranceVille de Paris, Île-de-France, France
+• Renault (FLMDH) : Conception et déploiement d’un Data Hub sur GCP pour centraliser les données constructeur et bancaires, avec intégration de dbt, pipelines CI/CD et Docker sur Cloud Run. Plateforme exploitée pour des projets IA stratégiques : assistant conversationnel (Talk To Data) et modèles de Machine Learning pour estimer les Valeurs Résiduelles.
+ • Enedis : Optimisation des échanges de données dans le secteur énergétique via le Système de Gestion des Échanges (SGE), améliorant la qualité et la fiabilité des flux de données.• Renault (FLMDH) : Conception et déploiement d’un Data Hub sur GCP pour centraliser les données constructeur et bancaires, avec intégration de dbt, pipelines CI/CD et Docker sur Cloud Run. Plateforme exploitée pour des projets IA stratégiques : assistant conversationnel (Talk To Data) et modèles de Machine Learning pour estimer les Valeurs Résiduelles. • Enedis : Optimisation des échanges de données dans le secteur énergétique via le Système de Gestion des Échanges (SGE), améliorant la qualité et la fiabilité des flux de données.
+Google Cloud Platform (GCP), Intégration continue et livraison continue (CI/CD) et 1 compétence de plus
+Logo de Kadi
+Co-fondateur et CTO
+Co-fondateur et CTO
+Kadi · IndépendantKadi · Indépendant
+déc. 2022 - aujourd’hui · 2 ans 1 moisDe déc. 2022 à aujourd’hui · 2 ans 1 mois
+• Architecture technique et technologies : Conception de l’architecture technique et choix stratégiques des technologies (Flutter, GCP).
+ • Intelligence artificielle : Entraînement d’un réseau de neurones Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine pour une scalabilité optimale.
+ • Collaboration et gestion : Mise en place de Git pour le contrôle de version, structuration des workflows collaboratifs, et supervision des processus de développement en équipe.
+ • Maintenance et innovation : Organisation de la maintenance du code et amélioration continue des fonctionnalités.• Architecture technique et technologies : Conception de l’architecture technique et choix stratégiques des technologies (Flutter, GCP). • Intelligence artificielle : Entraînement d’un réseau de neurones Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine pour une scalabilité optimale. • Collaboration et gestion : Mise en place de Git pour le contrôle de version, structuration des workflows collaboratifs, et supervision des processus de développement en équipe. • Maintenance et innovation : Organisation de la maintenance du code et amélioration continue des fonctionnalités.
+Google Cloud Platform (GCP), Intelligence artificielle (IA) et 3 compétences de plus
+Logo de Blispac
+Ingénieur - transformation digitale
+Ingénieur - transformation digitale
+Blispac · CDIBlispac · CDI
+févr. 2022 - sept. 2022 · 8 moisDu févr. 2022 au sept. 2022 · 8 mois
+Différentes missions réalisées au sein d'une entreprise familiale :
+
+- Digitalisation de l'entreprise (structuration des bases de données (SQL), évolution de l'ERP).
+- Mise en place d'un algorithme génétique pour optimiser les processus de fabrication.
+- Automatisation d'un banc de test pour prothèses de hanches (génération de courbes CAM pour coller aux normes ISO, minimisation du jerk).
+- Rééquipement des entrepôts logistiquesDifférentes missions réalisées au sein d'une entreprise familiale : - Digitalisation de l'entreprise (structuration des bases de données (SQL), évolution de l'ERP). - Mise en place d'un algorithme génétique pour optimiser les processus de fabrication. - Automatisation d'un banc de test pour prothèses de hanches (génération de courbes CAM pour coller aux normes ISO, minimisation du jerk). - Rééquipement des entrepôts logistiques
+Recherche opérationnelle, Coordination d’équipe et 3 compétences de plus
+Logo de DIAGMA | smarter and more sustainable Supply Chain designers
+Consultant strategie supply chain
+Consultant strategie supply chain
+DIAGMA | smart and sustainable Supply Chain designers · StageDIAGMA | smart and sustainable Supply Chain designers · Stage
+sept. 2021 - févr. 2022 · 6 moisDu sept. 2021 au févr. 2022 · 6 mois
+Ville de Paris, Île-de-France, FranceVille de Paris, Île-de-France, France
+- Gestion d'une opération de Sale & Leaseback pour un entrepôt de 70 000m² d'un distributeur discount (élaboration de l'information memorandum, mise en concurrence d'une trentaine de banques d'investissement, sélection et suivi de la vente).
+- Restructuration de la planification de production pour un laboratoire pharmaceutique, en lien avec l'éditeur de logiciel AZAP (Optimisation linéaire en variables mixtes)- Gestion d'une opération de Sale & Leaseback pour un entrepôt de 70 000m² d'un distributeur discount (élaboration de l'information memorandum, mise en concurrence d'une trentaine de banques d'investissement, sélection et suivi de la vente). - Restructuration de la planification de production pour un laboratoire pharmaceutique, en lien avec l'éditeur de logiciel AZAP (Optimisation linéaire en variables mixtes)
+Recherche opérationnelle, Génie industriel et 1 compétence de plus
+Logo de TotalEnergies
+Analyste de marché LNG
+Analyste de marché LNG
+Total · StageTotal · Stage
+févr. 2020 - juil. 2020 · 6 moisDu févr. 2020 au juil. 2020 · 6 mois
+Région de Paris, FranceRégion de Paris, France
+Travail au sein du bureau d'analyse de marché de la direction de la branche Gas Renewable and Power.
+Cette équipe a pour mission principale l'élaboration du Total Energy Outlook, une publication annuelle recensant les perspectives énergétiques mondiales et la vision stratégique du groupe.
+
+J'ai notamment été amené à développer un algorithme (en Python, librairie Pandas) de traitement de la base de donnée IHS des méthaniers GNL. L'objectif était de recréer des indicateurs similaires au marché du pétrole sur le marché du gaz (repositionnement des navires, trajets ballast/laden...)Travail au sein du bureau d'analyse de marché de la direction de la branche Gas Renewable and Power. Cette équipe a pour mission principale l'élaboration du Total Energy Outlook, une publication annuelle recensant les perspectives énergétiques mondiales et la vision stratégique du groupe. J'ai notamment été amené à développer un algorithme (en Python, librairie Pandas) de traitement de la base de donnée IHS des méthaniers GNL. L'objectif était de recréer des indicateurs similaires au marché du pétrole sur le marché du gaz (repositionnement des navires, trajets ballast/laden...)
+Python (langage de programmation), Anglais et 3 compétences de plus
+Afficher les 8 expériences
+FormationFormation
+Logo de École nationale des ponts et chaussées
+École nationale des ponts et chaussées
+École nationale des ponts et chaussées
+Master of Engineering - MEngMaster of Engineering - MEng
+2017 - 20212017 - 2021
+Spécialisation en Génie Industriel : Recherche opérationnelle, stratégie d'entreprise, finance, planification.Spécialisation en Génie Industriel : Recherche opérationnelle, stratégie d'entreprise, finance, planification.
+Anglais, Réseaux de neurones et 5 compétences de plus
+Logo de Politecnico di Milano
+Politecnico di Milano
+Politecnico di Milano
+Master 2 (M2), Mathématiques appliquéesMaster 2 (M2), Mathématiques appliquées
+2020 - 20212020 - 2021
+Data and text mining, machine learning, game theory, computational finance, operations managementData and text mining, machine learning, game theory, computational finance, operations management
+Anglais, Réseaux de neurones et 6 compétences de plus
+Afficher les 3 formations
+Licences et certificationsLicences et certifications
+Logo de Amazon Web Services (AWS)
+AWS Certified Cloud Practitioner
+AWS Certified Cloud Practitioner
+Amazon Web Services (AWS)Amazon Web Services (AWS)
+Émise le sept. 2024 · Expire le sept. 2027Émise le sept. 2024 · Expire le sept. 2027
+Afficher l’identifiant
+CompétencesCompétences
+Gaz naturel liquéfié (GNL)
+Gaz naturel liquéfié (GNL)
+
+Analyste de marché LNG chez TotalAnalyste de marché LNG chez Total
+Énergie
+Énergie
+
+Analyste de marché LNG chez TotalAnalyste de marché LNG chez Total
+Afficher les 22 compétences
+Centres d’intérêtCentres d’intérêt
+Top VoicesTop Voices
+EntreprisesEntreprises
+GroupesGroupes
+NewslettersNewsletters
+ÉcolesÉcoles
+Photo du profil de Jean-Marc Jancovici
+Jean-Marc Jancovici
+Jean-Marc Jancovici
+· 2eRelation de deuxième niveau
+Associé Carbone 4 - Président The Shift ProjectAssocié Carbone 4 - Président The Shift Project
+1 193 905 abonnés1 193 905 abonnés
+
+Suivi
+Photo du profil de Bill Gates
+Bill Gates
+Bill Gates
+Chair, Gates Foundation and Founder, Breakthrough EnergyChair, Gates Foundation and Founder, Breakthrough Energy
+36 664 114 abonnés36 664 114 abonnés
+
+Suivi
+Langue du profil
+Français
+
+Profil public et URL
+www.linkedin.com/in/alexis-de-monts-61328a175
+
+
+Plus de profils pour vousPlus de profils pour vous
+Photo du profil de Alice LUU
+Alice LUU
+Alice LUU
+· 3e et +Relation hors réseau
+Senior Data Scientist chez EY | GenAI | Speech to Text/Text to Speech | Deep Learning | Master Ecole Polytechnique en Data ScienceSenior Data Scientist chez EY | GenAI | Speech to Text/Text to Speech | Deep Learning | Master Ecole Polytechnique en Data Science
+Message
+Photo du profil de Bedis Bouslama
+Bedis Bouslama
+Bedis Bouslama
+· 1erRelation de premier niveau
+McKinsey | Ponts & ChausséesMcKinsey | Ponts & Chaussées
+Message
+Photo du profil de Matthieu Garrigue
+Matthieu Garrigue
+Matthieu Garrigue
+· 2eRelation de deuxième niveau
+Data ScientistData Scientist
+
+Se connecter
+Photo du profil de Maher Amara
+Maher Amara
+Maher Amara
+· 2eRelation de deuxième niveau
+Manager @EY, Technology Consulting (SAP FI-CO)Manager @EY, Technology Consulting (SAP FI-CO)
+
+Se connecter
+Photo du profil de Aurelia Costache
+Aurelia Costache
+Aurelia Costache
+· 2eRelation de deuxième niveau
+Partner, AI & DataPartner, AI & Data
+
+Suivre
+Tout afficher
+Explorer les profils PremiumExplorer les profils Premium
+Photo du profil de Raphaël MASI
+Raphaël MASI
+Raphaël MASI
+· 3eRelation de troisième niveau
+Tech Lead chez POCKET COM.Tech Lead chez POCKET COM.
+Voir le profil
+Photo du profil de Antoine de Reviers
+Antoine de Reviers
+Antoine de Reviers
+· 2eRelation de deuxième niveau
+Machine Learning Engineer | Freelance | Python, Data, AIMachine Learning Engineer | Freelance | Python, Data, AI
+
+Se connecter
+Personnes que vous pourriez connaîtrePersonnes que vous pourriez connaître
+D’après votre entrepriseD’après votre entreprise
+
+Photo du profil de Teo Brachet
+Teo Brachet
+Teo Brachet
+Consultant Data & Analytics @ EYConsultant Data & Analytics @ EY
+
+Se connecter
+Photo du profil de Andréa Gaspar
+Andréa Gaspar
+Andréa Gaspar
+Consultante AI & DataConsultante AI & Data
+
+Se connecter
+Photo du profil de Céline GONCALVES
+Céline GONCALVES
+Céline GONCALVES
+Data Analytics & AI | Applied Mathematics and Computer ScienceData Analytics & AI | Applied Mathematics and Computer Science
+
+Se connecter
+Photo du profil de May Voong
+May Voong
+May Voong
+Consultante Data ScientistConsultante Data Scientist
+
+Se connecter
+Photo du profil de Paul Skorochod
+Paul Skorochod
+Paul Skorochod
+EY - Data Scientist ConsultantEY - Data Scientist Consultant
+
+Se connecter
+Tout afficher
+Vous aimerez peut-êtreVous aimerez peut-être
+Pages pour vousPages pour vous
+
+Logo de EUA Utility Networks
+EUA Utility Networks
+EUA Utility Networks
+Services publics de distributionServices publics de distribution
+517 abonnés517 abonnés
+
+Suivre
+Logo de Veejo
+Veejo
+Veejo
+Recrutement et placement de personnelRecrutement et placement de personnel
+964 abonnés964 abonnés
+
+Suivre
+Tout afficher
+
+Alexis de MontsLe statut est en ligne
+MessagerieVous êtes dans la fenêtre de messagerie. Appuyez sur Entrée pour ouvrir la liste de conversations.
+
+Rédiger un message
+Vous êtes dans la fenêtre de messagerie. Appuyez sur Entrée pour ouvrir la liste de conversations.

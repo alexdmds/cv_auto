@@ -1,0 +1,92 @@
+📢 FICHE DE POSTE — INGÉNIEUR MACHINE LEARNING (H/F) — TOTALENERGIES 📢
+
+---
+
+🔍 Contexte du poste  
+TotalEnergies, acteur majeur de la transition énergétique, s'engage dans le développement de solutions innovantes intégrant l'intelligence artificielle (IA) et le machine learning (ML) pour optimiser ses opérations, réduire son empreinte carbone et renforcer sa compétitivité. Dans ce contexte, nous recherchons un Ingénieur Machine Learning (H/F) au sein de notre département Data & Digital Transformation. Vous contribuerez activement au développement et au déploiement de solutions d'IA impactantes au service des métiers de l'énergie, des énergies renouvelables et des infrastructures industrielles.
+
+---
+
+🎯 Missions principales  
+En tant qu'Ingénieur Machine Learning, vous jouerez un rôle clé dans la conception, la mise en œuvre et l'optimisation de modèles de machine learning tout au long de leur cycle de vie (de la phase de recherche au déploiement en production).  
+
+Vos principales responsabilités incluent :  
+- Développement et déploiement de modèles de machine learning (supervisé, non supervisé, deep learning) pour répondre aux besoins des métiers de TotalEnergies.  
+- Optimisation des performances des modèles : tuning des hyperparamètres, réduction de la latence, amélioration de la robustesse et de la scalabilité.  
+- Création et gestion des pipelines MLOps (pré-traitement des données, entraînement des modèles, suivi des performances) en utilisant des outils tels que MLflow, Airflow et Vertex AI.  
+- Collaboration avec les Data Engineers pour assurer l'intégration des pipelines ML dans les infrastructures cloud existantes (GCP, AWS).  
+- Automatisation des workflows d'entraînement et de déploiement à travers des outils de CI/CD (GitHub Actions, GitLab CI, etc.).  
+- Suivi des modèles en production : détection des dérives (drift), réentraînement des modèles et maintenance continue.  
+- Veille technologique sur les dernières avancées en IA/ML, avec une exploration des technologies telles que les LLMs (Large Language Models) et les modèles génératifs.  
+
+---
+
+🛠️ Compétences techniques requises  
+
+1️⃣ Compétences en machine learning et IA  
+- Maîtrise des algorithmes de machine learning (régression, classification, clustering, réduction de dimension) et des modèles de deep learning (CNN, RNN, Transformers).  
+- Connaissance des frameworks de machine learning et deep learning : TensorFlow, Keras, PyTorch.  
+- Expérience dans le tuning des hyperparamètres et la validation croisée.  
+- Bonne compréhension des techniques de drift monitoring et de la surveillance des modèles.  
+
+2️⃣ Compétences en MLOps et CI/CD  
+- Connaissance des outils MLOps : MLflow, Vertex AI, Kubeflow.  
+- Expérience dans la mise en production des modèles de machine learning, la surveillance et la maintenance continue.  
+- Compétence en automatisation des déploiements via CI/CD (GitHub Actions, GitLab CI/CD, Jenkins).  
+
+3️⃣ Compétences en Data Engineering et traitement des données  
+- Maîtrise des langages de programmation Python et SQL.  
+- Connaissance des outils de traitement de données (pandas, NumPy, scikit-learn).  
+- Familiarité avec les environnements cloud (GCP, AWS, Azure) et les services de traitement de données distribués (BigQuery, Dataflow, Dataproc).  
+
+4️⃣ Soft Skills  
+- Esprit analytique : Capacité à analyser des problèmes complexes et à proposer des solutions optimisées.  
+- Autonomie et proactivité : Capacité à travailler de manière autonome tout en respectant les deadlines.  
+- Communication efficace : Capacité à expliquer des concepts techniques complexes à des interlocuteurs non techniques.  
+- Veille continue : Passion pour les avancées technologiques et l’apprentissage continu.  
+
+---
+
+📚 Profil recherché  
+
+- Diplôme : Bac +5 (école d'ingénieurs ou master universitaire) en mathématiques appliquées, intelligence artificielle, data science ou informatique.  
+- Expérience : 2 à 5 ans d'expérience en tant qu'Ingénieur Machine Learning, Data Scientist ou MLOps Engineer.  
+- Langues : Français (courant) et anglais (professionnel).  
+
+---
+
+🚀 Ce que nous offrons  
+
+- Projets stratégiques à fort impact : Travailler sur des projets concrets pour réduire l'empreinte carbone, optimiser les processus énergétiques et accélérer la transition énergétique.  
+- Montée en compétences : Accès à des formations continues sur les nouvelles technologies en IA/ML.  
+- Environnement de travail collaboratif : Équipe multidisciplinaire composée de data engineers, data scientists et experts cloud.  
+- Flexibilité : Télétravail hybride (2 jours par semaine) et horaires flexibles.  
+- Avantages : Participation, intéressement, mutuelle d’entreprise, carte repas, etc.  
+
+---
+
+📍 Localisation  
+Poste basé à Paris, La Défense (possibilité de travail hybride 2 jours de télétravail par semaine).  
+
+---
+
+💼 Pourquoi nous rejoindre ?  
+Rejoindre TotalEnergies, c'est intégrer une entreprise engagée dans la transition énergétique mondiale. Vous aurez l'opportunité de travailler sur des projets à forte valeur ajoutée, en utilisant des technologies de pointe et en collaborant avec des experts de renommée internationale. L'impact de vos travaux se mesurera non seulement par des gains de performance, mais aussi par des réductions d'empreinte carbone au niveau mondial.  
+
+---
+
+📄 Processus de recrutement  
+1️⃣ Entretien RH (30 min) — Échange sur vos motivations et votre parcours.  
+2️⃣ Test technique (1h30) — Exercice technique à résoudre (exemple : pré-traitement des données, conception d'un modèle ML simple).  
+3️⃣ Entretien technique (1h) — Entretien avec un Data Scientist Senior et un Data Engineer pour échanger sur vos compétences techniques.  
+4️⃣ Entretien final (45 min) — Rencontre avec un manager de l'équipe Data & Digital Transformation.  
+
+---
+
+📝 Comment postuler ?  
+📧 Envoyez votre CV et une lettre de motivation à l’adresse suivante : recrutement_ml@totalenergies.com  
+🔗 Vous pouvez également postuler directement via notre site carrière : careers.totalenergies.com  
+
+---
+
+**Rejoignez TotalEnergies et contribuez à la transformation numérique et énergétique mondiale !** 🌍⚡

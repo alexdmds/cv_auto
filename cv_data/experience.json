@@ -1,14 +1,23 @@
 [
     {
-      "post": "Data Engineer",
-      "company": "Renault",
-      "dates": "2023-Présent",
-      "description": "Restructuration de pipelines de données et amélioration de la qualité des données sur GCP."
+        "post": "Senior Data Scientist",
+        "company": "EY",
+        "location": "Paris, France",
+        "dates": "Février 2023 – Présent",
+        "description": "A joué un rôle clé dans la conception et le déploiement de projets autour des données et du cloud, notamment sur GCP. Responsable de la conception et du déploiement d’un Data Hub pour Renault, y compris la création de pipelines CI/CD. A également piloté des projets d'IA comme le développement d'un assistant conversationnel et la prédiction des valeurs résiduelles des véhicules."
     },
     {
-      "post": "Data Scientist",
-      "company": "TotSA",
-      "dates": "2020-2023",
-      "description": "Mise en place de modèles de machine learning pour optimiser les flux énergétiques."
+        "post": "Co-fondateur et CTO",
+        "company": "Kadi",
+        "location": "Paris, France",
+        "dates": "Décembre 2022 – Présent",
+        "description": "A dirigé la conception, le développement et la mise en production de l'application mobile Kadi, y compris l'architecture technique globale et les pipelines MLOps. A développé et déployé un modèle Faster R-CNN pour la détection de tickets de caisse dans des images."
+    },
+    {
+        "post": "Stagiaire - Analyste de Données ",
+        "company": "TotalEnergies",
+        "location": "Paris, France",
+        "dates": "Février 2020 – Juillet 2020",
+        "description": "A participé à l'analyse des marchés internationaux du gaz naturel liquéfié et de l'électricité. Développé un algorithme Python pour l'analyse automatisée des données du marché du GNL et a amélioré les visualisations et les rapports."
     }
-  ]
+]
