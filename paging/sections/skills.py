@@ -1,7 +1,7 @@
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 
-def create_skills_section(data):
+def create_skills_section(data, language='fr'):
     # Styles
     section_title_style = ParagraphStyle(
         name="SectionTitle",
@@ -18,11 +18,10 @@ def create_skills_section(data):
         textColor="black"
     )
 
-    elements = [Paragraph(data['standard_names']['languages_skills'], section_title_style)]
+    elements = [Paragraph(data['standard_names']['languages_skills'][language], section_title_style)]
 
     # Langues en une seule ligne
-    languages = f"<b>Langues :</b> {', '.join(data['languages'])}"
-    elements.append(Paragraph(languages, skills_style))
+    elements.append(Paragraph(data['standard_names']['languages'][language], skills_style))
 
     # Compétences regroupées de manière concise
     compact_skills = []

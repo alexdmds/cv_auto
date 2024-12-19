@@ -29,20 +29,13 @@ def load_cv_data():
     data.update(load_json(os.path.join(base_path, 'skills.json')))  # Compétences
     data['hobbies'] = load_json(os.path.join(base_path, 'hobbies.json'))  # Centres d'intérêt
     data['general_info'] = load_json(os.path.join(base_path, 'general_info.json'))  # Informations générales
-    # Récupération de la langue choisie
+    data['standard_names'] = load_json('paging/dictionnary.json')  # Intitulés standard
     language = data['general_info'].get('language', 'fr')  # Valeur par défaut 'fr'
 
-    # Chargement des intitulés dans la bonne langue
-    data_par_langue = load_json(os.path.join('paging', 'standards_names.json'))
-    if language in ['fr', 'en']:
-        data['standard_names'] = {key: value[language] for key, value in data_par_langue.items()}
-    else:
-        raise ValueError("La langue spécifiée dans general_info.json est invalide. Choisir 'fr' ou 'en'.")
-    
-    return data
+    return data, language
 
 
-def generate_cv(output_file, data):
+def generate_cv(output_file, data, language='fr'):
     # Initialiser le document
     doc = SimpleDocTemplate(
         output_file,
@@ -56,19 +49,19 @@ def generate_cv(output_file, data):
     elements = []
 
     # **1. En-tête**
-    elements += create_header(data)
+    elements += create_header(data, language)
 
     # **2. Expérience professionnelle**
-    elements += create_experience_section(data)
+    elements += create_experience_section(data, language)
 
     # **3. Éducation**
-    elements += create_education_section(data)
+    elements += create_education_section(data, language)
 
     # **4. Compétences techniques**
-    elements += create_skills_section(data)
+    elements += create_skills_section(data, language)
     
     # **5. Centres d'intérêt**
-    elements += create_hobbies_section(data)
+    elements += create_hobbies_section(data, language)
     
     # Générer le PDF
     doc.build(elements)
@@ -77,7 +70,8 @@ def generate_cv(output_file, data):
 
 if __name__ == '__main__':
     # Charger les données à partir des fichiers sources
-    cv_data = load_cv_data()
+    cv_data = load_cv_data()[0]
+    language = load_cv_data()[1]
 
     # Générer le CV
-    generate_cv("CV_Alexis_de_Monts.pdf", cv_data)
+    generate_cv("CV_Alexis_de_Monts.pdf", cv_data, language)

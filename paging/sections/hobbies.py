@@ -1,7 +1,7 @@
-from reportlab.platypus import Paragraph, Spacer, ListFlowable, ListItem
+from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 
-def create_hobbies_section(data):
+def create_hobbies_section(data, language='fr'):
     # Styles
     section_title_style = ParagraphStyle(
         name="SectionTitle",
@@ -11,24 +11,19 @@ def create_hobbies_section(data):
         leading=18
     )
 
-    bullet_style = ParagraphStyle(
-        name="Bullet",
+    hobbies_style = ParagraphStyle(
+        name="Hobbies",
         fontSize=10,
         leading=12,
-        leftIndent=15,
-        bulletIndent=10,
         spaceAfter=2
     )
 
     # Section title
-    elements = [Paragraph(data['standard_names']['hobbies'], section_title_style)]
+    elements = [Paragraph(data['standard_names']['hobbies'][language], section_title_style)]
 
-    # Ajout des hobbies sous forme de liste à puces
-    if data.get('hobbies'):
-        bullet_items = [ListItem(Paragraph(hobby, bullet_style)) for hobby in data['hobbies']]
-        elements.append(ListFlowable(bullet_items, bulletType='bullet'))
-    else:
-        elements.append(Paragraph("Aucun centre d'intérêt spécifié.", bullet_style))
+
+    elements.append(Paragraph(data['standard_names']['interest_body'][language], hobbies_style))
+
 
     elements.append(Spacer(1, 12))
     return elements

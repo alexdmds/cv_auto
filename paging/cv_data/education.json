@@ -1,20 +1,23 @@
-[
-  {
-      "degree": "Master of Science in Financial Engineering",
-      "school": "Columbia University, New York",
-      "dates": "2019 – 2021",
-      "description": [
-          "Major de promotion.",
-          "Cours clés : Financial Derivatives, Quantitative Risk Management, Machine Learning."
-      ]
-  },
-  {
-      "degree": "Diplôme d'ingénieur en Mathématiques Appliquées",
-      "school": "École Polytechnique, France",
-      "dates": "2016 – 2019",
-      "description": [
-          "Spécialisation en Analyse de Données et Optimisation.",
-          "Projet de fin d'études sur la modélisation des marchés de l'énergie."
-      ]
-  }
-]
+{
+    "politecnico": {
+        "dates": "2019 – 2021",
+        "description": [
+            "Major de promotion.",
+            "Cours clés : Financial Derivatives, Quantitative Risk Management, Machine Learning."
+        ]
+    },
+    "ponts": {
+        "dates": "2016 – 2019",
+        "description": [
+            "Diplôme d'ingénieur de l'Ecole Nationale des Ponts et Chaussées.",
+            "Cours clés : Calcul des Structures, Génie Civil, Gestion de Projet."
+        ]
+    },
+    "stan": {
+        "dates": "2018",
+        "description": [
+            "Semestre d'échange à Stanford University.",
+            "Cours clés : Data Mining, Machine Learning, Deep Learning."
+        ]
+    }
+}

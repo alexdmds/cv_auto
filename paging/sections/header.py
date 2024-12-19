@@ -2,7 +2,7 @@ from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 
-def create_header(data):
+def create_header(data, language='fr'):
     # **1️⃣ Styles**
     name_style = ParagraphStyle(
         name="Name",

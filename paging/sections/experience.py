@@ -3,7 +3,8 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib import colors
 
-def create_experience_section(data):
+
+def create_experience_section(data, language='fr'):
     # Styles
     section_title_style = ParagraphStyle(
         name="SectionTitle",
@@ -23,7 +24,8 @@ def create_experience_section(data):
         name="Company",
         fontSize=10,
         fontName="Helvetica-Oblique",
-        textColor="gray"
+        textColor="gray",
+        spaceAfter=6
     )
 
     date_style = ParagraphStyle(
@@ -41,26 +43,43 @@ def create_experience_section(data):
         spaceAfter=2
     )
 
-    elements = [Paragraph(data['standard_names']['experience'], section_title_style)]
+    # Titre de la section
+    elements = [Paragraph(data['standard_names']['experience'][language], section_title_style)]
 
     for exp in data['experience']:
+        # Table avec Titre du poste et Dates alignées à droite
         table_data = [
             [
                 Paragraph(f"{exp['post']}", job_title_style),
                 Paragraph(exp['dates'], date_style)
             ]
         ]
-
-        table = Table(table_data, colWidths=[400, 100])
+        table = Table(table_data, colWidths=[300, 200])
         table.setStyle(TableStyle([
             ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
-
         elements.append(table)
-        elements.append(Paragraph(f"{exp['company']} - {exp['location']}", company_style))
+
+        table_data = [
+            [   
+                Paragraph(f"{exp['company']} - {exp['location']}", company_style),
+                elements.append(Spacer(0, 0))
+            ]
+        ]
+        table = Table(table_data, colWidths=[300, 200])
+        table.setStyle(TableStyle([
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(table)
+
+
+        # Liste des réalisations avec des puces
         bullet_items = [ListItem(Paragraph(f"{bullet}", bullet_style)) for bullet in exp['bullets']]
         elements.append(ListFlowable(bullet_items, bulletType='bullet'))
-        elements.append(Spacer(1, 10))
+
+        # Ajouter un espacement entre chaque expérience
+        elements.append(Spacer(1, 12))
 
     return elements

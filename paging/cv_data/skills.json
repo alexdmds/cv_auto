@@ -1,5 +1,4 @@
 {
-  "languages": ["Français (natif)", "Anglais (courant)"],
   "skills": {
       "Langages": ["Python", "SQL", "C++"],
       "Frameworks": ["TensorFlow", "PyTorch", "Scikit-learn", "XGBoost"],
