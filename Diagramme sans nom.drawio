@@ -1,9 +1,45 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" version="26.0.3">
   <diagram name="Page-1" id="BE6vburvbPrBN28iqg8U">
-    <mxGraphModel>
+    <mxGraphModel dx="2954" dy="1121" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="DEmFa6QDfOD7n2PnAPB6-1" target="DEmFa6QDfOD7n2PnAPB6-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-1" value="Profil : sources multiples&lt;br&gt;&lt;br&gt;fichiers au format txt ou pdf" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="30" y="112.5" width="140" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="DEmFa6QDfOD7n2PnAPB6-2" target="DEmFa6QDfOD7n2PnAPB6-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-2" value="Poste :&lt;br&gt;&lt;br&gt;Fiche de poste brute au format txt" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="550" width="140" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-3" value="fiche de poste condensée en max 500 mots dans la même langue&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="605" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="DEmFa6QDfOD7n2PnAPB6-4" target="DEmFa6QDfOD7n2PnAPB6-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="DEmFa6QDfOD7n2PnAPB6-4" target="DEmFa6QDfOD7n2PnAPB6-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="DEmFa6QDfOD7n2PnAPB6-4" target="DEmFa6QDfOD7n2PnAPB6-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-4" value="Mise en commun en un seul fichier exhaustif txt" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="165" width="130" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-7" value="JSON EXPERIENCES&lt;div&gt;&lt;br&gt;Creation d&#39;un JSON explicite avec toutes les expériences :&lt;br&gt;&lt;br&gt;poste&lt;br&gt;entreprise&lt;br&gt;dates&lt;br&gt;description&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="5" width="190" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-8" value="JSON EDUCATION&lt;div&gt;&lt;br&gt;Creation d&#39;un JSON explicite avec les formations :&lt;br&gt;&lt;br&gt;intitulé&lt;br&gt;école&lt;br&gt;dates&lt;br&gt;description&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="180" width="190" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="DEmFa6QDfOD7n2PnAPB6-9" value="Texte brute résumé de compétences et hobbies" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="360" width="190" height="100" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
