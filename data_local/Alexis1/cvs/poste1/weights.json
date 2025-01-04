@@ -1,0 +1,58 @@
+Pour générer le JSON "weights.json" en analysant les expériences du candidat par rapport à la fiche de poste, nous devons évaluer la pertinence de chaque expérience en fonction des responsabilités, compétences et profil recherchés pour le poste d'Ingénieur Machine Learning chez TotalEnergies.
+
+Voici l'analyse des expériences du candidat :
+
+1. **Senior Data Scientist chez EY** : 
+   - Correspond bien aux responsabilités de conception et déploiement de modèles ML, intégration de pipelines CI/CD, et usage de GCP, ce qui est très pertinent pour le rôle d'Ingénieur Machine Learning. **(Weight: 2)**
+
+2. **Co-fondateur et CTO chez Kadi** : 
+   - Expérience en développement de modèles ML et déploiement sur des plateformes cloud (GCP), ainsi que gestion de workflows de développement. Ceci est directement pertinent pour le rôle. **(Weight: 2)**
+
+3. **Ingénieur - transformation digitale chez Blispac** : 
+   - Expérience en digitalisation, structuration de bases de données SQL, et optimisation des processus, ce qui est pertinent mais moins directement lié aux responsabilités principales du poste. **(Weight: 1)**
+
+4. **Consultant stratégie supply chain chez DIAGMA** : 
+   - Expérience en optimisation linéaire et gestion de supply chain, moins directement liée aux compétences requises pour le poste actuel. **(Weight: 1)**
+
+5. **Analyste de marché LNG chez TotalEnergies** : 
+   - Expérience chez le même employeur avec développement d'algorithmes en Python, ce qui est pertinent mais de nature différente du rôle d'Ingénieur ML. **(Weight: 1)**
+
+6. **Project Coordinator chez L'Oeuvre d'Orient** : 
+   - Gestion de projets humanitaires, non directement lié aux responsabilités techniques du poste. **(Weight: 0)**
+
+7. **Consultant junior chez Cdiscount** : 
+   - Expérience en optimisation logistique avec des méthodes analytiques, ce qui est pertinent mais secondaire pour le rôle recherché. **(Weight: 1)**
+
+En suivant les règles données, voici le JSON généré en respectant l'ordre chronologique décroissant et la pertinence des expériences :
+
+```json
+[
+    {
+        "exp_choisie": "1",
+        "place": 1,
+        "weight": 2
+    },
+    {
+        "exp_choisie": "2",
+        "place": 2,
+        "weight": 2
+    },
+    {
+        "exp_choisie": "3",
+        "place": 3,
+        "weight": 1
+    },
+    {
+        "exp_choisie": "5",
+        "place": 4,
+        "weight": 1
+    },
+    {
+        "exp_choisie": "4",
+        "place": 5,
+        "weight": 1
+    }
+]
+```
+
+Les expériences sélectionnées répondent aux critères de pertinence par rapport à la fiche de poste, tout en respectant l'ordre chronologique lorsque la pertinence est similaire.
