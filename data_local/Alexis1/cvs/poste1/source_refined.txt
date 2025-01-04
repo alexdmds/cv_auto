@@ -1,36 +1,9 @@
-Poste à pourvoir : Ingénieur Machine Learning chez TotalEnergies, acteur majeur de la transition énergétique, pour contribuer au développement de solutions d'IA au sein du département Data & Digital Transformation.
+Poste d'Ingénieur Machine Learning (H/F) chez TotalEnergies. Le rôle implique le développement, le déploiement et l'optimisation de modèles de machine learning pour divers secteurs de l'énergie. Les responsabilités principales incluent la gestion des pipelines MLOps, la collaboration avec les Data Engineers pour l'intégration des pipelines ML dans les infrastructures cloud, l'automatisation des workflows et le suivi des modèles en production. 
 
-Responsabilités :
-- Conception, mise en œuvre et optimisation de modèles de machine learning.
-- Développement et déploiement de modèles ML pour différents domaines de l'entreprise.
-- Optimisation des performances des modèles.
-- Création et gestion des pipelines MLOps.
-- Collaboration avec les Data Engineers pour l'intégration des pipelines ML dans les infrastructures cloud.
-- Automatisation des workflows d'entraînement et de déploiement.
-- Suivi des modèles en production et veille technologique.
+Les compétences requises incluent une maîtrise des algorithmes de machine learning et des modèles de deep learning, une connaissance des outils MLOps, une expérience en automatisation des déploiements, une maîtrise des langages de programmation Python et SQL et une familiarité avec les environnements cloud. Les compétences douces nécessaires incluent un esprit analytique, l'autonomie, une communication efficace et une passion pour l'apprentissage continu.
 
-Compétences requises :
-- Expertise en machine learning et IA, MLOps et CI/CD.
-- Compétences en Data Engineering et traitement des données.
-- Maîtrise des langages de programmation Python et SQL.
-- Capacité à analyser des problèmes complexes, autonomie, communication efficace et passion pour les avancées technologiques.
+Profil recherché : Bac+5 en mathématiques appliquées, IA, data science ou informatique, avec 2 à 5 ans d'expérience en tant qu'Ingénieur Machine Learning, Data Scientist ou MLOps Engineer. Français courant et anglais professionnel demandés. 
 
-Profil recherché :
-- Bac +5 en mathématiques appliquées, intelligence artificielle, data science ou informatique.
-- 2 à 5 ans d'expérience en tant qu'Ingénieur Machine Learning, Data Scientist ou MLOps Engineer.
-- Maîtrise du français et de l'anglais.
+Offre : Projets à fort impact, formations continues, environnement de travail collaboratif, flexibilité dans le travail, avantages sociaux. Poste basé à Paris, La Défense (télétravail hybride possible). 
 
-Offre :
-- Projets stratégiques à fort impact.
-- Formations continues.
-- Environnement de travail collaboratif.
-- Flexibilité : Télétravail hybride et horaires flexibles.
-- Avantages divers.
-
-Localisation : Poste basé à Paris, La Défense (télétravail hybride possible).
-
-Pourquoi rejoindre TotalEnergies : Travailler sur des projets à forte valeur ajoutée, utiliser des technologies de pointe et contribuer à la réduction de l'empreinte carbone mondiale.
-
-Processus de recrutement : Entretien RH, test technique, entretien technique, entretien final.
-
-Pour postuler, envoyez votre CV et une lettre de motivation à recrutement_ml@totalenergies.com ou postulez directement sur careers.totalenergies.com.
+Processus de recrutement : Entretien RH, test technique, entretien technique et entretien final avec un manager de l'équipe. Pour postuler, envoyez CV et lettre de motivation à l'adresse recrutement_ml@totalenergies.com ou postulez sur le site de carrières TotalEnergies.

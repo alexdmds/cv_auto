@@ -1,0 +1,48 @@
+{
+    "intitule_section": "Expérience Professionnelle",
+    "experiences": [
+        {
+            "post": "Senior Data Scientist",
+            "company": "EY",
+            "location": "Paris, France",
+            "dates": "February 2023 – Present",
+            "bullets": [
+                "Conçu et déployé un Data Hub sur GCP pour centraliser les données constructeur et bancaires chez Renault.",
+                "Intégré dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA stratégiques.",
+                "Optimisé les échanges de données pour Enedis, améliorant la qualité et la fiabilité des flux de données."
+            ]
+        },
+        {
+            "post": "Co-fondateur et CTO",
+            "company": "Kadi",
+            "location": "Paris, France",
+            "dates": "December 2022 – Present",
+            "bullets": [
+                "Développé un modèle Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine.",
+                "Supervisé les processus de développement collaboratif avec Git et structuration des workflows.",
+                "Déploiement réussi sur Google Play et Apple Store en juin 2023."
+            ]
+        },
+        {
+            "post": "Ingénieur - transformation digitale",
+            "company": "Blispac",
+            "location": "France",
+            "dates": "February 2022 – September 2022",
+            "bullets": [
+                "Digitalisé l'entreprise avec la structuration des bases de données SQL et évolution de l'ERP.",
+                "Mise en place d’un algorithme génétique pour optimiser les processus de fabrication.",
+                "Automatisé un banc de test pour prothèses de hanches, rééquipant les entrepôts logistiques."
+            ]
+        },
+        {
+            "post": "Analyste de marché LNG",
+            "company": "TotalEnergies",
+            "location": "Paris, France",
+            "dates": "February 2020 – July 2020",
+            "bullets": [
+                "Analysé les marchés mondiaux de GNL et d'électricité pour le Total Energy Outlook.",
+                "Développé un algorithme en Python utilisant Pandas pour analyser les routes des méthaniers GNL."
+            ]
+        }
+    ]
+}
