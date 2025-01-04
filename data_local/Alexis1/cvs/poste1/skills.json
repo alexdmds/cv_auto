@@ -1,0 +1,10 @@
+{
+    "intitule_section": "Skills",
+    "skills": {
+        "Langages": ["Python", "SQL", "C++"],
+        "Frameworks": ["TensorFlow", "PyTorch", "Scikit-learn", "XGBoost"],
+        "Cloud/DevOps": ["GCP", "AWS", "Docker", "Kubernetes"],
+        "Outils Data": ["BigQuery", "Airflow", "dbt", "Spark"],
+        "Mathématiques": ["Optimisation", "Statistiques", "Probabilités"]
+    }
+  }

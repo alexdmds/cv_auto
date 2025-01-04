@@ -1,0 +1,24 @@
+{
+    "intitule_section" : "Education",
+    "eductations" :
+        [
+            {
+                "intitule" : "",
+                "etablissement" : "",
+                "dates": "2019 – 2021",
+                "description": "Major de promotion."
+            },
+            {
+                "intitule" : "",
+                "etablissement" : "",
+                "dates": "2019 – 2021",
+                "description": "Major de promotion."
+            },
+            {
+                "intitule" : "",
+                "etablissement" : "",
+                "dates": "2019 – 2021",
+                "description": "Major de promotion."
+            }
+        ]
+}

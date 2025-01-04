@@ -1,0 +1,21 @@
+Je souhaite générer un JSON structuré contenant les formations universitaires d'une personne à partir des données suivantes :
+
+[Insérez ici les données brutes sur les formations universitaires, comme les diplômes, les établissements, les années d'étude, les mentions ou distinctions, et tout autre détail pertinent.]
+
+Le JSON doit avoir la structure suivante :
+[
+    {
+        "intitule": "[Nom ou intitulé du diplôme]",
+        "etablissement": "[Nom de l'établissement]",
+        "dates": "[Période d'études au format 'YYYY – YYYY']",
+        "description": "[Description des réalisations, mentions, distinctions, spécialisations, projets, et tout autre détail pertinent.]"
+    },
+    ...
+]
+
+- **`intitule`** : Le nom ou l'intitulé du diplôme ou programme.
+- **`etablissement`** : Le nom précis de l'université ou de l'école.
+- **`dates`** : La période d'études sous le format 'YYYY – YYYY'.
+- **`description`** : Incluez une description aussi complète que possible. Mentionnez les distinctions obtenues (par exemple : major de promotion), les spécialisations suivies, les projets académiques majeurs, et tout autre détail marquant.
+
+Générez le JSON correspondant en respectant scrupuleusement cette structure et en prenant en compte toutes les données brutes fournies.

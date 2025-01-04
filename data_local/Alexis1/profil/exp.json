@@ -1,0 +1,58 @@
+[
+    {
+        "order": 1,
+        "post": "Senior Data Scientist",
+        "company": "EY",
+        "location": "Paris, France",
+        "dates": "February 2023 – Present",
+        "description": "Conception et déploiement d’un Data Hub sur GCP pour centraliser les données constructeur et bancaires chez Renault. Intégration de dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA stratégiques tels que l'assistant conversationnel (Talk To Data) et la prédiction des valeurs résiduelles. Optimisation des échanges de données pour Enedis via le Système de Gestion des Échanges, améliorant la qualité et la fiabilité des flux de données."
+    },
+    {
+        "order": 2,
+        "post": "Co-fondateur et CTO",
+        "company": "Kadi",
+        "location": "Paris, France",
+        "dates": "December 2022 – Present",
+        "description": "Conception de l'architecture technique et choix des technologies (Flutter, GCP). Développement d’un modèle Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine. Supervision des processus de développement collaboratif avec Git et structuration des workflows. Déploiement réussi sur Google Play et Apple Store en juin 2023."
+    },
+    {
+        "order": 3,
+        "post": "Ingénieur - transformation digitale",
+        "company": "Blispac",
+        "location": "France",
+        "dates": "February 2022 – September 2022",
+        "description": "Digitalisation de l’entreprise avec la structuration des bases de données SQL et évolution de l'ERP. Mise en place d’un algorithme génétique pour optimiser les processus de fabrication. Automatisation d'un banc de test pour prothèses de hanches, et rééquipement des entrepôts logistiques."
+    },
+    {
+        "order": 4,
+        "post": "Consultant stratégie supply chain",
+        "company": "DIAGMA",
+        "location": "Paris, France",
+        "dates": "September 2021 – February 2022",
+        "description": "Gestion d'une opération de Sale & Leaseback pour un entrepôt de 70 000m² d'un distributeur discount. Restructuration de la planification de production pour un laboratoire pharmaceutique avec optimisation linéaire en variables mixtes."
+    },
+    {
+        "order": 5,
+        "post": "Analyste de marché LNG",
+        "company": "TotalEnergies",
+        "location": "Paris, France",
+        "dates": "February 2020 – July 2020",
+        "description": "Analyse des marchés mondiaux de GNL et d'électricité pour le Total Energy Outlook. Développement d’un algorithme en Python utilisant Pandas pour analyser les routes des méthaniers GNL et automatiser les workflows de données."
+    },
+    {
+        "order": 6,
+        "post": "Project Coordinator",
+        "company": "L'Oeuvre d'Orient",
+        "location": "Erbil, Irak",
+        "dates": "June 2019 – February 2020",
+        "description": "Coordination de projets pour reconstruire et aider les minorités en Irak. Suivi administratif et financier de projets, gestion d’un atelier de menuiserie, et gestion d’un portefeuille de projets annuels de 6M€."
+    },
+    {
+        "order": 7,
+        "post": "Consultant junior",
+        "company": "Cdiscount",
+        "location": "France",
+        "dates": "October 2018 – February 2019",
+        "description": "Optimisation d’un entrepôt logistique en collaboration avec le département Génie Industriel de l'École des Ponts. Analyse des données et mise en œuvre de solutions basées sur des problèmes de routage de véhicules (VRP)."
+    }
+]

@@ -1,0 +1,25 @@
+Je souhaite générer un JSON structuré contenant les expériences professionnelles d'une personne à partir des données suivantes :
+
+[Insérez ici les données brutes sur la personne, comme les postes, les entreprises, les dates, les localisations, et tout autre détail pertinent.]
+
+Le JSON doit avoir la structure suivante :
+[
+    {
+        "order": 1,
+        "post": "[Titre du poste]",
+        "company": "[Nom de l'entreprise]",
+        "location": "[Ville, Pays]",
+        "dates": "[Période de travail au format 'MMMM YYYY – MMMM YYYY' ou 'MMMM YYYY – Present']",
+        "description": "[Description détaillée et exhaustive du rôle, des responsabilités, des projets menés, des technologies utilisées, des résultats obtenus, etc.]"
+    },
+    ...
+]
+
+- **`order`** : L'ordre doit être basé sur la chronologie des expériences, de la plus récente à la plus ancienne.
+- **`post`** : Indiquez le poste occupé.
+- **`company`** : Mentionnez précisément le nom de l'entreprise.
+- **`location`** : Fournissez la ville et le pays.
+- **`dates`** : Respectez le format demandé pour les dates.
+- **`description`** : Fournissez une description aussi complète que possible en mettant en avant les réalisations majeures, les technologies utilisées, et l'impact des contributions.
+
+Générez le JSON correspondant en respectant scrupuleusement cette structure et en prenant en compte toutes les données brutes fournies.
