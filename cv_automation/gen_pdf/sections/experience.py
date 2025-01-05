@@ -80,7 +80,7 @@ def create_experience_section(data):
         bullet_items = [ListItem(Paragraph(f"{bullet}", bullet_style)) for bullet in exp['bullets']]
         elements.append(ListFlowable(bullet_items, bulletType='bullet'))
 
-        # Ajouter un espacement entre chaque expérience
-        elements.append(Spacer(1, 12))
+
+    elements.append(Spacer(1, 6))
 
     return elements
