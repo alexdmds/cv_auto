@@ -5,9 +5,9 @@ from reportlab.lib.enums import TA_RIGHT
 
 def create_education_section(data):
     # Récupérer la section éducation et son titre
-    education_data = data.get('education', {})
-    educations = education_data.get('eductations', [])
-    section_title = education_data.get('intitule_section', 'Education')
+    education_data = data["education"]
+    educations = education_data["educations"]
+    section_title = education_data["intitule_section"]
 
     # Styles
     section_title_style = ParagraphStyle(

@@ -27,6 +27,7 @@ def generate_cv(profil, cv):
     """
     # Chemin de base
     base_path = Path(f"data_local/{profil}/cvs/{cv}")
+    profile_path = Path(f"data_local/{profil}")
     data_file = base_path / "data_cv.json"
 
     if not data_file.exists():
@@ -47,7 +48,7 @@ def generate_cv(profil, cv):
     )
     elements = []
 
-    photo_path = base_path / "photo.png"
+    photo_path = profile_path / "photo.jpg"
 
     # **1. En-tête**
     elements += create_header(data, photo_path)

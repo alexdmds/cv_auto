@@ -60,7 +60,7 @@ def refine_job_description(profil, cv):
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
-    except openai.InvalidRequestError as e:
+    except openai.BadRequestError as e:
         print(f"Requête invalide : {e}")
     except Exception as e:
         print(f"Erreur inattendue : {e}")

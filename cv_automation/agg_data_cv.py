@@ -12,7 +12,7 @@ def aggregate_json_files(profil, cv):
     # Liste des fichiers JSON avec leurs clés
     input_files = [
         {"key": "head", "file": base_path / "head.json"},
-        {"key": "experiences", "file": base_path / "all_exps.json"},
+        {"key": "experiences", "file": base_path / "exp.json"},
         {"key": "education", "file": base_path / "edu.json"},
         {"key": "skills", "file": base_path / "skills.json"},
         {"key": "hobbies", "file": base_path / "hobbies.json"}

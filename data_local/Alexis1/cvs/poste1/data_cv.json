@@ -6,68 +6,73 @@
         "general_title": "Data Architecture Specialist from Ecole des Ponts ParisTech"
     },
     "experiences": {
-        "intitule_section": "Professional Experience",
+        "intitule_section": "Expérience Professionnelle",
         "experiences": [
             {
-                "order": 1,
-                "post": "Senior Consultant",
+                "post": "Senior Data Scientist",
                 "company": "EY",
                 "location": "Paris, France",
                 "dates": "February 2023 – Present",
                 "bullets": [
-                    "Data Consultant at EY, driving large-scale cloud projects.",
-                    "Led Renault’s FLMDH project, building a GCP Data Hub linking manufacturer and financial services.",
-                    "Deployed CI/CD pipelines, dbt workflows, and Dockerized solutions on Cloud Run.",
-                    "Improved data quality for Enedis, optimizing energy data exchanges."
+                    "Conçu et déployé un Data Hub sur GCP pour centraliser les données constructeur et bancaires chez Renault.",
+                    "Intégré dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA stratégiques.",
+                    "Optimisé les échanges de données pour Enedis, améliorant la qualité et la fiabilité des flux de données."
                 ]
             },
             {
-                "order": 2,
-                "post": "Co-founder & CTO",
+                "post": "Co-fondateur et CTO",
                 "company": "Kadi",
                 "location": "Paris, France",
-                "dates": "2022 – 2024",
+                "dates": "December 2022 – Present",
                 "bullets": [
-                    "Co-founded and led a mobile app project, overseeing technical architecture and deployment.",
-                    "Developed and deployed a Faster R-CNN model on Google Cloud (App Engine) for automated receipt detection and data extraction.",
-                    "Built scalable data workflows using Cloud Functions, Firestore, and BigQuery.",
-                    "Optimized end-to-end data pipelines, enabling successful deploy on Google Play and Apple Store."
+                    "Développé un modèle Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine.",
+                    "Supervisé les processus de développement collaboratif avec Git et structuration des workflows.",
+                    "Déploiement réussi sur Google Play et Apple Store en juin 2023."
                 ]
             },
             {
-                "order": 3,
-                "post": "Energy Market Analysis Intern",
+                "post": "Ingénieur - transformation digitale",
+                "company": "Blispac",
+                "location": "France",
+                "dates": "February 2022 – September 2022",
+                "bullets": [
+                    "Digitalisé l'entreprise avec la structuration des bases de données SQL et évolution de l'ERP.",
+                    "Mise en place d’un algorithme génétique pour optimiser les processus de fabrication.",
+                    "Automatisé un banc de test pour prothèses de hanches, rééquipant les entrepôts logistiques."
+                ]
+            },
+            {
+                "post": "Analyste de marché LNG",
                 "company": "TotalEnergies",
-                "location": "Paris – GRP (Coupole)",
+                "location": "Paris, France",
                 "dates": "February 2020 – July 2020",
                 "bullets": [
-                    "Analyzed global LNG and electricity markets, providing insights for the Total Energy Outlook.",
-                    "Developed and optimized Python-based tools to analyze LNG carrier routes and automate data workflows.",
-                    "Improved efficiency in identifying trends and ensuring data accuracy."
+                    "Analysé les marchés mondiaux de GNL et d'électricité pour le Total Energy Outlook.",
+                    "Développé un algorithme en Python utilisant Pandas pour analyser les routes des méthaniers GNL."
                 ]
             }
         ]
     },
     "education": {
-        "intitule_section": "Education",
-        "eductations": [
+        "intitule_section": "Éducation",
+        "educations": [
             {
-                "intitule": "",
-                "etablissement": "",
-                "dates": "2019 – 2021",
-                "description": "Major de promotion."
+                "intitule": "MSc in Mathematical Engineering",
+                "etablissement": "Politecnico di Milano",
+                "dates": "2021 – 2022",
+                "description": "Spécialisation en Energy Finance avec un focus sur les modèles de tarification du gaz naturel et des options swing. Cours suivis en Computational Finance, incluant des modèles stochastiques et des méthodes numériques pour les dérivés financiers. Études en théorie des jeux et apprentissage machine, avec des compétences en analyse prédictive et optimisation dans des systèmes complexes."
             },
             {
-                "intitule": "",
-                "etablissement": "",
-                "dates": "2019 – 2021",
-                "description": "Major de promotion."
+                "intitule": "Master en Ingénierie Civile",
+                "etablissement": "École des Ponts ParisTech",
+                "dates": "2017 – 2022",
+                "description": "Formation généraliste en ingénierie civile avec une spécialisation en optimisation linéaire, statistiques et mathématiques appliquées. Développement de compétences avancées en résolution de problèmes complexes et analyse quantitative. Projet majeur : optimisation logistique et gestion des chaînes d'approvisionnement dans des environnements industriels."
             },
             {
-                "intitule": "",
-                "etablissement": "",
-                "dates": "2019 – 2021",
-                "description": "Major de promotion."
+                "intitule": "Classe préparatoire scientifique",
+                "etablissement": "Collège Stanislas Paris",
+                "dates": "2015 – 2017",
+                "description": "Formation intensive en mathématiques, physique et sciences de l’ingénieur. Préparation aux concours des grandes écoles d’ingénieurs, acquérant des bases solides en analyse et en résolution de problèmes complexes."
             }
         ]
     },
