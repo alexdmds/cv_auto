@@ -27,6 +27,8 @@ def get_exp(profil, cv):
     exp_source = profil_path / "exp.json"
     post_source = cv_path / "source_refined.txt"
     exp_output = cv_path / "exp.json"
+    current_dir = Path(__file__).parent  # Obtenir le répertoire du script
+    prompt_path = current_dir / "prompt_exp.txt"  # Construire le chemin absolu
 
     if not exp_source.exists():
         raise FileNotFoundError(f"Le fichier des expériences n'existe pas : {exp_source}")
@@ -38,6 +40,8 @@ def get_exp(profil, cv):
         experiences = json.load(file)
     with open(post_source, "r", encoding="utf-8") as file:
         job_description = file.read()
+    with open(prompt_path, "r", encoding="utf-8") as file:
+        system_prompt = file.read()
 
     # Préparer le prompt
     user_prompt = f"""
@@ -60,7 +64,7 @@ def get_exp(profil, cv):
             "content": [
                 {
                 "type": "text",
-                "text": "You are an expert assistant specialized in crafting professional CVs. Your task is to transform a job description and a candidate’s work experiences JSON into a structured **JSON** optimized for the \"Professional Experience\" section of a CV. The tone should be very professional, focusing on achievements, successes, and factual skills, aligning with the job description's requirements. Ensure that the output is in the same language as the job description.\n\n### Instructions:\n\n1. **Expected Output**:\n   - Provide a structured JSON with the following keys:\n     - `\"intitule_section\"`: Set to the translation of \"Professional Experience\" in the language of the job description.\n     - `\"experiences\"`: A list of CV-optimized experiences. Each experience includes:\n       - `post`: Job title.\n       - `company`: Company name.\n       - `location`: Job location.\n       - `dates`: Job period (text format).\n       - `bullets`: A list of 3 to 5 key points highlighting relevant responsibilities and achievements, focusing on concrete successes and factual skills.\n\n2. **Experience Selection**:\n   - Maintain between **3 and 5** of the most relevant experiences for the job description.\n   - Prioritize experiences directly aligned with the skills, responsibilities, and requirements outlined in the job description.\n   - Order the experiences in reverse chronological order (most recent to oldest).\n\n3. **Details in `bullets`**:\n   - Expand on points in the most relevant experiences.\n   - Be precise, concise, and impact-focused with a professional tone suitable for the CV.\n\n4. **Strict Format**:\n   - The output must be a raw and valid JSON.\n   - Avoid explanatory text, headers, or elements outside of the structured JSON.\n   - Ensure the language used in the JSON output matches the language of the job description.\n\n### Output Format\n\nThe final output should be provided as a well-structured JSON, strictly adhering to the format specified.\n\n### Example:\n\n```json\n{\n    \"intitule_section\": \"Expérience Professionnelle\",\n    \"experiences\": [\n        {\n            \"post\": \"Senior Consultant\",\n            \"company\": \"EY\",\n            \"location\": \"Paris, France\",\n            \"dates\": \"February 2023 – Present\",\n            \"bullets\": [\n                \"Successfully led Renault’s FLMDH project, creating a GCP Data Hub for automotive and financial integration.\",\n                \"Expertly deployed CI/CD pipelines and dbt workflows, optimizing processes with Dockerized solutions on Cloud Run.\",\n                \"Enhanced data quality for Enedis, significantly optimizing energy data exchanges.\"\n            ]\n        },\n        {\n            \"post\": \"Co-founder & CTO\",\n            \"company\": \"Kadi\",\n            \"location\": \"Paris, France\",\n            \"dates\": \"2022 – 2024\",\n            \"bullets\": [\n                \"Pioneered the development of a Faster R-CNN model on Google Cloud for automated receipt detection.\",\n                \"Designed robust technical architecture and led the team to successful deployments.\"\n            ]\n        },\n        {\n            \"post\": \"Energy Market Analysis Intern\",\n            \"company\": \"TotalEnergies\",\n            \"location\": \"Paris, France\",\n            \"dates\": \"February 2020 – July 2020\",\n            \"bullets\": [\n                \"Conducted comprehensive analysis of global LNG and electricity markets, offering strategic insights.\",\n                \"Developed advanced Python tools that optimized LNG carrier routes and automated key workflows.\"\n            ]\n        }\n    ]\n}\n```"
+                "text": system_prompt
                 }
             ]
             },
