@@ -1,40 +1,48 @@
 {
-    "intitule_section": "Exp\u00e9rience Professionnelle",
+    "intitule_section": "Expérience Professionnelle",
     "experiences": [
         {
             "post": "Senior Data Scientist",
             "company": "EY",
             "location": "Paris, France",
-            "dates": "F\u00e9vrier 2023 \u2013 Pr\u00e9sent",
+            "dates": "Février 2023 – Présent",
             "bullets": [
-                "Conception d'un Data Hub sur GCP pour centraliser les donn\u00e9es constructeur et bancaires chez Renault ; int\u00e9gration de dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA."
+                "Développement et déploiement d'un Data Hub sur GCP pour centraliser les données constructeur et bancaires chez Renault.",
+                "Intégration de dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA stratégiques.",
+                "Optimisation des échanges de données pour Enedis, améliorant la qualité et la fiabilité des flux de données."
             ]
         },
         {
             "post": "Co-fondateur et CTO",
             "company": "Kadi",
             "location": "Paris, France",
-            "dates": "D\u00e9cembre 2022 \u2013 Pr\u00e9sent",
+            "dates": "Décembre 2022 – Présent",
             "bullets": [
-                "Conception de l'architecture technique avec Flutter et GCP, et d\u00e9veloppement d'un mod\u00e8le Faster R-CNN pour la d\u00e9tection de tickets sur Google App Engine."
+                "Conception de l'architecture technique et choix des technologies (Flutter, GCP).",
+                "Développement d’un modèle Faster R-CNN pour la détection automatique de tickets de caisse.",
+                "Supervision des processus de développement collaboratif avec Git et structuration des workflows."
             ]
         },
         {
-            "post": "Ing\u00e9nieur - transformation digitale",
+            "post": "Ingénieur - transformation digitale",
             "company": "Blispac",
             "location": "France",
-            "dates": "F\u00e9vrier 2022 \u2013 Septembre 2022",
+            "dates": "Février 2022 – Septembre 2022",
             "bullets": [
-                "Digitalisation avec structuration de bases SQL et \u00e9volution de l'ERP ; mise en place d'un algorithme g\u00e9n\u00e9tique pour optimiser les processus de fabrication."
+                "Digitalisation de l’entreprise avec la structuration des bases de données SQL.",
+                "Mise en place d’un algorithme génétique pour optimiser les processus de fabrication.",
+                "Automatisation d'un banc de test pour prothèses de hanches."
             ]
         },
         {
-            "post": "Analyste de march\u00e9 LNG",
+            "post": "Analyste de marché LNG",
             "company": "TotalEnergies",
             "location": "Paris, France",
-            "dates": "F\u00e9vrier 2020 \u2013 Juillet 2020",
+            "dates": "Février 2020 – Juillet 2020",
             "bullets": [
-                "Analyse des march\u00e9s mondiaux de GNL ; d\u00e9veloppement d'un algorithme en Python avec Pandas pour analyser les routes des m\u00e9thaniers."
+                "Analyse des marchés mondiaux de GNL et d'électricité pour le Total Energy Outlook.",
+                "Développement d’un algorithme en Python utilisant Pandas pour analyser les routes des méthaniers GNL.",
+                "Automatisation des workflows de données."
             ]
         }
     ]

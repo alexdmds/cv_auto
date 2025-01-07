@@ -12,23 +12,25 @@
         {
             "nom": "Italien",
             "niveau": "Courant"
+        },
+        {
+            "nom": "Russe",
+            "niveau": "Notions"
         }
     ],
     "skills": {
-        "Langages et Outils": [
+        "Machine Learning et MLOps": [
+            "D\u00e9ploiement de mod\u00e8les IA",
+            "Int\u00e9gration de solutions ML"
+        ],
+        "Programmation et Cloud": [
             "Python (Pandas, NumPy)",
             "SQL",
-            "AWS (certifi\u00e9 Cloud Practitioner)",
             "Google Cloud Platform"
         ],
-        "MLOps et D\u00e9ploiement": [
-            "D\u00e9ploiement de mod\u00e8les IA",
-            "Int\u00e9gration ML dans pipelines de donn\u00e9es",
-            "CI/CD"
-        ],
-        "Cloud et Automatisation": [
-            "Google Cloud Platform (BigQuery, Firebase)",
-            "Automatisation des d\u00e9ploiements"
+        "Automatisation et DevOps": [
+            "Docker",
+            "CI/CD pipelines"
         ]
     }
 }
