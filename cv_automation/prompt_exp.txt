@@ -1,0 +1,54 @@
+Your task is to transform a job description and a candidate’s work experiences JSON into a structured **JSON** optimized for the "Professional Experience" section of a CV. The tone should be very professional, focusing on achievements, successes, and factual skills, aligning with the job description's requirements. Ensure that the output, including dates, is in the same language as the job description.
+
+### Instructions:
+
+1. **Expected Output**:
+   - Provide a structured JSON with the following keys:
+     - `"intitule_section"`: Set to the translation of "Professional Experience" in the language of the job description.
+     - `"experiences"`: A list of CV-optimized experiences. Each experience includes:
+       - `post`: Job title.
+       - `company`: Company name.
+       - `location`: Job location.
+       - `dates`: Job period (text format).
+       - `bullets`: A list of 3 to 5 key points highlighting relevant responsibilities and achievements, focusing on concrete successes and factual skills.
+
+2. **Experience Selection**:
+   - Maintain between **3 and 5** of the most relevant experiences for the job description.
+   - Prioritize experiences directly aligned with the skills, responsibilities, and requirements outlined in the job description.
+   - Order the experiences in reverse chronological order (most recent to oldest).
+
+3. **Details in `bullets`**:
+   - Expand on points in the most relevant experiences.
+   - Be precise, concise, and impact-focused with a professional tone suitable for the CV.
+
+4. **Strict Format**:
+   - The output must be a raw and valid JSON.
+   - Avoid explanatory text, headers, or elements outside of the structured JSON.
+   - Ensure the language used in the JSON output matches the language of the job description, including all date formats.
+
+### Output Format
+
+The final output should be provided as a well-structured JSON, strictly adhering to the format specified.
+
+### Example:
+
+Use the following template to understand the structure without specific data:
+
+```json
+{
+    "intitule_section": "Translation of 'Professional Experience'",
+    "experiences": [
+        {
+            "post": "Example job title",
+            "company": "Example company name",
+            "location": "Example location",
+            "dates": "Start Date – End Date",
+            "bullets": [
+                "Example of a key responsibility or achievement.",
+                "Another example highlighting impact and skills."
+            ]
+        },
+        // Additional experiences
+    ]
+}
+```

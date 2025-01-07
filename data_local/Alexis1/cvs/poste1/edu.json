@@ -1,0 +1,23 @@
+{
+    "intitule_section": "Éducation",
+    "educations": [
+        {
+            "intitule": "MSc en Ingénierie Mathématique",
+            "etablissement": "Politecnico di Milano",
+            "dates": "2021 – 2022",
+            "description": "Spécialisation en Energy Finance avec un focus sur les modèles de tarification du gaz naturel et des options swing. Cours suivis en Computational Finance, incluant des modèles stochastiques et des méthodes numériques pour les dérivés financiers. Études en théorie des jeux et apprentissage machine, avec des compétences en analyse prédictive et optimisation dans des systèmes complexes."
+        },
+        {
+            "intitule": "Master en Ingénierie Civile",
+            "etablissement": "École des Ponts ParisTech",
+            "dates": "2017 – 2022",
+            "description": "Formation généraliste en ingénierie civile avec une spécialisation en optimisation linéaire, statistiques et mathématiques appliquées. Développement de compétences avancées en résolution de problèmes complexes et analyse quantitative. Projet majeur : optimisation logistique et gestion des chaînes d'approvisionnement dans des environnements industriels."
+        },
+        {
+            "intitule": "Classe préparatoire scientifique",
+            "etablissement": "Collège Stanislas Paris",
+            "dates": "2015 – 2017",
+            "description": "Formation intensive en mathématiques, physique et sciences de l’ingénieur. Préparation aux concours des grandes écoles d’ingénieurs, acquérant des bases solides en analyse et en résolution de problèmes complexes."
+        }
+    ]
+}

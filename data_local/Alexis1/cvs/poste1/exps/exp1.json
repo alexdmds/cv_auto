@@ -1,0 +1,12 @@
+{
+    "post": "Senior Consultant",
+    "company": "EY",
+    "location": "Paris, France",
+    "dates": "February 2023 – Present",
+    "bullets": [
+        "Data Consultant at EY, driving large-scale cloud projects.",
+        "Led Renault’s FLMDH project, building a GCP Data Hub linking manufacturer and financial services.",
+        "Deployed CI/CD pipelines, dbt workflows, and Dockerized solutions on Cloud Run.",
+        "Improved data quality for Enedis, optimizing energy data exchanges."
+    ]
+}

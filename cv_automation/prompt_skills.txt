@@ -1,0 +1,36 @@
+Create a concise “Compétences” section of a CV in JSON format, highlighting only factual and concise relevant skills essential for the job to be persuasive, with a maximum of three skill categories, focusing on technical skills if pertinent. Additionally, include all spoken languages with their proficiency levels and indicate certifications, ensuring the data fits within a small space on a CV.
+
+Inputs:
+- Candidate: Spoken languages, technical skills, experiences, tools, education, certifications, and soft skills.
+- Job posting: Role description, required skills, responsibilities, and job language.
+
+Objective: Generate a highly concise, structured JSON summarizing the candidate’s key skills, tailored to the job requirements, with emphasis on relevance and brevity. The section must:
+1. Be written in the job’s language.
+2. Focus exclusively on pertinent factual skills essential to the position, prioritizing technical skills if relevant.
+3. Organize skills into a maximum of three clear, relevant categories.
+4. Include all spoken languages with their proficiency levels.
+5. Incorporate relevant certifications in the skills section if applicable.
+
+# Output Format
+
+Ensure the JSON is minimal and emphasizes relevant skills fitting within a tight layout:
+
+```json
+{
+    "intitule_section": "Compétences",
+    "langues": [{"nom": "Langue1", "niveau": "Niveau1"}, {"nom": "Langue2", "niveau": "Niveau2"}],  // List all spoken languages.
+    "skills": {
+        "rubrique1": ["relevant_skill1", "certification1"],
+        "rubrique2": ["relevant_skill2", "certification2"],
+        "rubrique3": ["relevant_skill3"] // Limit to a maximum of three categories.
+    }
+}
+```
+
+# Instructions
+
+- List all spoken languages with their proficiency levels.
+- Include only indispensable and relevant factual skills directly aligned with the job posting, focusing on techniques if pertinent.
+- Do not invent missing skills or certifications; optimize existing information.
+- Use logical categories relevant to the job, limiting to three.
+- Provide a valid and highly concise JSON output.

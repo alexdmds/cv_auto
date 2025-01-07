@@ -1,0 +1,27 @@
+{
+        "intitule_section": "Compétences",
+        "langues": [
+            {"nom": "Français", "niveau": "Courant"},
+            {"nom": "Anglais", "niveau": "Professionnel"},
+            {"nom": "Italien", "niveau": "Courant"},
+            {"nom": "Russe", "niveau": "Notions"},
+            {"nom": "Arabe", "niveau": "Notions"}
+        ],
+        "skills": {
+            "Machine Learning et MLOps": [
+                "Déploiement de modèles IA",
+                "Intégration de solutions ML",
+                "MLOps"
+            ],
+            "Technologies Cloud": [
+                "Google Cloud Platform",
+                "AWS",
+                "AWS Cloud Practitioner"
+            ],
+            "Langages de Programmation": [
+                "Python",
+                "SQL",
+                "PySpark"
+            ]
+        }
+    }
