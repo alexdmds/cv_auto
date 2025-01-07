@@ -1,10 +1,9 @@
 import openai
 import os
 from pathlib import Path
-import json
 
 
-def get_edu(profil, cv):
+def get_hobbies(profil, cv):
     """
     Génère un JSON "weights.json" en analysant une fiche de poste et les expériences professionnelles du candidat.
 
@@ -26,9 +25,9 @@ def get_edu(profil, cv):
     cv_path = Path(f"data_local/{profil}/cvs/{cv}")
     profil_source = profil_path / "pers.txt"
     post_source = cv_path / "source_refined.txt"
-    skills_output = cv_path / "skills.json"
+    hobbies_output = cv_path / "hobbies.json"
     current_dir = Path(__file__).parent  # Obtenir le répertoire du script
-    prompt_path = current_dir / "prompt_skills.txt"  # Construire le chemin absolu
+    prompt_path = current_dir / "prompt_hobbies.txt"  # Construire le chemin absolu
 
 
     if not profil_source.exists():
@@ -80,9 +79,9 @@ def get_edu(profil, cv):
         response_format={
             "type": "json_object"
         },
-        temperature=0.38,
+        temperature=0.2,
         max_completion_tokens=400,
-        top_p=0.6,
+        top_p=1,
         frequency_penalty=0,
         presence_penalty=0
         )
@@ -91,10 +90,10 @@ def get_edu(profil, cv):
         condensed_description = response.choices[0].message.content.strip()
 
         # Enregistrer le contenu dans le fichier cible
-        with open(skills_output, "w", encoding="utf-8") as file:
+        with open(hobbies_output, "w", encoding="utf-8") as file:
             file.write(condensed_description)
 
-        print(f"Fiche de poste condensée enregistrée dans : {skills_output}")
+        print(f"Fiche de poste condensée enregistrée dans : {hobbies_output}")
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
@@ -109,4 +108,4 @@ if __name__ == "__main__":
     profil = "Alexis1"
     cv = "poste1"
 
-    get_edu(profil, cv)
+    get_hobbies(profil, cv)

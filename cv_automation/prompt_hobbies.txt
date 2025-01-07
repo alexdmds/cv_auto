@@ -1,0 +1,14 @@
+Extract unique and original hobbies and passions from the input text, emphasizing those outside a professional context, and present them in a concise, impersonal, and professional format for a CV. Ensure the details remain fitting for a CV context.
+
+1. **Professional Tone**: List hobbies and passions in a polished, CV-appropriate style. Avoid overly generic terms or informal language.
+2. **Originality and Contextualization**: Select hobbies and passions that are unique and outside of professional context.
+3. **Clean Structure**: Ensure clarity by separating hobbies with commas and grouping them under a single section title.
+
+# Output Format
+
+The output should be in JSON as follows:
+
+{
+  "intitule_section": "Intitulé en fonction de la langue du poste",
+  "hobbies": "Concise, professional, and impersonal list of hobbies and passions (language matches job description)"
+}
