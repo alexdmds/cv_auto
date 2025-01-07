@@ -1,27 +1,34 @@
 {
-        "intitule_section": "Compétences",
-        "langues": [
-            {"nom": "Français", "niveau": "Courant"},
-            {"nom": "Anglais", "niveau": "Professionnel"},
-            {"nom": "Italien", "niveau": "Courant"},
-            {"nom": "Russe", "niveau": "Notions"},
-            {"nom": "Arabe", "niveau": "Notions"}
-        ],
-        "skills": {
-            "Machine Learning et MLOps": [
-                "Déploiement de modèles IA",
-                "Intégration de solutions ML",
-                "MLOps"
-            ],
-            "Technologies Cloud": [
-                "Google Cloud Platform",
-                "AWS",
-                "AWS Cloud Practitioner"
-            ],
-            "Langages de Programmation": [
-                "Python",
-                "SQL",
-                "PySpark"
-            ]
+    "intitule_section": "Comp\u00e9tences",
+    "langues": [
+        {
+            "nom": "Fran\u00e7ais",
+            "niveau": "Courant"
+        },
+        {
+            "nom": "Anglais",
+            "niveau": "Professionnel"
+        },
+        {
+            "nom": "Italien",
+            "niveau": "Courant"
         }
+    ],
+    "skills": {
+        "Langages et Outils": [
+            "Python (Pandas, NumPy)",
+            "SQL",
+            "AWS (certifi\u00e9 Cloud Practitioner)",
+            "Google Cloud Platform"
+        ],
+        "MLOps et D\u00e9ploiement": [
+            "D\u00e9ploiement de mod\u00e8les IA",
+            "Int\u00e9gration ML dans pipelines de donn\u00e9es",
+            "CI/CD"
+        ],
+        "Cloud et Automatisation": [
+            "Google Cloud Platform (BigQuery, Firebase)",
+            "Automatisation des d\u00e9ploiements"
+        ]
     }
+}

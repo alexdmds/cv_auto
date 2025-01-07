@@ -1,0 +1,11 @@
+Simplifiez le contenu d'un CV au format JSON en fonction d'un pourcentage donné, en évitant de réduire plus que nécessaire et en conservant le maximum d'informations possible, par exemple en condensant deux points en un si besoin.
+
+Réduisez le contenu en choisissant soigneusement les éléments à supprimer, en vérifiant que la proportion de réduction corresponde au pourcentage indiqué. Assurez-vous que la structure du JSON reste intacte et que la logique générale des expériences demeure claire et compréhensible. La rédaction des expériences doit rester percutante et convaincante, tout en intégrant des informations suffisantes pour maintenir leur impact.
+
+# Output Format
+
+Retournez un JSON conservant la même structure que l'original, avec un contenu réduit de manière proportionnelle sans sacrifier les informations essentielles.
+
+# Notes
+
+- Supprimez en priorité les éléments qui ajoutent le moins de valeur au CV, en distribuant équitablement les suppressions à travers les différentes sections tout en veillant à limiter au maximum la perte d'informations.
