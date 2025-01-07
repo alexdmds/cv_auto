@@ -1,9 +1,9 @@
 {
     "head": {
-        "name": "Alexis",
-        "phone": "06 00 00 00 00",
-        "email": "",
-        "general_title": "Data Architecture Specialist from Ecole des Ponts ParisTech"
+        "name": "Alexis de Monts",
+        "phone": "+33 7 81 37 86 80",
+        "email": "alexis.demonts.s@gmail.com",
+        "general_title": "Ingénieur Machine Learning spécialisé en Architecture de Données, certifié AWS Cloud Practitioner et expert en Google Cloud Platform"
     },
     "experiences": {
         "intitule_section": "Expérience Professionnelle",
@@ -78,35 +78,44 @@
         ]
     },
     "skills": {
-        "intitule_section": "Skills",
+        "intitule_section": "Compétences",
+        "langues": [
+            {
+                "nom": "Français",
+                "niveau": "Courant"
+            },
+            {
+                "nom": "Anglais",
+                "niveau": "Professionnel"
+            },
+            {
+                "nom": "Italien",
+                "niveau": "Courant"
+            },
+            {
+                "nom": "Russe",
+                "niveau": "Notions"
+            },
+            {
+                "nom": "Arabe",
+                "niveau": "Notions"
+            }
+        ],
         "skills": {
-            "Langages": [
+            "Machine Learning et MLOps": [
+                "Déploiement de modèles IA",
+                "Intégration de solutions ML",
+                "MLOps"
+            ],
+            "Technologies Cloud": [
+                "Google Cloud Platform",
+                "AWS",
+                "AWS Cloud Practitioner"
+            ],
+            "Langages de Programmation": [
                 "Python",
                 "SQL",
-                "C++"
-            ],
-            "Frameworks": [
-                "TensorFlow",
-                "PyTorch",
-                "Scikit-learn",
-                "XGBoost"
-            ],
-            "Cloud/DevOps": [
-                "GCP",
-                "AWS",
-                "Docker",
-                "Kubernetes"
-            ],
-            "Outils Data": [
-                "BigQuery",
-                "Airflow",
-                "dbt",
-                "Spark"
-            ],
-            "Mathématiques": [
-                "Optimisation",
-                "Statistiques",
-                "Probabilités"
+                "PySpark"
             ]
         }
     },

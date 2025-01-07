@@ -8,7 +8,7 @@ def create_skills_section(data):
     section_title_style = ParagraphStyle(
         name="SectionTitle",
         fontSize=16,
-        spaceAfter=8,
+        spaceAfter=12,
         textColor="darkblue"
     )
 
@@ -22,10 +22,17 @@ def create_skills_section(data):
 
     # Récupérer les données pour les compétences
     skills_data = data.get('skills', {})
-    section_title = data.get('section_title', 'Compétences techniques')
+    section_title = data.get('intitule_section', '')
 
     # Créer les éléments de la section
     elements = [Paragraph(section_title, section_title_style)]
+
+    #ajouter une ligne avec les langues
+    languages = data.get('langues', [])
+    if languages:
+        formatted_languages = ", ".join([f"{lang['nom']} ({lang['niveau']})" for lang in languages])
+        languages_paragraph = f"<b>Langues :</b> {formatted_languages}"
+        elements.append(Paragraph(languages_paragraph, skills_style))
 
     # Regrouper les compétences par catégorie
     compact_skills = []

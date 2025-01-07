@@ -17,18 +17,20 @@ def create_education_section(data):
         textColor="darkblue"
     )
 
-    degree_style = ParagraphStyle(
-        name="Degree",
+    education_style = ParagraphStyle(
+        name="Education",
         fontSize=12,
         fontName="Helvetica-Bold",
-        textColor="black"
+        textColor="black",
+        spaceAfter=4
     )
 
-    school_style = ParagraphStyle(
-        name="School",
+    description_style = ParagraphStyle(
+        name="Description",
         fontSize=10,
-        fontName="Helvetica-Oblique",
-        textColor="gray"
+        fontName="Helvetica",
+        textColor="black",
+        leading=12
     )
 
     date_style = ParagraphStyle(
@@ -39,39 +41,40 @@ def create_education_section(data):
         textColor="black"
     )
 
-    bullet_style = ParagraphStyle(
-        name="Bullet",
-        fontSize=10,
-        leftIndent=15,
-        spaceAfter=2
-    )
-
     # Ajouter le titre de la section
     elements = [Paragraph(section_title, section_title_style)]
 
     for education in educations:
-        # Titre du diplôme et dates
+        # Récupérer les données
+        institution_name = education.get('etablissement', 'Établissement inconnu')
+        degree_title = education.get('intitule', 'Diplôme inconnu')
+        dates = education.get('dates', '')
+
+        # Construire le texte principal : "École - Diplôme"
+        education_text = f"<b>{institution_name}</b> – {degree_title}"
+
+        # Table contenant école - diplôme et dates
         table_data = [
             [
-                Paragraph(education.get('intitule', 'Diplôme inconnu'), degree_style),
-                Paragraph(education.get('dates', ''), date_style)
+                Paragraph(education_text, education_style),  # École et diplôme
+                Paragraph(dates, date_style)                 # Dates
             ]
         ]
 
         # Créer une table pour aligner les colonnes
-        table = Table(table_data, colWidths=[400, 100])
+        table = Table(table_data, colWidths=[400, 100])  # Largeur ajustée pour éviter les retours à la ligne
         table.setStyle(TableStyle([
             ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         elements.append(table)
 
-        # Description du diplôme (puces)
+        # Ajouter la description (s'il y en a)
         if 'description' in education and education['description']:
-            bullets = [Paragraph(f"• {education['description']}", bullet_style)]
-            elements.extend(bullets)
+            description_paragraph = Paragraph(education['description'], description_style)
+            elements.append(description_paragraph)
 
-        # Ajouter un espacement entre les diplômes
-        elements.append(Spacer(1, 10))
+        # Ajouter un espacement entre les entrées
+        elements.append(Spacer(1, 12))
 
     return elements

@@ -1,3 +1,5 @@
+Alexis de Monts habite Paris. Son numéro de téléphone est le +33 7 81 37 86 80, son mail est alexis.demonts.s@gmail.com
+
 Alexis de Monts est un spécialiste en architecture de données avec une expertise avancée en technologies cloud, ingénierie des données et intégration de solutions IA dans des environnements complexes. Doté d’une solide formation en ingénierie civile et mathématiques appliquées, il excelle dans l’analyse, la structuration et l’optimisation de données.
 
 Compétences techniques :
@@ -17,3 +19,6 @@ Alexis est trilingue, parlant couramment le français, l’anglais et l’italie
 
 Autres informations pertinentes :
 Alexis a démontré une expertise particulière dans la gestion et l’optimisation des données pour des projets stratégiques. Il est à l’aise avec les méthodologies de recherche opérationnelle et les modèles d’optimisation, des compétences qu’il a appliquées à des projets industriels et académiques. Enfin, il est titulaire d’un permis de conduire catégorie B, ce qui lui confère une flexibilité géographique pour ses missions professionnelles.
+
+Alexis fait beaucoup de musique (il a 15 ans de conservatoire en hautbois). Maintenant il fait plutôt du piano.
+Il fait également beaucoup de bateau à voile, il est skipper pour des croisières, principalement en méditerranée. En 2023 il a traversé le Golfe de Gascogne à la voile.
