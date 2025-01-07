@@ -1,0 +1,12 @@
+{
+    "adjustments": [
+        {
+            "section": 2,
+            "suggested_reduction_percentage": 15
+        },
+        {
+            "section": 3,
+            "suggested_reduction_percentage": 10
+        }
+    ]
+}

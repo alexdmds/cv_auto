@@ -1,23 +1,23 @@
 {
-    "intitule_section": "Éducation",
+    "intitule_section": "\u00c9ducation",
     "educations": [
         {
-            "intitule": "MSc en Ingénierie Mathématique",
+            "intitule": "MSc en Ing\u00e9nierie Math\u00e9matique",
             "etablissement": "Politecnico di Milano",
-            "dates": "2021 – 2022",
-            "description": "Spécialisation en Energy Finance avec un focus sur les modèles de tarification du gaz naturel et des options swing. Cours suivis en Computational Finance, incluant des modèles stochastiques et des méthodes numériques pour les dérivés financiers. Études en théorie des jeux et apprentissage machine, avec des compétences en analyse prédictive et optimisation dans des systèmes complexes."
+            "dates": "2021 \u2013 2022",
+            "description": "Sp\u00e9cialisation en Energy Finance, mod\u00e9lisation en Computational Finance et m\u00e9thodes num\u00e9riques pour les d\u00e9riv\u00e9s financiers. Comp\u00e9tences en th\u00e9orie des jeux et apprentissage machine."
         },
         {
-            "intitule": "Master en Ingénierie Civile",
-            "etablissement": "École des Ponts ParisTech",
-            "dates": "2017 – 2022",
-            "description": "Formation généraliste en ingénierie civile avec une spécialisation en optimisation linéaire, statistiques et mathématiques appliquées. Développement de compétences avancées en résolution de problèmes complexes et analyse quantitative. Projet majeur : optimisation logistique et gestion des chaînes d'approvisionnement dans des environnements industriels."
+            "intitule": "Master en Ing\u00e9nierie Civile",
+            "etablissement": "\u00c9cole des Ponts ParisTech",
+            "dates": "2017 \u2013 2022",
+            "description": "Sp\u00e9cialisation en optimisation lin\u00e9aire et statistiques. Projet majeur en optimisation logistique."
         },
         {
-            "intitule": "Classe préparatoire scientifique",
-            "etablissement": "Collège Stanislas Paris",
-            "dates": "2015 – 2017",
-            "description": "Formation intensive en mathématiques, physique et sciences de l’ingénieur. Préparation aux concours des grandes écoles d’ingénieurs, acquérant des bases solides en analyse et en résolution de problèmes complexes."
+            "intitule": "Classe pr\u00e9paratoire scientifique",
+            "etablissement": "Coll\u00e8ge Stanislas Paris",
+            "dates": "2015 \u2013 2017",
+            "description": "Math\u00e9matiques, physique et sciences de l\u2019ing\u00e9nieur. Pr\u00e9paration aux concours des grandes \u00e9coles."
         }
     ]
 }
