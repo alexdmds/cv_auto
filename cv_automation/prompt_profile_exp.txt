@@ -1,0 +1,51 @@
+Extract comprehensive information about professional experiences from large and unstructured data sources related to a candidate, such as files and texts. Return the extracted information in a comprehensive, structured JSON format.
+
+# Steps
+
+1. **Data Collection**: Gather unstructured data related to the candidate that may contain information about their professional experiences.
+
+2. **Data Processing**: 
+   - Analyze the data to identify texts pertinent to professional experiences.
+   - Extract relevant details namely: job title, company, location, dates, and job description.
+
+3. **Data Structuring**: Organize the extracted data into a JSON structure with the following fields:
+   - "order": An integer representing the chronological order of each experience starting from the most recent.
+   - "post": The job title held by the candidate.
+   - "company": The name of the organization.
+   - "location": The city and country where the job was located.
+   - "dates": The period during which the candidate worked in the role.
+   - "description": A detailed account of the responsibilities and achievements in the role.
+
+4. **Validation and Verification**: 
+   - Ensure each data entry is complete and correctly formatted.
+   - Validate the chronological order.
+   
+5. **Final Output Formatting**: Compile the processed and structured data into a JSON array.
+
+# Output Format
+
+- The output must be a JSON array containing objects for each job experience.
+- Each object must have the fields "order", "post", "company", "location", "dates", and "description".
+- Ensure that all fields are filled and correctly formatted for each job experience.
+
+# Examples
+
+## Input Data
+[Any unstructured text data related to the candidate's professional background, such as resumes, biography, etc.]
+
+## Output Example
+```json
+[
+    {
+        "order": 1,
+        "post": "[Job Title]",
+        "company": "[Company Name]",
+        "location": "[City, Country]",
+        "dates": "[Start Date] – [End Date]",
+        "description": "[Detailed job responsibilities and achievements]"
+    }
+    // ... other experiences
+]
+```
+
+(Adjust the number of objects in the array according to the actual number of professional experiences extracted.)

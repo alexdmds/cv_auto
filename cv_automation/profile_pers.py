@@ -1,15 +1,19 @@
 import openai
 import os
 from pathlib import Path
+import json
+
+def save_text_to_file(exp_output, text):
+    # Créer le chemin si nécessaire
+    file_path = Path(exp_output)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Enregistrer le contenu dans le fichier cible
+    file_path.write_text(text, encoding="utf-8")
 
 
-def get_hobbies(profil, cv):
-    """
-    Génère un JSON "weights.json" en analysant une fiche de poste et les expériences professionnelles du candidat.
 
-    :param profil: Nom du profil (sous-dossier dans `data_local`).
-    :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
-    """
+def profile_pers(profil):
     # Récupérer la clé API depuis les variables d'environnement
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -22,38 +26,31 @@ def get_hobbies(profil, cv):
 
     # Définir les chemins des fichiers
     profil_path = Path(f"data_local/{profil}/profil")
-    cv_path = Path(f"data_local/{profil}/cvs/{cv}")
-    profil_source = profil_path / "pers.txt"
-    post_source = cv_path / "source_refined.txt"
-    hobbies_output = cv_path / "hobbies.json"
+    source_profil_path = Path(f"data_local/{profil}/sources")
     current_dir = Path(__file__).parent  # Obtenir le répertoire du script
-    prompt_path = current_dir / "prompt_hobbies.txt"  # Construire le chemin absolu
-
-
-    if not profil_source.exists():
-        raise FileNotFoundError(f"Le fichier des expériences n'existe pas : {profil_source}")
-    if not post_source.exists():
-        raise FileNotFoundError(f"Le fichier de la fiche de poste n'existe pas : {post_source}")
+    prompt_path = current_dir / "prompt_profile_pers.txt"  # Construire le chemin absolu
+    exp_output = profil_path / "pers.txt"
 
     # Lire les contenus des fichiers sources
-    with open(profil_source, "r", encoding="utf-8") as file:
-        profil = file.read()
-    with open(post_source, "r", encoding="utf-8") as file:
-        job_description = file.read()
     with open(prompt_path, "r", encoding="utf-8") as file:
         system_prompt = file.read()
 
-    # Préparer le prompt
+    textes = []
+    #On récupère tous les fichiers txt présents dans le dossier source_profil_path
+    for txt_file in source_profil_path.glob("*.txt"):
+        with open(txt_file, "r", encoding="utf-8") as file:
+            job_description = file.read()
+            textes.append(job_description)
+
+    # Préparer le prompt en donnant toutes les textes des sources
     user_prompt = f"""
-    Voici les données nécessaires pour votre analyse :\n\n1. **Fiche de poste** :\n
-    {job_description}
-    \n2. **Profil du candidat** :\n
-    {profil}
-    \nGénérez le JSON final en suivant scrupuleusement les règles indiquées dans vos instructions.
+    Voici les données nécessaires pour votre analyse :\n
+    {textes}
     """
 
     try:
         # Appeler l'API de ChatGPT
+
         response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -77,23 +74,22 @@ def get_hobbies(profil, cv):
             }
         ],
         response_format={
-            "type": "json_object"
+            "type": "text"
         },
-        temperature=0.2,
-        max_completion_tokens=400,
+        temperature=1,
+        max_completion_tokens=2048,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
         )
-
+        
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
 
-        # Enregistrer le contenu dans le fichier cible
-        with open(hobbies_output, "w", encoding="utf-8") as file:
-            file.write(condensed_description)
 
-        print(f"Fiche de poste condensée enregistrée dans : {hobbies_output}")
+        save_text_to_file(exp_output, condensed_description)
+
+        print(f"Fiche de poste condensée enregistrée dans : {exp_output}")
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
@@ -106,6 +102,5 @@ def get_hobbies(profil, cv):
 
 if __name__ == "__main__":
     profil = "Alix1"
-    cv = "vancleef"
 
-    get_hobbies(profil, cv)
+    profile_pers(profil)

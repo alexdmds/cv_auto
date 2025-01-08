@@ -107,7 +107,7 @@ def get_exp(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Alexis1"
-    cv = "poste1"
+    profil = "Alix1"
+    cv = "vancleef"
 
     get_exp(profil, cv)

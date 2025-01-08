@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 
 
-def get_edu(profil, cv):
+def get_head(profil, cv):
     """
     Génère un JSON "weights.json" en analysant une fiche de poste et les expériences professionnelles du candidat.
 
@@ -106,7 +106,7 @@ def get_edu(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Alexis1"
-    cv = "poste1"
+    profil = "Alix1"
+    cv = "vancleef"
 
-    get_edu(profil, cv)
+    get_head(profil, cv)

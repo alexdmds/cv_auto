@@ -32,7 +32,7 @@ def refine_job_description(profil, cv):
 
     # Préparer le message pour l'API
     prompt = (
-        "Condensez la fiche de poste suivante en gardant tous les éléments importants, "
+        "Condensez la fiche de poste suivante, dans la même langue, en gardant tous les éléments importants, "
         "dans une limite de 500 mots. Conservez le ton professionnel et les détails essentiels.\n\n"
         f"Fiche de poste :\n{job_description}\n\nCondensé :"
     )
@@ -67,7 +67,7 @@ def refine_job_description(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Alexis1"
-    cv = "poste1"
+    profil = "Alix1"
+    cv = "vancleef"
 
     refine_job_description(profil, cv)
