@@ -3,14 +3,16 @@
 <head>
     <title>Connexion</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <h1>Bienvenue</h1>
-    <button onclick="loginWithGoogle()">Connexion avec Google</button>
-    <script>
-        function loginWithGoogle() {
-            window.location.href = "https://your-backend-url/login";
-        }
-    </script>
+    <!-- Bouton de connexion avec Google -->
+    <div id="g_id_onload"
+         data-client_id="177360827241-3g376bqaun1t2h5nhl8thnv5k9o64efh.apps.googleusercontent.com"
+         data-login_uri="https://storage.googleapis.com/frontend_cv_generator/authenticated.html"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
 </body>
 </html>
