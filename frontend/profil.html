@@ -8,15 +8,13 @@
 <body>
   <h1 id="welcome-message">Bienvenue</h1>
 
-  <script>
-    // Récupérer le nom de l'utilisateur depuis localStorage
-    const userName = localStorage.getItem("userName");
+  <h2>Upload de fichiers</h2>
+  <input type="file" id="file-uploader" />
+  <button id="upload-button">Upload</button>
+  <div id="upload-status"></div>
 
-    if (userName) {
-      document.getElementById("welcome-message").textContent = `Bienvenue, ${userName}!`;
-    } else {
-      document.getElementById("welcome-message").textContent = "Aucun utilisateur connecté.";
-    }
-  </script>
+  <!-- Inclusion des scripts -->
+  <script type="module" src="./firebase-config.js"></script>
+  <script type="module" src="./profil.js"></script>
 </body>
 </html>

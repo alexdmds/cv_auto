@@ -1,39 +1,39 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { storage } from "./firebase-config.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 
-// Configuration Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyD2ZmZ8y399YYyvUHWaKOux3tgAV4T6OLg",
-    authDomain: "cv-generator-447314.firebaseapp.com",
-    projectId: "cv-generator-447314",
-    storageBucket: "cv-generator-447314.firebasestorage.app",
-    messagingSenderId: "177360827241",
-    appId: "1:177360827241:web:2eccbab9c11777f27203f8"
-};
+const auth = getAuth();
 
-// Initialiser Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// Vérifier l'état de connexion
 onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Afficher le nom de l'utilisateur
-        document.getElementById("welcome-message").textContent = `Bienvenue, ${user.displayName} !`;
-    } else {
-        // Rediriger si l'utilisateur n'est pas connecté
-        window.location.href = "/frontend/index.html";
-    }
-});
+  if (user) {
+    const userName = user.displayName || "Utilisateur";
+    document.getElementById("welcome-message").textContent = `Bienvenue, ${userName}!`;
 
-// Déconnexion de l'utilisateur
-document.getElementById("logout").addEventListener("click", async () => {
-    try {
-        await signOut(auth);
-        alert("Vous avez été déconnecté.");
-        window.location.href = "/frontend/index.html";
-    } catch (error) {
-        console.error("Erreur lors de la déconnexion :", error);
-        alert("Une erreur est survenue lors de la déconnexion.");
-    }
+    document.getElementById("upload-button").addEventListener("click", async () => {
+      const fileInput = document.getElementById("file-uploader");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        document.getElementById("upload-status").textContent = "Aucun fichier sélectionné.";
+        return;
+      }
+
+      try {
+        // Référence à l'emplacement dans le bucket Firebase Storage
+        const fileRef = ref(storage, `${user.uid}/${file.name}`);
+
+        // Upload du fichier
+        await uploadBytes(fileRef, file);
+
+        // Récupérer l'URL de téléchargement
+        const downloadURL = await getDownloadURL(fileRef);
+        document.getElementById("upload-status").textContent = `Fichier uploadé avec succès : ${downloadURL}`;
+      } catch (error) {
+        console.error(error);
+        document.getElementById("upload-status").textContent = "Erreur lors de l'upload.";
+      }
+    });
+  } else {
+    document.getElementById("welcome-message").textContent = "Aucun utilisateur connecté.";
+  }
 });
