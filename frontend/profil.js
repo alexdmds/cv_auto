@@ -10,6 +10,11 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("welcome-message").textContent = `Bienvenue, ${userName}!`;
 
     const fileList = document.getElementById("file-list");
+    const userInfo = document.getElementById("user-info");
+    const infoStatus = document.getElementById("info-status");
+
+    // Référence pour le fichier texte
+    const infoFileRef = ref(storage, `${user.uid}/sources/infos.txt`);
 
     // Fonction pour lister les fichiers
     const listFiles = async () => {
@@ -53,8 +58,34 @@ onAuthStateChanged(auth, (user) => {
       }
     };
 
-    // Appeler la fonction pour afficher les fichiers au chargement
+    // Fonction pour charger le contenu du fichier texte
+    const loadUserInfo = async () => {
+        try {
+            // Tente d'obtenir l'URL du fichier
+            const infoURL = await getDownloadURL(infoFileRef);
+    
+            // Récupère le contenu du fichier en une seule étape
+            const response = await fetch(infoURL);
+            if (response.ok) {
+                const text = await response.text(); // Lit le contenu du fichier
+                userInfo.value = text;             // Remplit la zone de texte
+            } else {
+                console.log("Aucun fichier infos.txt encore existant");
+                userInfo.value = ""; // Si aucune info, on laisse la zone de texte vide
+            }
+        } catch (error) {
+            // Vérifie si l'erreur est liée à un fichier manquant
+            if (error.code === 'storage/object-not-found' || error.message.includes('404')) {
+                console.log("Aucun fichier infos.txt encore existant");
+                userInfo.value = ""; // Zone de texte vide si aucune info
+            } else {
+                console.error("Erreur lors du chargement :", error);
+            }
+        }
+    };
+    // Appeler la fonction pour afficher les fichiers et charger le texte au chargement
     listFiles();
+    loadUserInfo();
 
     // Gestion de l'upload des fichiers
     document.getElementById("upload-button").addEventListener("click", async () => {
@@ -87,6 +118,19 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("upload-status").textContent = "Erreur lors de l'upload.";
       }
     });
+    // Gestion de la sauvegarde du texte
+    document.getElementById("save-info").addEventListener("click", async () => {
+        const infoText = userInfo.value;
+  
+        try {
+          const textBlob = new Blob([infoText], { type: "text/plain" });
+          await uploadBytes(infoFileRef, textBlob);
+          infoStatus.textContent = "Informations sauvegardées avec succès.";
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde des informations :", error);
+          infoStatus.textContent = "Erreur lors de la sauvegarde des informations.";
+        }
+      });
   } else {
     document.getElementById("welcome-message").textContent = "Aucun utilisateur connecté.";
   }
