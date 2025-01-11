@@ -3,17 +3,21 @@ body {
     text-align: center;
     margin: 0;
     padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
 }
 
 h1 {
     margin-top: 50px;
+    color: #4CAF50;
 }
 
-textarea, input[type="file"], button {
-    display: block;
+p {
+    font-size: 18px;
     margin: 20px auto;
-    padding: 10px;
-    font-size: 16px;
+    width: 80%;
+    max-width: 500px;
+    line-height: 1.5;
 }
 
 button {
@@ -22,8 +26,16 @@ button {
     border: none;
     cursor: pointer;
     border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 20px;
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+#logout {
+    margin-top: 40px;
+    font-weight: bold;
 }

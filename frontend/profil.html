@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil</title>
+</head>
+<body>
+  <h1 id="welcome-message">Bienvenue</h1>
+
+  <script>
+    // Récupérer le nom de l'utilisateur depuis localStorage
+    const userName = localStorage.getItem("userName");
+
+    if (userName) {
+      document.getElementById("welcome-message").textContent = `Bienvenue, ${userName}!`;
+    } else {
+      document.getElementById("welcome-message").textContent = "Aucun utilisateur connecté.";
+    }
+  </script>
+</body>
+</html>
