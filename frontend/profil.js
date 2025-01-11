@@ -14,7 +14,7 @@ onAuthStateChanged(auth, (user) => {
     const infoStatus = document.getElementById("info-status");
 
     // Référence pour le fichier texte
-    const infoFileRef = ref(storage, `${user.uid}/sources/infos.txt`);
+    const infoFileRef = ref(storage, `${user.uid}/sources/system_infos.txt`);
 
     // Fonction pour lister les fichiers
     const listFiles = async () => {
@@ -28,6 +28,10 @@ onAuthStateChanged(auth, (user) => {
 
         // Afficher chaque fichier
         for (const itemRef of result.items) {
+          // Ignorer le fichier "system_infos.txt"
+          if (itemRef.name === "system_infos.txt") {
+            continue;
+          }
           const fileURL = await getDownloadURL(itemRef);
           const li = document.createElement("li");
           li.textContent = itemRef.name;
@@ -97,8 +101,8 @@ onAuthStateChanged(auth, (user) => {
         return;
       }
 
-      if (file.type !== "application/pdf") {
-        alert("Seuls les fichiers PDF sont autorisés.");
+      if (file.type !== "application/pdf" && file.type !== "text/plain") {
+        alert("Seuls les fichiers PDF et TXT sont autorisés.");
         return;
       }
 
