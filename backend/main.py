@@ -8,6 +8,11 @@ from cv_automation.pdf_to_text import convert_source_pdf_to_txt
 from cv_automation.profile_edu import profile_edu
 from cv_automation.profile_exp import profile_exp
 from cv_automation.profile_pers import profile_pers
+from cv_automation.refine_post import refine_job_description
+from cv_automation.get_head import get_head
+from cv_automation.get_exp import get_exp
+from cv_automation.get_edu import get_edu
+from cv_automation.get_skills import get_skills
 
 import logging
 
@@ -70,6 +75,44 @@ def generate_profile():
         logger.info("Profil personnel généré")
 
         logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        # Gérer les erreurs lors de l'exécution des fonctions
+        logger.error("Erreur lors de la génération du profil", exc_info=True)
+        return jsonify({"error": "Failed to generate profile", "details": str(e)}), 500
+    
+@app.route("/generate-cv", methods=["POST"])
+def generate_profile():
+    logger.debug("Requête reçue sur /generate-profile")
+
+    # Vérification du token Firebase ID
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        logger.warning("Authorization header is missing or invalid")
+        return jsonify({"error": "Authorization header missing or invalid"}), 401
+
+    id_token = auth_header.split(" ")[1]
+
+    try:
+        # Vérifier et décoder le token
+        logger.debug("Vérification du token Firebase ID")
+        decoded_token = auth.verify_id_token(id_token)
+        user_id = decoded_token["uid"]  # Récupérer l'UID utilisateur
+        logger.info(f"Token décodé avec succès. UID utilisateur : {user_id}")
+    except Exception as e:
+        logger.error("Erreur de validation du token Firebase", exc_info=True)
+        return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+
+    #recuperer le nom du cv a generer
+    cv_name = request.json.get("cv_name")
+
+    try:
+        # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
+        logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
+
+
+
         return jsonify({"success": True}), 200
 
     except Exception as e:
