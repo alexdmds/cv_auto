@@ -5,7 +5,7 @@ FROM python:3.13.1-slim
 WORKDIR /app
 
 # Copie les fichiers nécessaires depuis le répertoire backend/
-COPY backend/ .
+COPY . .
 
 # Installe les dépendances spécifiées dans requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
