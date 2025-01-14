@@ -19,7 +19,7 @@ gcloud run deploy backend-flask \
     --image europe-west9-docker.pkg.dev/cv-generator-447314/backend-cv-automation/backend-flask:v1 \
     --platform managed \
     --region europe-west9 \
-    --allow-unauthenticated
+    --allow-unauthenticated \
     --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com
 
 
