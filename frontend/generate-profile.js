@@ -25,11 +25,12 @@ export const generateProfile = () => {
       // Construire l'en-tête d'autorisation
       const headers = new Headers();
       headers.append("Authorization", `Bearer ${idToken}`);
+      headers.append("Content-Type", "application/json"); // Si un corps est nécessaire (facultatif ici)
 
       // Envoyer la requête HTTP
       const url = `https://backend-flask-177360827241.europe-west9.run.app/generate-profile`;
       const response = await fetch(url, {
-        method: "GET",
+        method: "POST", // Utilisation de POST au lieu de GET
         headers: headers,
       });
 

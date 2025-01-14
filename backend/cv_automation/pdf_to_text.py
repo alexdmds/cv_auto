@@ -2,14 +2,12 @@ import sys
 from pathlib import Path
 
 # Ajouter le répertoire racine au chemin Python
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # Chemin vers 'CV_auto'
+ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 from PyPDF2 import PdfReader
-from backend.config import Config
-from backend.utils import download_files_from_bucket, upload_to_bucket
-
-
+from config import Config
+from utils import download_files_from_bucket, upload_to_bucket
 
 def extract_text_from_pdf(pdf_path):
     """
