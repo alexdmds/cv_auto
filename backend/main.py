@@ -35,26 +35,18 @@ def generate_profile():
         # Vérifier et décoder le token
         decoded_token = auth.verify_id_token(id_token)
         user_id = decoded_token["uid"]  # Récupérer l'UID utilisateur
+        #user_id = "j4WSNb5TuQVwVwSpq65N7o06GC52"
     except Exception as e:
         return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
 
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur
-        pdf_text = convert_source_pdf_to_txt(user_id)
-        education = profile_edu(user_id)
-        experience = profile_exp(user_id)
-        personal_info = profile_pers(user_id)
+        convert_source_pdf_to_txt(user_id)
+        profile_edu(user_id)
+        profile_exp(user_id)
+        profile_pers(user_id)
 
-        # Générer le profil complet
-        profile = {
-            "userID": user_id,
-            "text_extraction": pdf_text,
-            "education": education,
-            "experience": experience,
-            "personal_info": personal_info,
-        }
-
-        return jsonify({"success": True, "profile": profile}), 200
+        return jsonify({"success": True}), 200
 
     except Exception as e:
         # Gérer les erreurs lors de l'exécution des fonctions
