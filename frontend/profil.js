@@ -1,6 +1,12 @@
 import { storage } from "./firebase-config.js";
 import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { generateProfile } from "./generate-profile.js";
+
+// Initialisation des fonctionnalités
+document.addEventListener("DOMContentLoaded", () => {
+  generateProfile();
+});
 
 const auth = getAuth();
 
