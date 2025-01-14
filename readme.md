@@ -1,3 +1,6 @@
+
+rm -rf venv
+python3 -m venv venv
 source venv/bin/activate
 
 L’attribut alignment prend les valeurs suivantes :
@@ -18,3 +21,6 @@ gcloud run deploy backend-flask \
     --region europe-west9 \
     --allow-unauthenticated
     --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com
+
+
+
