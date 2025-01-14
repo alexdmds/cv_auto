@@ -101,6 +101,6 @@ def profile_pers(profil):
 
 
 if __name__ == "__main__":
-    profil = "Alix1"
+    profil = "Sixtine"
 
     profile_pers(profil)

@@ -103,6 +103,6 @@ def profile_edu(profil):
 
 
 if __name__ == "__main__":
-    profil = "Alix1"
+    profil = "Sixtine"
 
     profile_edu(profil)

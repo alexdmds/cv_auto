@@ -21,5 +21,5 @@ def convert_source_pdf_to_txt(profil):
 
 if __name__ == "__main__":
 
-    profil = "Alix1"
+    profil = "Sixtine"
     convert_source_pdf_to_txt(profil)

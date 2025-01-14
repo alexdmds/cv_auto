@@ -106,7 +106,7 @@ def get_edu(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Alix1"
-    cv = "vancleef"
+    profil = "Sixtine"
+    cv = "laposte"
 
     get_edu(profil, cv)

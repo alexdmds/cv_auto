@@ -72,7 +72,7 @@ def generate_cv(profil, cv):
 
 if __name__ == '__main__':
 
-    profil = "Alix1"
-    cv = "vancleef"
+    profil = "Sixtine"
+    cv = "laposte"
 
     generate_cv(profil, cv)

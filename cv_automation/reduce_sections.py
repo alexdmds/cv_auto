@@ -100,5 +100,5 @@ def apply_reduce(profil, cv):
 
 if __name__ == "__main__":
     profil = "Alexis1"
-    cv = "poste1"
+    cv = "laposte"
     apply_reduce(profil, cv)

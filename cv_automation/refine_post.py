@@ -67,7 +67,7 @@ def refine_job_description(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Alix1"
-    cv = "vancleef"
+    profil = "Sixtine"
+    cv = "laposte"
 
     refine_job_description(profil, cv)

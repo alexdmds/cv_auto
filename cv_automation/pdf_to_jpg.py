@@ -3,8 +3,8 @@ from PIL import Image, ImageDraw
 
 
 # Chemin vers le fichier PDF
-pdf_path = "data_local/Alexis1/cvs/poste1/cv.pdf"
-output_image_path = "data_local/Alexis1/cvs/poste1/cv_image.jpg"
+pdf_path = "data_local/Alexis1/cvs/laposte/cv.pdf"
+output_image_path = "data_local/Alexis1/cvs/laposte/cv_image.jpg"
 
 # Paramètre pour la hauteur du trait noir
 separator_height = 10
