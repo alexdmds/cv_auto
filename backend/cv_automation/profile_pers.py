@@ -10,15 +10,6 @@ import openai
 from backend.config import Config
 from backend.utils import get_openai_api_key, download_files_from_bucket, upload_to_bucket
 
-def save_text_to_file(exp_output, text):
-    # Créer le chemin si nécessaire
-    file_path = Path(exp_output)
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Enregistrer le contenu dans le fichier cible
-    file_path.write_text(text, encoding="utf-8")
-
-
 
 def profile_pers(profil):
     config = Config()

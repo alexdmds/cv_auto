@@ -30,3 +30,11 @@ def upload_to_bucket(bucket_name, destination_path, content):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_path)
     blob.upload_from_string(content, content_type="text/plain")
+
+def save_text_to_file(exp_output, text):
+    # Créer le chemin si nécessaire
+    file_path = Path(exp_output)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Enregistrer le contenu dans le fichier cible
+    file_path.write_text(text, encoding="utf-8")

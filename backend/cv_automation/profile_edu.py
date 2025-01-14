@@ -1,35 +1,35 @@
-import openai
-import os
+import sys
 from pathlib import Path
-import json
 
-def save_text_to_file(exp_output, text):
-    # Créer le chemin si nécessaire
-    file_path = Path(exp_output)
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Enregistrer le contenu dans le fichier cible
-    file_path.write_text(text, encoding="utf-8")
+# Ajouter le répertoire racine au chemin Python
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # Chemin vers 'CV_auto'
+sys.path.append(str(ROOT_DIR))
 
 
+import openai
+from backend.config import Config
+from backend.utils import get_openai_api_key, download_files_from_bucket, upload_to_bucket
 
 def profile_edu(profil):
-    # Récupérer la clé API depuis les variables d'environnement
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("La clé API OpenAI n'est pas définie dans les variables d'environnement.")
-    
-    # Configurer l'API OpenAI avec un client
+    config = Config()
+    env = config.ENV
+
+    # Configurer l'API OpenAI
+    api_key = get_openai_api_key(env, config)
     client = openai.OpenAI(api_key=api_key)
 
-    openai.api_key = api_key
-
-    # Définir les chemins des fichiers
-    profil_path = Path(f"data_local/{profil}/profil")
-    source_profil_path = Path(f"data_local/{profil}/sources")
-    current_dir = Path(__file__).parent  # Obtenir le répertoire du script
-    prompt_path = current_dir / "prompt_profile_edu.txt"  # Construire le chemin absolu
-    exp_output = profil_path / "edu.json"
+    # Configurer les chemins
+    if env == "local":
+        profil_path = config.LOCAL_BASE_PATH / profil / "profil"
+        source_profil_path = config.LOCAL_BASE_PATH / profil / "sources"
+        exp_output = profil_path / "edu.json"
+        prompt_path = config.LOCAL_PROMPT_PATH / "prompt_profile_edu.txt"
+    else:
+        source_profil_path = config.TEMP_PATH / profil / "sources"
+        exp_output = f"{profil}/profil/edu.json"
+        prompt_path = config.LOCAL_PROMPT_PATH / "prompt_profile_edu.txt"
+        # Télécharger les fichiers depuis le bucket
+        download_files_from_bucket(config.BUCKET_NAME, f"{profil}/sources/", source_profil_path)
 
     # Lire les contenus des fichiers sources
     with open(prompt_path, "r", encoding="utf-8") as file:
@@ -88,8 +88,13 @@ def profile_edu(profil):
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
 
-
-        save_text_to_file(exp_output, condensed_description)
+        if env == "local":
+            # Sauvegarder localement
+            Path(exp_output).parent.mkdir(parents=True, exist_ok=True)
+            Path(exp_output).write_text(condensed_description, encoding="utf-8")
+        else:
+            # Envoyer au bucket
+            upload_to_bucket(config.BUCKET_NAME, exp_output, condensed_description)
 
         print(f"Fiche de poste condensée enregistrée dans : {exp_output}")
 
@@ -103,6 +108,6 @@ def profile_edu(profil):
 
 
 if __name__ == "__main__":
-    profil = "Sixtine"
+    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
 
     profile_edu(profil)
