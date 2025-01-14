@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Générer un CV</title>
+</head>
+<body>
+  <h1 id="cv-title">Génération de CV</h1>
+
+  <nav>
+    <!-- Boutons pour revenir à la page profil ou à la page des CVs -->
+    <button id="back-to-profile">Retour au profil</button>
+    <button id="back-to-cvs">Retour aux CVs</button>
+  </nav>
+
+  <h2>Fiche de poste</h2>
+  <textarea id="job-description" placeholder="Entrez ici la fiche de poste..." rows="50" cols="100"></textarea>
+  <br />
+  <button id="save-job-description">Save</button>
+  <div id="save-status"></div>
+
+  <h2>Génération</h2>
+  <button id="generate-cv">Generate CV</button>
+
+  <script type="module" src="./generate-cv.js"></script>
+</body>
+</html>

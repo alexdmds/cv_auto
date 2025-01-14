@@ -7,6 +7,9 @@ import { generateProfile } from "./generate-profile.js";
 document.addEventListener("DOMContentLoaded", () => {
   generateProfile();
 });
+document.getElementById("view-cvs").addEventListener("click", () => {
+  window.location.href = "./mes-cvs.html";
+});
 
 const auth = getAuth();
 
