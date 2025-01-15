@@ -1,19 +1,40 @@
 import os
 from pathlib import Path
-import sys
+from google.cloud import secretmanager
 
-class Config:
-    ENV = os.getenv("ENV", "not_local")
-    #ENV = os.getenv("ENV", "local")
-    
-    # Configuration OpenAI
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    SECRET_NAME = "projects/177360827241/secrets/OPENAI_API_KEY/versions/1"
+class BaseConfig:
+    # Valeurs communes à tous les environnements
+    LOCAL_PROMPT_PATH = Path(__file__).parent / "prompts"
+    TEMP_PATH = Path("/tmp")  # Chemin temporaire
+    LOCAL_BASE_PATH = Path("data_local")  # Données locales par défaut
 
-    # Chemins locaux
-    LOCAL_BASE_PATH = Path("data_local")
-    LOCAL_PROMPT_PATH = Path(__file__).parent / "cv_automation/prompts"
+    # Placeholder pour les variables spécifiques
+    ENV = None
+    BUCKET_NAME = None
+    OPENAI_API_KEY = None
 
-    # Buckets Firebase Storage
+class LocalConfig(BaseConfig):
+    ENV = "local"
+    BUCKET_NAME = None  # Pas de bucket en local
+    OPENAI_API_KEY = OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+class DevConfig(BaseConfig):
+    ENV = "dev"
     BUCKET_NAME = "cv-generator-447314.firebasestorage.app"
-    TEMP_PATH = Path("/tmp")  # Chemin temporaire en backend
+    OPENAI_API_KEY = OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+class ProdConfig(BaseConfig):
+    ENV = "prod"
+    BUCKET_NAME = "cv-generator-447314.firebasestorage.app"
+    secret_manager_client = secretmanager.SecretManagerServiceClient()
+    response = secret_manager_client.access_secret_version(request={"name": "projects/177360827241/secrets/OPENAI_API_KEY/versions/1"})
+    OPENAI_API_KEY = response.payload.data.decode("UTF-8")
+
+def load_config():
+    env = os.getenv("ENV", "dev")
+    if env == "dev":
+        return DevConfig()
+    elif env == "prod":
+        return ProdConfig()
+    else:
+        return LocalConfig()

@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, auth
+from config import Config
+from backend.utils_old import download_files_from_bucket
 
 #importer les fonctions de cv_automation
 from cv_automation.pdf_to_text import convert_source_pdf_to_txt
@@ -13,6 +15,9 @@ from cv_automation.get_head import get_head
 from cv_automation.get_exp import get_exp
 from cv_automation.get_edu import get_edu
 from cv_automation.get_skills import get_skills
+from cv_automation.get_hobbies import get_hobbies
+from cv_automation.agg_data_cv import aggregate_json_files
+from cv_automation.gen_pdf.main import generate_cv
 
 import logging
 
@@ -24,6 +29,8 @@ logging.basicConfig(
         logging.StreamHandler()  # Envoyer les logs à la sortie standard
     ]
 )
+
+config = Config()
 
 logger = logging.getLogger(__name__)
 
@@ -110,8 +117,27 @@ def generate_profile():
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
+        download_files_from_bucket(config.BUCKET_NAME, f"{user_id}/cvs/{cv_name}/", config.TEMP_PATH / user_id / "cvs" / cv_name)
+        download_files_from_bucket(config.BUCKET_NAME, f"{user_id}/profil/", config.TEMP_PATH / user_id / "profil")
 
+        refine_job_description(user_id, cv_name)
+        logger.info("Fiche de poste condensée générée")
+        get_head(user_id, cv_name)
+        logger.info("Profil éducatif généré")
+        get_exp(user_id, cv_name)
+        logger.info("Profil professionnel généré")
+        get_edu(user_id, cv_name)
+        logger.info("Profil personnel généré")
+        get_skills(user_id, cv_name)
+        logger.info("Profil personnel généré")
+        get_hobbies(user_id, cv_name)
+        logger.info("Profil personnel généré")
+        aggregate_json_files(user_id, cv_name)
+        logger.info("Profil personnel généré")
 
+        logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
+        generate_cv(user_id, cv_name)
+        logger.info(f"CV généré avec succès pour l'utilisateur {user_id}")
 
         return jsonify({"success": True}), 200
 

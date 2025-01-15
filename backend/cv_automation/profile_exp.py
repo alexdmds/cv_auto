@@ -7,7 +7,7 @@ sys.path.append(str(ROOT_DIR))
 
 import openai
 from config import Config
-from utils import get_openai_api_key, download_files_from_bucket, upload_to_bucket
+from backend.utils_old import get_openai_api_key, download_files_from_bucket, upload_to_bucket
 
 def profile_exp(profil):
     config = Config()

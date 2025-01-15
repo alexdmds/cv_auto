@@ -1,7 +1,13 @@
-import openai
-import os
+import sys
 from pathlib import Path
-import json
+
+# Ajouter le répertoire racine au chemin Python
+ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
+sys.path.append(str(ROOT_DIR))
+
+import openai
+from config import Config
+from backend.utils_old import get_openai_api_key, upload_to_bucket
 
 
 def get_head(profil, cv):
@@ -11,30 +17,32 @@ def get_head(profil, cv):
     :param profil: Nom du profil (sous-dossier dans `data_local`).
     :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
     """
-    # Récupérer la clé API depuis les variables d'environnement
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("La clé API OpenAI n'est pas définie dans les variables d'environnement.")
-    
-    # Configurer l'API OpenAI avec un client
+
+    config = Config()
+    env = config.ENV
+
+    # Configurer l'API OpenAI
+    api_key = get_openai_api_key(env, config)
     client = openai.OpenAI(api_key=api_key)
 
-    openai.api_key = api_key
+    # Configurer les chemins
+    if env == "local":
+        profil_path = config.LOCAL_BASE_PATH / profil / "profil"
+        cv_path = config.LOCAL_BASE_PATH / profil / "cvs" / cv
+        prompt_path = config.LOCAL_PROMPT_PATH / "prompt_head.txt"
+    else:
+        prompt_path = config.LOCAL_PROMPT_PATH / "prompt_head.txt"
+        profil_path = config.TEMP_PATH / profil / "profil"
+        cv_path = config.TEMP_PATH / profil / "cvs" / cv
 
-    # Définir les chemins des fichiers
-    profil_path = Path(f"data_local/{profil}/profil")
-    cv_path = Path(f"data_local/{profil}/cvs/{cv}")
     profil_source = profil_path / "pers.txt"
     post_source = cv_path / "source_refined.txt"
-    head_output = cv_path / "head.json"
-    current_dir = Path(__file__).parent  # Obtenir le répertoire du script
-    prompt_path = current_dir / "prompt_head.txt"  # Construire le chemin absolu
-
 
     if not profil_source.exists():
         raise FileNotFoundError(f"Le fichier des expériences n'existe pas : {profil_source}")
     if not post_source.exists():
         raise FileNotFoundError(f"Le fichier de la fiche de poste n'existe pas : {post_source}")
+    
 
     # Lire les contenus des fichiers sources
     with open(profil_source, "r", encoding="utf-8") as file:
@@ -89,12 +97,16 @@ def get_head(profil, cv):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
+        
+        exp_output = cv_path / "head.json"
+        if env == "local":
+            # Sauvegarder localement
+            Path(exp_output).parent.mkdir(parents=True, exist_ok=True)
+            Path(exp_output).write_text(condensed_description, encoding="utf-8")
+        else:
+            upload_to_bucket(config.BUCKET_NAME, exp_output, condensed_description)
 
-        # Enregistrer le contenu dans le fichier cible
-        with open(head_output, "w", encoding="utf-8") as file:
-            file.write(condensed_description)
-
-        print(f"Fiche de poste condensée enregistrée dans : {head_output}")
+        print(f"head du cv généré à : {exp_output}")
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
@@ -106,7 +118,7 @@ def get_head(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "Sixtine"
-    cv = "laposte"
+    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    cv = "cv1"
 
     get_head(profil, cv)
