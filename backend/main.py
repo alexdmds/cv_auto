@@ -8,7 +8,6 @@ from cv_automation.pdf_to_text import convert_source_pdf_to_txt
 from cv_automation.profile_edu import profile_edu
 from cv_automation.profile_exp import profile_exp
 from cv_automation.profile_pers import profile_pers
-"""
 from cv_automation.refine_post import refine_job_description
 from cv_automation.get_head import get_head
 from cv_automation.get_exp import get_exp
@@ -17,7 +16,7 @@ from cv_automation.get_skills import get_skills
 from cv_automation.get_hobbies import get_hobbies
 from cv_automation.agg_data_cv import aggregate_json_files
 from cv_automation.gen_pdf.main import generate_cv
-"""
+
 import logging
 
 # Configurer le logger
@@ -113,7 +112,22 @@ def generate_cv():
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
-        pass
+        refine_job_description(user_id, cv_name)
+        logger.info("Description de poste raffinée")
+        get_head(user_id, cv_name)
+        logger.info("En-tête récupéré")
+        get_exp(user_id, cv_name)
+        logger.info("Expériences professionnelles récupérées")
+        get_edu(user_id, cv_name)
+        logger.info("Formations récupérées")
+        get_skills(user_id, cv_name)
+        logger.info("Compétences techniques récupérées")
+        get_hobbies(user_id, cv_name)
+        logger.info("Centres d'intérêt récupérés")
+        aggregate_json_files(user_id, cv_name)
+        logger.info("Données agrégées")
+        generate_cv(user_id, cv_name)
+        logger.info("CV généré")
 
     except Exception as e:
         # Gérer les erreurs lors de l'exécution des fonctions

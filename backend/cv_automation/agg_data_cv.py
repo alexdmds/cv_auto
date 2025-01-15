@@ -40,12 +40,9 @@ def aggregate_json_files(profil, cv):
             # Récupérer le fichier depuis les environnements via `get_file`
             file = get_file(file_path)  # La nouvelle version de `get_file` gère les fichiers uniques
 
-            print(f"Chargement du fichier : {file}")
-
             # Charger le contenu du fichier JSON
             with open(file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                print(f"Contenu du fichier {file_path} : {data}")
                 aggregated_data[key] = data
         except FileNotFoundError:
             print(f"Fichier non trouvé : {file_path}. Ignoré.")

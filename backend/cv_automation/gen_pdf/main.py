@@ -9,16 +9,17 @@ import json
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
-
-# Import des sections
-from sections.header import create_header
-from sections.education import create_education_section
-from sections.experience import create_experience_section
-from sections.skills import create_skills_section
-from sections.hobbies import create_hobbies_section
-
 # Import des fonctions utilitaires
 from utils import get_file, save_file
+
+# Import des sections
+from cv_automation.gen_pdf.sections.header import create_header
+from cv_automation.gen_pdf.sections.education import create_education_section
+from cv_automation.gen_pdf.sections.experience import create_experience_section
+from cv_automation.gen_pdf.sections.skills import create_skills_section
+from cv_automation.gen_pdf.sections.hobbies import create_hobbies_section
+
+
 
 
 def load_json(file_path):
