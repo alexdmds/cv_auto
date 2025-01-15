@@ -10,7 +10,7 @@ from config import load_config
 def get_files_in_directory(chemin_relatif):
     """
     Récupère tous les fichiers dans un dossier donné selon l'environnement actif.
-    
+
     :param chemin_relatif: Chemin relatif d'un dossier (ex: "profil/sources/").
     :return: Liste des chemins des fichiers trouvés dans le dossier.
     :raises FileNotFoundError: Si le dossier n'existe pas ou est vide.
@@ -20,28 +20,19 @@ def get_files_in_directory(chemin_relatif):
     config = load_config()
 
     # Construire le chemin de base selon l'environnement
-    if config.ENV in ["local", "dev"]:
-        base_path = config.LOCAL_BASE_PATH if config.ENV == "local" else config.TEMP_PATH
+    if config.ENV == "local":
+        base_path = config.LOCAL_BASE_PATH
         full_path = base_path / chemin_relatif
-    elif config.ENV == "prod":
-        full_path = Path("/tmp") / chemin_relatif
-    else:
-        raise ValueError(f"Environnement inconnu : {config.ENV}")
-
-    # Vérifier si c'est un dossier
-    if config.ENV in ["local", "dev"]:
         if not full_path.is_dir():
             raise ValueError(f"Le chemin fourni n'est pas un dossier : {chemin_relatif}")
 
-        # Lister les fichiers dans le dossier
-        files = list(full_path.glob("*"))  # Récupérer tous les fichiers et dossiers
-        files = [file for file in files if file.is_file()]  # Filtrer uniquement les fichiers
+        # Lister les fichiers locaux
+        files = [file.relative_to(base_path) for file in full_path.glob("*") if file.is_file()]
         if not files:
             raise FileNotFoundError(f"Aucun fichier trouvé dans le dossier : {chemin_relatif}")
         return files
 
-    # Gestion en mode "prod" : liste des fichiers depuis le bucket
-    elif config.ENV == "prod":
+    elif config.ENV in ["dev", "prod"]:
         storage_client = storage.Client()
         bucket = storage_client.bucket(config.BUCKET_NAME)
         blobs = list(bucket.list_blobs(prefix=chemin_relatif))
@@ -51,18 +42,19 @@ def get_files_in_directory(chemin_relatif):
         for blob in blobs:
             blob_path = Path(blob.name)
             if blob_path.parent == Path(chemin_relatif) and not blob.name.endswith("/"):
-                temp_file = Path("/tmp") / blob_path.name
-                blob.download_to_filename(temp_file)
-                files.append(temp_file)
+                files.append(blob_path)
 
         if not files:
             raise FileNotFoundError(f"Aucun fichier trouvé dans le dossier : {chemin_relatif}")
         return files
 
+    else:
+        raise ValueError(f"Environnement inconnu : {config.ENV}")
 
 def get_file(chemin_relatif):
     """
     Récupère un fichier unique selon l'environnement actif et un chemin relatif.
+
     :param chemin_relatif: Chemin relatif d'un fichier unique (ex: "profil/sources/file.pdf").
     :return: Chemin local du fichier.
     """
@@ -70,33 +62,34 @@ def get_file(chemin_relatif):
     config = load_config()
 
     # Construire le chemin de base selon l'environnement
-    if config.ENV in ["local", "dev"]:
-        base_path = config.LOCAL_BASE_PATH if config.ENV == "local" else config.TEMP_PATH
+    if config.ENV == "local":
+        base_path = config.LOCAL_BASE_PATH
         full_path = base_path / chemin_relatif
-    elif config.ENV == "prod":
-        full_path = Path("/tmp") / chemin_relatif
-    else:
-        raise ValueError(f"Environnement inconnu : {config.ENV}")
 
-    # Gestion en mode "dev" et "prod" : téléchargement depuis le bucket
-    if config.ENV in ["dev", "prod"]:
+        # Vérifier que le fichier existe localement
+        if not full_path.exists() or not full_path.is_file():
+            raise FileNotFoundError(f"Le fichier spécifié n'existe pas localement : {full_path}")
+
+        return full_path
+
+    elif config.ENV in ["dev", "prod"]:
+        # Gestion en mode distant : télécharger depuis le bucket
         storage_client = storage.Client()
         bucket = storage_client.bucket(config.BUCKET_NAME)
         blob = bucket.blob(chemin_relatif)
-        
+
         if not blob.exists():
             raise FileNotFoundError(f"Le fichier spécifié n'existe pas dans le bucket : {chemin_relatif}")
 
-        # Téléchargement du fichier vers /tmp
+        # Télécharger le fichier vers /tmp
         temp_file = Path("/tmp") / Path(chemin_relatif).name
+        temp_file.parent.mkdir(parents=True, exist_ok=True)  # Créer les répertoires si nécessaire
         blob.download_to_filename(temp_file)
+
         return temp_file
 
-    # Environnements local : vérifier que le fichier existe
-    if not full_path.exists() or not full_path.is_file():
-        raise FileNotFoundError(f"Le fichier spécifié n'existe pas : {full_path}")
-
-    return full_path
+    else:
+        raise ValueError(f"Environnement inconnu : {config.ENV}")
 
 
 def save_file(chemin_relatif, content):
@@ -233,7 +226,5 @@ def get_prompt(prompt_name):
         return file.read()
 
 if __name__ == "__main__":
-    # Exemple d'utilisation du get_file
-    file_path = "j4WSNb5TuQVwVwSpq65N7o06GC52/cvs/cv1/head.json"
-    file = get_file(file_path)
-    print(file)
+    # Exemple d'utilisation du save_file
+    save_file("test.txt", "Hello, world!")
