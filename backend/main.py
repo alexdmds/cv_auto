@@ -15,7 +15,7 @@ from cv_automation.get_edu import get_edu
 from cv_automation.get_skills import get_skills
 from cv_automation.get_hobbies import get_hobbies
 from cv_automation.agg_data_cv import aggregate_json_files
-from cv_automation.gen_pdf.main import generate_cv
+from cv_automation.gen_pdf.main import build_pdf
 
 import logging
 
@@ -126,7 +126,7 @@ def generate_cv():
         logger.info("Centres d'intérêt récupérés")
         aggregate_json_files(user_id, cv_name)
         logger.info("Données agrégées")
-        generate_cv(user_id, cv_name)
+        build_pdf(user_id, cv_name)
         logger.info("CV généré")
 
     except Exception as e:

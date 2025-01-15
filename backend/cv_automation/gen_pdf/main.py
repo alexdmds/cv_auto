@@ -28,7 +28,7 @@ def load_json(file_path):
         return json.load(file)
 
 
-def generate_cv(profil, cv):
+def build_pdf(profil, cv):
     """
     Génère un CV en PDF à partir des données dans `data_cv.json`.
 
@@ -111,4 +111,4 @@ def generate_cv(profil, cv):
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
     cv = "cv1"
-    generate_cv(profil, cv)
+    build_pdf(profil, cv)
