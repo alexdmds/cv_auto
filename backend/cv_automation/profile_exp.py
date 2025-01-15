@@ -51,11 +51,14 @@ def profile_exp(profil):
     try:
         # Appeler l'API de ChatGPT
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
+            response_format={
+                "type": "json_object"
+            },
             temperature=1,
             max_tokens=2048,
             top_p=1,
