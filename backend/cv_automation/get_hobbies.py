@@ -1,111 +1,97 @@
-import openai
-import os
+import sys
 from pathlib import Path
+
+# Ajouter le répertoire racine au chemin Python
+ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
+sys.path.append(str(ROOT_DIR))
+
+import openai
+from utils import get_openai_api_key, get_file, save_file, get_prompt
 
 
 def get_hobbies(profil, cv):
     """
-    Génère un JSON "weights.json" en analysant une fiche de poste et les expériences professionnelles du candidat.
+    Génère un JSON "hobbies.json" en analysant une fiche de poste et les expériences personnelles du candidat.
 
     :param profil: Nom du profil (sous-dossier dans `data_local`).
     :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
     """
-    # Récupérer la clé API depuis les variables d'environnement
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("La clé API OpenAI n'est pas définie dans les variables d'environnement.")
-    
-    # Configurer l'API OpenAI avec un client
+
+    # Configurer l'API OpenAI
+    api_key = get_openai_api_key()
     client = openai.OpenAI(api_key=api_key)
 
-    openai.api_key = api_key
+    # Configurer les chemins
+    profil_source_path = f"{profil}/profil/pers.txt"
+    post_source_path = f"{profil}/cvs/{cv}/source_refined.txt"
+    output_path = f"{profil}/cvs/{cv}/hobbies.json"
+    prompt_name = "prompt_hobbies.txt"
 
-    # Définir les chemins des fichiers
-    profil_path = Path(f"data_local/{profil}/profil")
-    cv_path = Path(f"data_local/{profil}/cvs/{cv}")
-    profil_source = profil_path / "pers.txt"
-    post_source = cv_path / "source_refined.txt"
-    hobbies_output = cv_path / "hobbies.json"
-    current_dir = Path(__file__).parent  # Obtenir le répertoire du script
-    prompt_path = current_dir / "prompt_hobbies.txt"  # Construire le chemin absolu
+    # Récupérer les fichiers nécessaires
+    try:
+        profil_source = get_file(profil_source_path)
+        post_source = get_file(post_source_path)
 
+        # Si une liste est retournée, prenez le premier fichier
+        if isinstance(profil_source, list):
+            profil_source = profil_source[0]
+        if isinstance(post_source, list):
+            post_source = post_source[0]
 
-    if not profil_source.exists():
-        raise FileNotFoundError(f"Le fichier des expériences n'existe pas : {profil_source}")
-    if not post_source.exists():
-        raise FileNotFoundError(f"Le fichier de la fiche de poste n'existe pas : {post_source}")
+        # Lire les contenus des fichiers sources
+        with open(profil_source, "r", encoding="utf-8") as file:
+            profil_content = file.read()
+        with open(post_source, "r", encoding="utf-8") as file:
+            job_description = file.read()
 
-    # Lire les contenus des fichiers sources
-    with open(profil_source, "r", encoding="utf-8") as file:
-        profil = file.read()
-    with open(post_source, "r", encoding="utf-8") as file:
-        job_description = file.read()
-    with open(prompt_path, "r", encoding="utf-8") as file:
-        system_prompt = file.read()
+        # Récupérer le contenu du prompt
+        system_prompt = get_prompt(prompt_name)
+
+    except FileNotFoundError as e:
+        print(f"Erreur : {e}")
+        return
 
     # Préparer le prompt
     user_prompt = f"""
     Voici les données nécessaires pour votre analyse :\n\n1. **Fiche de poste** :\n
     {job_description}
     \n2. **Profil du candidat** :\n
-    {profil}
+    {profil_content}
     \nGénérez le JSON final en suivant scrupuleusement les règles indiquées dans vos instructions.
     """
 
     try:
         # Appeler l'API de ChatGPT
         response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-            "role": "system",
-            "content": [
-                {
-                "type": "text",
-                "text": system_prompt
-                }
-            ]
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            response_format={
+                "type": "json_object"
             },
-                                    {
-            "role": "user",
-            "content": [
-                {
-                "text": user_prompt,
-                "type": "text"
-                }
-            ]
-            }
-        ],
-        response_format={
-            "type": "json_object"
-        },
-        temperature=0.2,
-        max_completion_tokens=400,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+            temperature=0.2,
+            max_completion_tokens=400,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
         )
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
 
-        # Enregistrer le contenu dans le fichier cible
-        with open(hobbies_output, "w", encoding="utf-8") as file:
-            file.write(condensed_description)
-
-        print(f"Fiche de poste condensée enregistrée dans : {hobbies_output}")
+        # Sauvegarder le contenu généré
+        save_file(output_path, condensed_description)
+        print(f"Fichier hobbies.json généré et sauvegardé dans : {output_path}")
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
-    except openai.BadRequestError as e:
-        print(f"Requête invalide : {e}")
     except Exception as e:
         print(f"Erreur inattendue : {e}")
 
 
-
 if __name__ == "__main__":
-    profil = "Sixtine"
-    cv = "laposte"
-
+    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    cv = "cv1"
     get_hobbies(profil, cv)

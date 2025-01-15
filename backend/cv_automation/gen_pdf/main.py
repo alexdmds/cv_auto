@@ -1,5 +1,11 @@
-import json
+import sys
 from pathlib import Path
+
+# Ajouter le répertoire racine au chemin Python
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # Chemin vers 'backend'
+sys.path.append(str(ROOT_DIR))
+
+import json
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -10,6 +16,9 @@ from sections.education import create_education_section
 from sections.experience import create_experience_section
 from sections.skills import create_skills_section
 from sections.hobbies import create_hobbies_section
+
+# Import des fonctions utilitaires
+from utils import get_file, save_file
 
 
 def load_json(file_path):
@@ -25,21 +34,45 @@ def generate_cv(profil, cv):
     :param profil: Nom du profil (sous-dossier dans `data_local`).
     :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
     """
-    # Chemin de base
-    base_path = Path(f"data_local/{profil}/cvs/{cv}")
-    profile_path = Path(f"data_local/{profil}")
-    data_file = base_path / "data_cv.json"
+    # Chemins des fichiers nécessaires
+    data_file_path = f"{profil}/cvs/{cv}/data_cv.json"
+    photo_file_path = f"{profil}/photo.jpg"
+    output_file_path = f"{profil}/cvs/{cv}/cv.pdf"
 
-    if not data_file.exists():
-        raise FileNotFoundError(f"Le fichier agrégé 'data_cv.json' n'existe pas : {data_file}")
+    # Charger les données JSON
+    try:
+        data_file = get_file(data_file_path)
+        if isinstance(data_file, list):  # Si une liste est retournée
+            data_file = data_file[0]
 
-    # Charger les données
-    data = load_json(data_file)
+        data = load_json(data_file)
+
+        # Définir un chemin par défaut pour la photo
+        default_photo_path = Path("backend/cv_automation/gen_pdf/sections/photo_default.jpg")
+
+        # Récupérer la photo (si disponible)
+        try:
+            photo_file = get_file(photo_file_path)
+            if isinstance(photo_file, list):
+                photo_file = photo_file[0]
+        except FileNotFoundError:
+            # Utiliser une photo par défaut si aucune photo n'est disponible
+            if not default_photo_path.exists():
+                raise FileNotFoundError(f"Le fichier photo par défaut n'existe pas : {default_photo_path}")
+            photo_file = default_photo_path
+            print(f"Photo non trouvée pour le profil, utilisation de la photo par défaut : {default_photo_path}")
+
+    except FileNotFoundError as e:
+        print(f"Erreur : {e}")
+        return
+
+    # Créer les répertoires nécessaires pour le fichier PDF
+    output_dir = Path(output_file_path).parent
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Initialiser le document PDF
-    output_file = str(base_path / "cv.pdf")
     doc = SimpleDocTemplate(
-        output_file,
+        output_file_path,
         pagesize=A4,
         rightMargin=1 * cm,
         leftMargin=1 * cm,
@@ -48,10 +81,8 @@ def generate_cv(profil, cv):
     )
     elements = []
 
-    photo_path = profile_path / "photo.jpg"
-
     # **1. En-tête**
-    elements += create_header(data, photo_path)
+    elements += create_header(data, photo_file)
 
     # **2. Expérience professionnelle**
     elements += create_experience_section(data)
@@ -66,13 +97,17 @@ def generate_cv(profil, cv):
     elements += create_hobbies_section(data)
 
     # Générer le PDF
-    doc.build(elements)
-    print(f"CV généré avec succès : {output_file}")
+    try:
+        doc.build(elements)
+        print(f"CV généré avec succès : {output_file_path}")
+
+        # Sauvegarder le fichier PDF dans l'environnement approprié
+        save_file(output_file_path, Path(output_file_path).read_bytes())
+    except Exception as e:
+        print(f"Erreur lors de la génération du CV : {e}")
 
 
-if __name__ == '__main__':
-
-    profil = "Sixtine"
-    cv = "laposte"
-
+if __name__ == "__main__":
+    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    cv = "cv1"
     generate_cv(profil, cv)

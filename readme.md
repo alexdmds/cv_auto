@@ -20,7 +20,5 @@ gcloud run deploy backend-flask \
     --platform managed \
     --region europe-west9 \
     --allow-unauthenticated \
-    --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com
-
-
-
+    --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com \
+    --set-env-vars ENV=prod

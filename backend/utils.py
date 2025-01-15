@@ -3,13 +3,68 @@ from pathlib import Path
 from google.cloud import storage
 from config import load_config
 
+from pathlib import Path
+from google.cloud import storage
+from config import load_config
+
+def get_files_in_directory(chemin_relatif):
+    """
+    Récupère tous les fichiers dans un dossier donné selon l'environnement actif.
+    
+    :param chemin_relatif: Chemin relatif d'un dossier (ex: "profil/sources/").
+    :return: Liste des chemins des fichiers trouvés dans le dossier.
+    :raises FileNotFoundError: Si le dossier n'existe pas ou est vide.
+    :raises ValueError: Si le chemin fourni n'est pas un dossier.
+    """
+    # Charger la configuration
+    config = load_config()
+
+    # Construire le chemin de base selon l'environnement
+    if config.ENV in ["local", "dev"]:
+        base_path = config.LOCAL_BASE_PATH if config.ENV == "local" else config.TEMP_PATH
+        full_path = base_path / chemin_relatif
+    elif config.ENV == "prod":
+        full_path = Path("/tmp") / chemin_relatif
+    else:
+        raise ValueError(f"Environnement inconnu : {config.ENV}")
+
+    # Vérifier si c'est un dossier
+    if config.ENV in ["local", "dev"]:
+        if not full_path.is_dir():
+            raise ValueError(f"Le chemin fourni n'est pas un dossier : {chemin_relatif}")
+
+        # Lister les fichiers dans le dossier
+        files = list(full_path.glob("*"))  # Récupérer tous les fichiers et dossiers
+        files = [file for file in files if file.is_file()]  # Filtrer uniquement les fichiers
+        if not files:
+            raise FileNotFoundError(f"Aucun fichier trouvé dans le dossier : {chemin_relatif}")
+        return files
+
+    # Gestion en mode "prod" : liste des fichiers depuis le bucket
+    elif config.ENV == "prod":
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(config.BUCKET_NAME)
+        blobs = list(bucket.list_blobs(prefix=chemin_relatif))
+
+        # Filtrer uniquement les fichiers dans le dossier (pas les sous-dossiers)
+        files = []
+        for blob in blobs:
+            blob_path = Path(blob.name)
+            if blob_path.parent == Path(chemin_relatif) and not blob.name.endswith("/"):
+                temp_file = Path("/tmp") / blob_path.name
+                blob.download_to_filename(temp_file)
+                files.append(temp_file)
+
+        if not files:
+            raise FileNotFoundError(f"Aucun fichier trouvé dans le dossier : {chemin_relatif}")
+        return files
 
 
 def get_file(chemin_relatif):
     """
-    Récupère un ou plusieurs fichiers selon l'environnement actif et un chemin relatif ou un motif.
-    :param chemin_relatif: Chemin relatif ou motif de fichiers (ex: "profil/sources/*.pdf").
-    :return: Liste des chemins correspondants ou contenu si un seul fichier est trouvé.
+    Récupère un fichier unique selon l'environnement actif et un chemin relatif.
+    :param chemin_relatif: Chemin relatif d'un fichier unique (ex: "profil/sources/file.pdf").
+    :return: Chemin local du fichier.
     """
     # Charger la configuration
     config = load_config()
@@ -27,22 +82,21 @@ def get_file(chemin_relatif):
     if config.ENV in ["dev", "prod"]:
         storage_client = storage.Client()
         bucket = storage_client.bucket(config.BUCKET_NAME)
-        blobs = list(bucket.list_blobs(prefix=Path(chemin_relatif).parent))
-        downloaded_files = []
-        for blob in blobs:
-            if blob.name.endswith(Path(chemin_relatif).suffix):  # Filtrer selon l'extension
-                temp_file = Path("/tmp") / Path(blob.name).name
-                blob.download_to_filename(temp_file)
-                downloaded_files.append(temp_file)
-        if not downloaded_files:
-            raise FileNotFoundError(f"Aucun fichier trouvé correspondant au motif : {chemin_relatif}")
-        return downloaded_files
+        blob = bucket.blob(chemin_relatif)
+        
+        if not blob.exists():
+            raise FileNotFoundError(f"Le fichier spécifié n'existe pas dans le bucket : {chemin_relatif}")
 
-    # Environnements local : utiliser glob pour matcher les fichiers
-    files = list(Path(full_path.parent).glob(full_path.name))
-    if not files:
-        raise FileNotFoundError(f"Aucun fichier trouvé correspondant au motif : {chemin_relatif}")
-    return files if len(files) > 1 else files[0]
+        # Téléchargement du fichier vers /tmp
+        temp_file = Path("/tmp") / Path(chemin_relatif).name
+        blob.download_to_filename(temp_file)
+        return temp_file
+
+    # Environnements local : vérifier que le fichier existe
+    if not full_path.exists() or not full_path.is_file():
+        raise FileNotFoundError(f"Le fichier spécifié n'existe pas : {full_path}")
+
+    return full_path
 
 
 def save_file(chemin_relatif, content):
@@ -59,11 +113,13 @@ def save_file(chemin_relatif, content):
     if config.ENV in ["local"]:
         base_path = config.LOCAL_BASE_PATH
         file_path = base_path / chemin_relatif
-        file_path.parent.mkdir(parents=True, exist_ok=True)
     elif config.ENV in ["prod", "dev"]:
-        file_path = Path("/tmp") / Path(chemin_relatif).name
+        file_path = Path("/tmp") / chemin_relatif
     else:
         raise ValueError(f"Environnement inconnu : {config.ENV}")
+
+    # Créer les répertoires nécessaires
+    file_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Enregistrer localement ou sur dev
     extension = file_path.suffix.lower()
@@ -87,17 +143,21 @@ def save_file(chemin_relatif, content):
         bucket = storage_client.bucket(config.BUCKET_NAME)
         blob = bucket.blob(chemin_relatif)
         
-        # Convertir le contenu en chaîne pour JSON ou texte
+        # Déterminer le type de contenu
         if isinstance(content, dict):  # JSON
-            content_str = json.dumps(content, indent=4)  # Convertir le dictionnaire en chaîne
+            content_str = json.dumps(content, indent=4)
             content_type = "application/json"
         elif isinstance(content, str):  # Texte brut
             content_str = content
             content_type = "text/plain"
-        else:  # Contenu binaire
-            content_str = content
-            content_type = "application/octet-stream"
+        elif isinstance(content, bytes):  # Contenu binaire
+            blob.upload_from_string(content, content_type="application/octet-stream")
+            print(f"Fichier sauvegardé dans le bucket : {chemin_relatif}")
+            return
+        else:
+            raise ValueError(f"Format de contenu non pris en charge : {type(content)}")
 
+        # Envoyer le fichier au bucket
         blob.upload_from_string(content_str, content_type=content_type)
         print(f"Fichier sauvegardé dans le bucket : {chemin_relatif}")
         
@@ -173,5 +233,7 @@ def get_prompt(prompt_name):
         return file.read()
 
 if __name__ == "__main__":
-    # Exemple d'utilisation du save_file
-    save_file("j4WSNb5TuQVwVwSpq65N7o06GC52/profil/edu.json", {"name": "John Doe", "age": 25})
+    # Exemple d'utilisation du get_file
+    file_path = "j4WSNb5TuQVwVwSpq65N7o06GC52/cvs/cv1/head.json"
+    file = get_file(file_path)
+    print(file)
