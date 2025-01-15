@@ -56,18 +56,18 @@ def save_file(chemin_relatif, content):
     config = load_config()
 
     # Construire le chemin complet selon l'environnement
-    if config.ENV in ["local", "dev"]:
-        base_path = config.LOCAL_BASE_PATH if config.ENV == "local" else config.TEMP_PATH
+    if config.ENV in ["local"]:
+        base_path = config.LOCAL_BASE_PATH
         file_path = base_path / chemin_relatif
         file_path.parent.mkdir(parents=True, exist_ok=True)
-    elif config.ENV == "prod":
+    elif config.ENV in ["prod", "dev"]:
         file_path = Path("/tmp") / Path(chemin_relatif).name
     else:
         raise ValueError(f"Environnement inconnu : {config.ENV}")
 
     # Enregistrer localement ou sur dev
     extension = file_path.suffix.lower()
-    if config.ENV in ["local", "dev"]:
+    if config.ENV in ["local"]:
         if extension == ".json":
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(content, f, indent=4)
@@ -80,17 +80,27 @@ def save_file(chemin_relatif, content):
         else:
             raise ValueError(f"Format de fichier non pris en charge : {extension}")
         print(f"Fichier sauvegardé localement : {file_path}")
-    # Enregistrer sur le bucket en prod
-    elif config.ENV == "prod":
+
+    # Enregistrer sur le bucket en dev/prod
+    elif config.ENV in ["prod", "dev"]:
         storage_client = storage.Client()
         bucket = storage_client.bucket(config.BUCKET_NAME)
         blob = bucket.blob(chemin_relatif)
-        if isinstance(content, str):  # Texte ou JSON
-            blob.upload_from_string(content, content_type="text/plain")
-        else:  # Binaire
-            blob.upload_from_string(content, content_type="application/octet-stream")
-        print(f"Fichier sauvegardé dans le bucket : {chemin_relatif}")
+        
+        # Convertir le contenu en chaîne pour JSON ou texte
+        if isinstance(content, dict):  # JSON
+            content_str = json.dumps(content, indent=4)  # Convertir le dictionnaire en chaîne
+            content_type = "application/json"
+        elif isinstance(content, str):  # Texte brut
+            content_str = content
+            content_type = "text/plain"
+        else:  # Contenu binaire
+            content_str = content
+            content_type = "application/octet-stream"
 
+        blob.upload_from_string(content_str, content_type=content_type)
+        print(f"Fichier sauvegardé dans le bucket : {chemin_relatif}")
+        
 def process_files(profil, file_extension, output_extension, process_function):
     """
     Traite les fichiers pour un profil donné en fonction d'une fonction de transformation.
@@ -134,3 +144,34 @@ def process_files(profil, file_extension, output_extension, process_function):
             print(f"Fichier transformé renvoyé dans le bucket : {output_file_path}")
 
         print(f"Fichier transformé et sauvegardé localement : {output_file_path}")
+
+def get_openai_api_key():
+    """
+    Récupère la clé API OpenAI en fonction de l'environnement actif.
+    :return: Clé API OpenAI.
+    """
+    # Charger la configuration
+    config = load_config()
+
+    # Récupérer la clé API
+    return config.OPENAI_API_KEY
+
+def get_prompt(prompt_name):
+    """
+    Récupère un prompt à partir de son nom.
+    :param prompt_name: Nom du prompt.
+    :return: Contenu du prompt.
+    """
+    # Charger la configuration
+    config = load_config()
+
+    # Construire le chemin complet du prompt
+    prompt_path = config.LOCAL_PROMPT_PATH / prompt_name
+
+    # Lire le contenu du prompt
+    with open(prompt_path, "r", encoding="utf-8") as file:
+        return file.read()
+
+if __name__ == "__main__":
+    # Exemple d'utilisation du save_file
+    save_file("j4WSNb5TuQVwVwSpq65N7o06GC52/profil/edu.json", {"name": "John Doe", "age": 25})

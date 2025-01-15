@@ -4,7 +4,7 @@ from google.cloud import secretmanager
 
 class BaseConfig:
     # Valeurs communes à tous les environnements
-    LOCAL_PROMPT_PATH = Path(__file__).parent / "prompts"
+    LOCAL_PROMPT_PATH = Path(__file__).parent / "cv_automation/prompts"
     TEMP_PATH = Path("/tmp")  # Chemin temporaire
     LOCAL_BASE_PATH = Path("data_local")  # Données locales par défaut
 

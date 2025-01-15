@@ -6,9 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import openai
-from config import Config
-from backend.utils_old import get_openai_api_key, upload_to_bucket
-
+from utils import get_openai_api_key, get_file, save_file
 
 def refine_job_description(profil, cv):
     """
@@ -17,27 +15,26 @@ def refine_job_description(profil, cv):
     :param profil: Nom du profil (sous-dossier dans `data_local`).
     :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
     """
-    config = Config()
-    env = config.ENV
 
     # Configurer l'API OpenAI
-    api_key = get_openai_api_key(env, config)
+    api_key = get_openai_api_key()
     client = openai.OpenAI(api_key=api_key)
 
     # Configurer les chemins
-    if env == "local":
-        cv_path = config.LOCAL_BASE_PATH / profil / "cvs" / cv
-    else:
-        cv_path = config.TEMP_PATH / profil / "cvs" / cv
+    source_path = f"{profil}/cvs/{cv}/source_raw.txt"
+    output_path = f"{profil}/cvs/{cv}/source_refined.txt"
 
-    post_source = cv_path / "source_raw.txt"
+    # Récupérer le contenu du fichier source
+    try:
+        source_file = get_file(source_path)
+        if isinstance(source_file, list):  # Si une liste est retournée
+            source_file = source_file[0]  # Prenez le premier élément
 
-    if not post_source.exists():
-        raise FileNotFoundError(f"Le fichier de la fiche de poste n'existe pas : {post_source}")
-
-    # Lire le contenu du fichier source
-    with open(post_source, "r", encoding="utf-8") as file:
-        job_description = file.read()
+        with open(source_file, "r", encoding="utf-8") as file:
+            job_description = file.read()
+    except FileNotFoundError as e:
+        print(f"Erreur : {e}")
+        return
 
     # Préparer le message pour l'API
     prompt = (
@@ -52,28 +49,21 @@ def refine_job_description(profil, cv):
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Vous êtes un assistant expert en rédaction professionnelle."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             max_tokens=2000,  # Limite de tokens pour le condensé
-            temperature=0.7
+            temperature=0.7,
         )
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
-        
-        exp_output = cv_path / "source_refined.txt"
-        if env == "local":
-            # Sauvegarder localement
-            Path(exp_output).parent.mkdir(parents=True, exist_ok=True)
-            Path(exp_output).write_text(condensed_description, encoding="utf-8")
-        else:
-            upload_to_bucket(config.BUCKET_NAME, exp_output, condensed_description)
-        print(f"Fiche de poste condensée enregistrée dans : {exp_output}")
+
+        # Sauvegarder le contenu généré
+        save_file(output_path, condensed_description)
+        print(f"Fiche de poste condensée enregistrée dans : {output_path}")
 
     except openai.APIError as e:
         print(f"Erreur API : {e}")
-    except openai.BadRequestError as e:
-        print(f"Requête invalide : {e}")
     except Exception as e:
         print(f"Erreur inattendue : {e}")
 
@@ -81,5 +71,4 @@ def refine_job_description(profil, cv):
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
     cv = "cv1"
-
     refine_job_description(profil, cv)
