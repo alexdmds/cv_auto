@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt
+from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory
 
 def profile_edu(profil):
     """
@@ -18,21 +18,26 @@ def profile_edu(profil):
     client = openai.OpenAI(api_key=api_key)
 
     # Configurer les chemins
-    source_profil_path = f"{profil}/sources/*.txt"
+    source_profil_path = f"{profil}/sources"
     exp_output = f"{profil}/profil/edu.json"
     prompt_name = "prompt_profile_edu.txt"
 
-    # Récupérer les fichiers texte depuis le chemin source
+    # Récupérer les fichiers texte depuis le dossier source
     try:
-        source_files = get_file(source_profil_path)
-        if not isinstance(source_files, list):  # Si un seul fichier est retourné
-            source_files = [source_files]
+        source_files = get_files_in_directory(source_profil_path)
+
+        print(f"Nombre de fichiers trouvés dans {source_profil_path} : {len(source_files)}")
 
         # Lire le contenu des fichiers texte
         textes = []
-        for txt_file in source_files:
-            with open(txt_file, "r", encoding="utf-8") as file:
-                textes.append(file.read())
+        for file_path in source_files:
+            if file_path.suffix == ".txt":  # Traiter uniquement les fichiers .txt
+                file_content = get_file(str(file_path))
+                with open(file_content, "r", encoding="utf-8") as file:
+                    textes.append(file.read())
+
+        if not textes:
+            raise FileNotFoundError("Aucun fichier texte valide trouvé pour l'analyse.")
 
         system_prompt = get_prompt(prompt_name)
 
