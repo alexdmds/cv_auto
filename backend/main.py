@@ -129,6 +129,8 @@ def generate_cv():
         build_pdf(user_id, cv_name)
         logger.info("CV généré")
 
+        return jsonify({"success": True}), 200
+
     except Exception as e:
         # Gérer les erreurs lors de l'exécution des fonctions
         logger.error("Erreur lors de la génération du profil", exc_info=True)

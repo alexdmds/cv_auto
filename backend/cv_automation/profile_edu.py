@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory
+from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, add_tokens_to_users
 
 def profile_edu(profil):
     """
@@ -33,6 +33,8 @@ def profile_edu(profil):
         for file_path in source_files:
             if file_path.suffix == ".txt":  # Traiter uniquement les fichiers .txt
                 file_content = get_file(str(file_path))
+                print("file_content")
+                print(file_content)
                 with open(file_content, "r", encoding="utf-8") as file:
                     textes.append(file.read())
 
@@ -47,11 +49,11 @@ def profile_edu(profil):
 
     # Préparer le prompt
     user_prompt = f"""
-    Voici les données nécessaires pour votre analyse :\n
-    {textes}
-    \nGénérez le JSON final en suivant scrupuleusement les règles indiquées dans vos instructions.
+    Voici les données nécessaires pour votre analyse :
+    {chr(10).join(textes)}
+    Générez le JSON final en suivant scrupuleusement les règles indiquées dans vos instructions.
     """
-    
+
     try:
         # Appeler l'API de ChatGPT
         response = client.chat.completions.create(
@@ -72,6 +74,13 @@ def profile_edu(profil):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
+
+        txt_input = user_prompt + system_prompt
+        txt_output = condensed_description
+        txt_total = txt_input + txt_output
+
+        add_tokens_to_users(profil, txt_total)
+
 
         # Sauvegarder le fichier JSON
         save_file(exp_output, condensed_description)

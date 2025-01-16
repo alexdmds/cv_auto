@@ -7,6 +7,15 @@ from pathlib import Path
 from google.cloud import storage
 from config import load_config
 
+import firebase_admin
+from firebase_admin import db
+
+# Initialiser Firebase Admin
+firebase_admin.initialize_app(options={
+    "databaseURL": "https://cv-generator-447314-default-rtdb.europe-west1.firebasedatabase.app/"
+})
+import tiktoken
+
 def get_files_in_directory(chemin_relatif):
     """
     Récupère tous les fichiers dans un dossier donné selon l'environnement actif.
@@ -224,7 +233,45 @@ def get_prompt(prompt_name):
     # Lire le contenu du prompt
     with open(prompt_path, "r", encoding="utf-8") as file:
         return file.read()
+    
+def count_tokens(text, model="gpt-4"):
+    """
+    Compte le nombre de tokens dans un texte pour un modèle donné.
+    """
+    # Charger l'encodeur de tokens pour le modèle
+    encoding = tiktoken.encoding_for_model(model)
+    tokens = encoding.encode(text)
+    return len(tokens)
+
+def add_tokens_to_users(user_id, text):
+    """
+    Ajoute le nombre de tokens calculé à l'utilisateur dans Firebase Realtime Database.
+    """
+    # Compter les tokens dans le texte
+    token_count = count_tokens(text, model="gpt-4")
+    print(f"Nombre de tokens dans le texte : {token_count}")
+
+    # Référence Firebase pour l'utilisateur
+    user_ref = db.reference(f"users/{user_id}")
+
+    try:
+        # Récupérer les données existantes pour cet utilisateur
+        user_data = user_ref.get()
+        if user_data and "total_tokens" in user_data:
+            total_tokens = user_data["total_tokens"]
+        else:
+            total_tokens = 0
+
+        # Ajouter les tokens calculés au total
+        new_total = total_tokens + token_count
+        user_ref.update({"total_tokens": new_total})
+
+        print(f"Total mis à jour pour l'utilisateur {user_id} : {new_total}")
+    except Exception as e:
+        print(f"Erreur lors de la mise à jour des tokens pour l'utilisateur {user_id} : {e}")
 
 if __name__ == "__main__":
-    # Exemple d'utilisation du save_file
-    save_file("test.txt", "Hello, world!")
+    # Exemple d'utilisation de add_tokens_to_users
+    text = "    Ajoute le nombre de tokens calculé à l'utilisateur dans Firebase Realtime Database."
+    user_id = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    add_tokens_to_users(text, user_id)
