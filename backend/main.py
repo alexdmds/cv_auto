@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import firebase_admin
+from firebase_init import db
 from firebase_admin import auth
 
 #importer les fonctions de cv_automation
@@ -36,9 +36,6 @@ app = Flask(__name__)
 
 # Ajouter la gestion des CORS
 CORS(app)
-
-# Initialiser Firebase Admin avec les ADC
-firebase_admin.initialize_app()
 
 @app.route("/")
 def home():
@@ -146,6 +143,39 @@ def generate_cv():
         # Gérer les erreurs lors de l'exécution des fonctions
         logger.error("Erreur lors de la génération du profil", exc_info=True)
         return jsonify({"error": "Failed to generate profile", "details": str(e)}), 500
+
+
+@app.route("/get-total-tokens", methods=["GET"])
+def get_total_tokens():
+    """
+    Endpoint pour récupérer le nombre total de tokens d'un utilisateur.
+    """
+    logger.debug("Requête reçue sur /get-total-tokens")
+
+    # Récupérer l'ID utilisateur depuis les paramètres de la requête
+    user_id = request.args.get("user_id")
+    if not user_id:
+        logger.warning("Paramètre user_id manquant")
+        return jsonify({"error": "Missing user_id parameter"}), 400
+
+    try:
+        # Référence Firebase pour l'utilisateur
+        user_ref = db.reference(f"users/{user_id}")
+        user_data = user_ref.get()
+
+        if not user_data or "total_tokens" not in user_data:
+            logger.warning(f"Aucun total_tokens trouvé pour l'utilisateur {user_id}")
+            return jsonify({"user_id": user_id, "total_tokens": 0}), 200
+
+        # Retourner le total des tokens
+        total_tokens = user_data["total_tokens"]
+        logger.info(f"Total des tokens récupéré pour l'utilisateur {user_id}: {total_tokens}")
+        return jsonify({"user_id": user_id, "total_tokens": total_tokens}), 200
+
+    except Exception as e:
+        logger.error("Erreur lors de la récupération du total des tokens", exc_info=True)
+        return jsonify({"error": "Failed to retrieve total_tokens", "details": str(e)}), 500
+    
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

@@ -7,15 +7,9 @@ from pathlib import Path
 from google.cloud import storage
 from config import load_config
 
-import firebase_admin
-from firebase_admin import db
-
+from firebase_init import db
 import time
 
-# Initialiser Firebase Admin
-firebase_admin.initialize_app(options={
-    "databaseURL": "https://cv-generator-447314-default-rtdb.europe-west1.firebasedatabase.app/"
-})
 import tiktoken
 
 def get_files_in_directory(chemin_relatif):
