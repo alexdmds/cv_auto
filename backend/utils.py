@@ -10,6 +10,8 @@ from config import load_config
 import firebase_admin
 from firebase_admin import db
 
+import time
+
 # Initialiser Firebase Admin
 firebase_admin.initialize_app(options={
     "databaseURL": "https://cv-generator-447314-default-rtdb.europe-west1.firebasedatabase.app/"
@@ -270,8 +272,50 @@ def add_tokens_to_users(user_id, text):
     except Exception as e:
         print(f"Erreur lors de la mise à jour des tokens pour l'utilisateur {user_id} : {e}")
 
+def can_user_proceed(profil):
+    """
+    Vérifie si un utilisateur peut effectuer un nouvel appel.
+    Conditions :
+    - Au moins 20 secondes se sont écoulées depuis le dernier appel.
+    - Le nombre total de tokens est inférieur à 100 000.
+    """
+    # Obtenir la référence Firebase pour l'utilisateur
+    user_ref = db.reference(f"users/{profil}")
+    
+    try:
+        # Récupérer les données existantes pour l'utilisateur
+        user_data = user_ref.get()
+
+        # Obtenir le timestamp actuel
+        current_timestamp = int(time.time())
+
+        # Vérifier si un timestamp précédent existe
+        if user_data and "last_call_timestamp" in user_data:
+            last_call_timestamp = user_data["last_call_timestamp"]
+        else:
+            last_call_timestamp = 0  # Par défaut, aucun appel précédent
+
+        # Vérifier si le délai de 20 secondes est respecté
+        if current_timestamp - last_call_timestamp < 20:
+            print(f"Temps insuffisant depuis le dernier appel : {current_timestamp - last_call_timestamp} secondes")
+            return False
+
+        # Vérifier si le total des tokens est inférieur à 100 000
+        total_tokens = user_data.get("total_tokens", 0) if user_data else 0
+        if total_tokens >= 100_000:
+            print(f"Nombre de tokens trop élevé : {total_tokens}")
+            return False
+
+        # Mettre à jour le timestamp de l'appel actuel
+        user_ref.update({"last_call_timestamp": current_timestamp})
+        print(f"Timestamp mis à jour pour l'utilisateur {profil} : {current_timestamp}")
+        return True
+
+    except Exception as e:
+        print(f"Erreur lors de la vérification des conditions pour l'utilisateur {profil} : {e}")
+        return False
+
 if __name__ == "__main__":
-    # Exemple d'utilisation de add_tokens_to_users
-    text = "    Ajoute le nombre de tokens calculé à l'utilisateur dans Firebase Realtime Database."
-    user_id = "j4WSNb5TuQVwVwSpq65N7o06GC52"
-    add_tokens_to_users(text, user_id)
+    # Exemple d'utilisation de can_user_proceed
+    print(can_user_proceed("j4WSNb5TuQVwVwSpq65N7o06GC52"))
+    

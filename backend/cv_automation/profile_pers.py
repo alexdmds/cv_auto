@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory
+from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, add_tokens_to_users
 
 def profile_pers(profil):
     """
@@ -68,6 +68,11 @@ def profile_pers(profil):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
+        txt_input = user_prompt + system_prompt
+        txt_output = condensed_description
+        txt_total = txt_input + txt_output
+
+        add_tokens_to_users(profil, txt_total)
 
         # Sauvegarder le fichier texte
         save_file(exp_output, condensed_description)

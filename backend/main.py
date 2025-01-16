@@ -17,6 +17,8 @@ from cv_automation.get_hobbies import get_hobbies
 from cv_automation.agg_data_cv import aggregate_json_files
 from cv_automation.gen_pdf.main import build_pdf
 
+from utils import can_user_proceed
+
 import logging
 
 # Configurer le logger
@@ -64,6 +66,11 @@ def generate_profile():
         logger.error("Erreur de validation du token Firebase", exc_info=True)
         return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
 
+    # Vérifier si l'utilisateur peut poursuivre
+    if not can_user_proceed(user_id):
+        logger.warning("L'utilisateur ne peut pas poursuivre")
+        return jsonify({"error": "User cannot proceed"}), 403
+
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
@@ -109,6 +116,10 @@ def generate_cv():
     #recuperer le nom du cv a generer
     cv_name = request.json.get("cv_name")
 
+    # Vérifier si l'utilisateur peut poursuivre
+    if not can_user_proceed(user_id):
+        logger.warning("L'utilisateur ne peut pas poursuivre")
+        return jsonify({"error": "User cannot proceed"}), 403
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")

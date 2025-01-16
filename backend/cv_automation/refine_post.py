@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import openai
-from utils import get_openai_api_key, get_file, save_file
+from utils import get_openai_api_key, get_file, save_file, add_tokens_to_users
 
 def refine_job_description(profil, cv):
     """
@@ -57,6 +57,11 @@ def refine_job_description(profil, cv):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
+        txt_input = prompt
+        txt_output = condensed_description
+        txt_total = txt_input + txt_output
+
+        add_tokens_to_users(profil, txt_total)
 
         # Sauvegarder le contenu généré
         save_file(output_path, condensed_description)
