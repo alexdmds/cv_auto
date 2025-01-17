@@ -5,11 +5,12 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
+import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, add_tokens_to_users
+from utils import get_openai_api_key, get_file, save_file, get_prompt, async_openai_call
 import json
 
-def get_exp(profil, cv):
+async def get_exp(profil, cv):
     """
     Génère un JSON "weights.json" en analysant une fiche de poste et les expériences professionnelles du candidat.
 
@@ -62,7 +63,9 @@ def get_exp(profil, cv):
 
     try:
         # Appeler l'API de ChatGPT
-        response = client.chat.completions.create(
+        response = await async_openai_call(
+            profil,
+            client,
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -80,11 +83,7 @@ def get_exp(profil, cv):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
-        txt_input = user_prompt + system_prompt
-        txt_output = condensed_description
-        txt_total = txt_input + txt_output
 
-        add_tokens_to_users(profil, txt_total)
         # Sauvegarder le contenu généré
         save_file(output_path, condensed_description)
         print(f"Fichier exp.json généré et sauvegardé dans : {output_path}")
@@ -98,4 +97,4 @@ def get_exp(profil, cv):
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
     cv = "cv1"
-    get_exp(profil, cv)
+    asyncio.run(get_exp(profil, cv))

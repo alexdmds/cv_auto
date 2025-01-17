@@ -5,10 +5,11 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
+import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, add_tokens_to_users
+from utils import get_openai_api_key, get_file, save_file, add_tokens_to_users, async_openai_call
 
-def refine_job_description(profil, cv):
+async def refine_job_description(profil, cv):
     """
     Condense une fiche de poste en 500 mots maximum en utilisant l'API de ChatGPT.
 
@@ -45,7 +46,9 @@ def refine_job_description(profil, cv):
 
     try:
         # Appeler l'API de ChatGPT
-        response = client.chat.completions.create(
+        response = await async_openai_call(
+            profil,
+            client,
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Vous êtes un assistant expert en rédaction professionnelle."},
@@ -57,11 +60,6 @@ def refine_job_description(profil, cv):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
-        txt_input = prompt
-        txt_output = condensed_description
-        txt_total = txt_input + txt_output
-
-        add_tokens_to_users(profil, txt_total)
 
         # Sauvegarder le contenu généré
         save_file(output_path, condensed_description)
@@ -76,4 +74,4 @@ def refine_job_description(profil, cv):
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
     cv = "cv1"
-    refine_job_description(profil, cv)
+    asyncio.run(refine_job_description(profil, cv))

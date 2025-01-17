@@ -6,7 +6,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import openai
 from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, async_openai_call
 

@@ -91,7 +91,7 @@ async def generate_profile():
         return jsonify({"error": "Failed to generate profile", "details": str(e)}), 500
     
 @app.route("/generate-cv", methods=["POST"])
-def generate_cv():
+async def generate_cv():
     logger.debug("Requête reçue sur /generate-cv")
 
     # Vérification du token Firebase ID
@@ -122,18 +122,14 @@ def generate_cv():
     try:
         # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
-        refine_job_description(user_id, cv_name)
-        logger.info("Description de poste raffinée")
-        get_head(user_id, cv_name)
-        logger.info("En-tête récupéré")
-        get_exp(user_id, cv_name)
-        logger.info("Expériences professionnelles récupérées")
-        get_edu(user_id, cv_name)
-        logger.info("Formations récupérées")
-        get_skills(user_id, cv_name)
-        logger.info("Compétences techniques récupérées")
-        get_hobbies(user_id, cv_name)
-        logger.info("Centres d'intérêt récupérés")
+        await asyncio.gather(
+            refine_job_description(user_id, cv_name),
+            get_head(user_id, cv_name),
+            get_exp(user_id, cv_name),
+            get_edu(user_id, cv_name),
+            get_skills(user_id, cv_name),
+            get_hobbies(user_id, cv_name),
+        )
         aggregate_json_files(user_id, cv_name)
         logger.info("Données agrégées")
         build_pdf(user_id, cv_name)
