@@ -9,8 +9,41 @@ from config import load_config
 
 from firebase_init import db
 import time
-
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import tiktoken
+from typing import Any, Dict
+
+async def async_openai_call(user_id: str, client, **kwargs: Dict[str, Any]):
+    """
+    Appelle l'API OpenAI de manière asynchrone en utilisant run_in_executor et en enregistrant les tokens.
+
+    :param user_id: ID de l'utilisateur pour enregistrer les tokens.
+    :param client: Client OpenAI configuré.
+    :param kwargs: Arguments pour l'appel de l'API OpenAI.
+    :return: Résultat de l'appel à OpenAI.
+    """
+    loop = asyncio.get_event_loop()
+
+    # Convertir la liste de messages en une chaîne pour compter les tokens
+    try:
+        messages = kwargs.get("messages", [])
+        message_str = "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages if "content" in msg)
+        add_tokens_to_users(user_id, message_str)  # Compte et ajoute les tokens de l'entrée
+    except Exception as e:
+        print(f"Erreur lors du comptage des tokens pour l'utilisateur {user_id}: {e}")
+
+    # Effectuer l'appel OpenAI dans un thread
+    try:
+        with ThreadPoolExecutor() as executor:
+            return await loop.run_in_executor(
+                executor, 
+                lambda: client.chat.completions.create(**kwargs)
+            )
+    except Exception as e:
+        print(f"Erreur lors de l'appel OpenAI pour l'utilisateur {user_id}: {e}")
+        raise  # Relève l'exception pour gestion ultérieure
+
 
 def get_files_in_directory(chemin_relatif):
     """

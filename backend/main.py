@@ -20,6 +20,7 @@ from cv_automation.gen_pdf.main import build_pdf
 from utils import can_user_proceed
 
 import logging
+import asyncio
 
 # Configurer le logger
 logging.basicConfig(
@@ -42,7 +43,7 @@ def home():
     return "Bienvenue sur le backend Flask avec Firebase !"
 
 @app.route("/generate-profile", methods=["POST"])
-def generate_profile():
+async def generate_profile():
     logger.debug("Requête reçue sur /generate-profile")
 
     # Vérification du token Firebase ID
@@ -72,13 +73,14 @@ def generate_profile():
         # Appeler les fonctions en utilisant l'UID utilisateur
         logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
         convert_source_pdf_to_txt(user_id)
-        logger.info("Conversion des PDFs terminée")
-        profile_edu(user_id)
-        logger.info("Profil éducatif généré")
-        profile_exp(user_id)
-        logger.info("Profil professionnel généré")
-        profile_pers(user_id)
-        logger.info("Profil personnel généré")
+        # Appeler les fonctions asynchrones en parallèle
+        logger.debug("Lancement des analyses en parallèle")
+        await asyncio.gather(
+            profile_edu(user_id),
+            profile_exp(user_id),
+            profile_pers(user_id),
+        )
+        logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
 
         logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
         return jsonify({"success": True}), 200

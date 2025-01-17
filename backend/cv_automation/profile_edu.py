@@ -5,12 +5,18 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, add_tokens_to_users
+from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, async_openai_call
 
-def profile_edu(profil):
+# Ajouter le répertoire racine au chemin Python
+ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
+sys.path.append(str(ROOT_DIR))
+
+async def profile_edu(profil):
     """
-    Analyse les fichiers texte pour un profil donné et génère un fichier JSON avec les résultats.
+    Analyse les fichiers texte pour un profil donné et génère un fichier JSON avec les résultats (asynchrone).
     """
 
     # Configurer l'API OpenAI
@@ -25,7 +31,6 @@ def profile_edu(profil):
     # Récupérer les fichiers texte depuis le dossier source
     try:
         source_files = get_files_in_directory(source_profil_path)
-
         print(f"Nombre de fichiers trouvés dans {source_profil_path} : {len(source_files)}")
 
         # Lire le contenu des fichiers texte
@@ -55,16 +60,16 @@ def profile_edu(profil):
     """
 
     try:
-        # Appeler l'API de ChatGPT
-        response = client.chat.completions.create(
+        # Appeler l'API de ChatGPT de manière asynchrone
+        response = await async_openai_call(
+            profil,
+            client,
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            response_format={
-                "type": "json_object"
-            },
+            response_format={"type": "json_object"},
             temperature=1,
             max_tokens=2048,
             top_p=1,
@@ -74,13 +79,6 @@ def profile_edu(profil):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
-
-        txt_input = user_prompt + system_prompt
-        txt_output = condensed_description
-        txt_total = txt_input + txt_output
-
-        add_tokens_to_users(profil, txt_total)
-
 
         # Sauvegarder le fichier JSON
         save_file(exp_output, condensed_description)
@@ -94,4 +92,4 @@ def profile_edu(profil):
 
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
-    profile_edu(profil)
+    asyncio.run(profile_edu(profil))

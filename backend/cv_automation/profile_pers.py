@@ -5,10 +5,11 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
+import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, add_tokens_to_users
+from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, async_openai_call
 
-def profile_pers(profil):
+async def profile_pers(profil):
     """
     Analyse les fichiers texte pour un profil donné et génère un fichier texte avec les résultats.
     """
@@ -53,7 +54,9 @@ def profile_pers(profil):
 
     try:
         # Appeler l'API de ChatGPT
-        response = client.chat.completions.create(
+        response = await async_openai_call(
+            profil,
+            client,
             model="gpt-4",
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -68,11 +71,6 @@ def profile_pers(profil):
 
         # Extraire le contenu généré
         condensed_description = response.choices[0].message.content.strip()
-        txt_input = user_prompt + system_prompt
-        txt_output = condensed_description
-        txt_total = txt_input + txt_output
-
-        add_tokens_to_users(profil, txt_total)
 
         # Sauvegarder le fichier texte
         save_file(exp_output, condensed_description)
@@ -86,4 +84,4 @@ def profile_pers(profil):
 
 if __name__ == "__main__":
     profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
-    profile_pers(profil)
+    asyncio.run(profile_pers(profil))
