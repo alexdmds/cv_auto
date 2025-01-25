@@ -58,8 +58,8 @@ def aggregate_json_files(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
-    cv = "cv1"
+    profil = "Alexis1"
+    cv = "augura"
 
     # Appel de la fonction principale
     try:

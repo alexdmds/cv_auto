@@ -134,7 +134,7 @@ def save_file(chemin_relatif, content):
     """
     Enregistre un fichier selon l'environnement actif et un chemin relatif.
 
-    :param chemin_relatif: Chemin relatif à partir du profil (ex: "profil/cvs/cv1/output.json").
+    :param chemin_relatif: Chemin relatif à partir du profil (ex: "profil/cvs/augura/output.json").
     :param content: Contenu à enregistrer (décodé ou binaire).
     """
     # Charger la configuration
@@ -344,5 +344,5 @@ def can_user_proceed(profil):
 
 if __name__ == "__main__":
     # Exemple d'utilisation de can_user_proceed
-    print(can_user_proceed("j4WSNb5TuQVwVwSpq65N7o06GC52"))
+    print(can_user_proceed("Alexis1"))
     

@@ -95,6 +95,6 @@ async def get_skills(profil, cv):
 
 
 if __name__ == "__main__":
-    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
-    cv = "cv1"
+    profil = "Alexis1"
+    cv = "augura"
     asyncio.run(get_skills(profil, cv))

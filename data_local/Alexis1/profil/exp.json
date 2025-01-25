@@ -5,7 +5,7 @@
         "company": "EY",
         "location": "Paris, France",
         "dates": "February 2023 – Present",
-        "description": "Conception et déploiement d’un Data Hub sur GCP pour centraliser les données constructeur et bancaires chez Renault. Intégration de dbt, pipelines CI/CD et Docker sur Cloud Run pour des projets IA stratégiques tels que l'assistant conversationnel (Talk To Data) et la prédiction des valeurs résiduelles. Optimisation des échanges de données pour Enedis via le Système de Gestion des Échanges, améliorant la qualité et la fiabilité des flux de données."
+        "description": "Pilotage de la transformation des pipelines de données pour Renault dans le cadre de projets stratégiques liés au leasing et au véhicule électrique. Mise en place d'une architecture dbt sur Cloud Run, accompagnée de pipelines CI/CD modernes. Encadrement d'une équipe de 5 data engineers et implémentation de solutions DevOps pour améliorer la qualité et la rapidité des workflows. Développement d’un assistant conversationnel (Talk To Data) et de modèles Machine Learning pour l’estimation des valeurs résiduelles (VR). Transition réussie des processus traditionnels vers des solutions cloud natives tout en garantissant la conformité avec les normes de sécurité du groupe."
     },
     {
         "order": 2,
@@ -13,46 +13,46 @@
         "company": "Kadi",
         "location": "Paris, France",
         "dates": "December 2022 – Present",
-        "description": "Conception de l'architecture technique et choix des technologies (Flutter, GCP). Développement d’un modèle Faster R-CNN pour la détection automatique de tickets de caisse, déployé sur Google App Engine. Supervision des processus de développement collaboratif avec Git et structuration des workflows. Déploiement réussi sur Google Play et Apple Store en juin 2023."
+        "description": "Définition de l’architecture technique et choix des technologies adaptées (Flutter pour le front-end, GCP pour le back-end). Développement d’un modèle Faster R-CNN pour la détection et l’analyse automatique de tickets de caisse, déployé sur Google App Engine pour une scalabilité optimale. Conception de pipelines de données automatisés avec Cloud Functions, BigQuery et Firestore. Supervision du déploiement de l'application sur Google Play et Apple Store en version bêta, validée par une communauté d'utilisateurs. Intégration de bonnes pratiques MLOps pour la gestion des modèles en production, incluant surveillance et mise à jour automatisées."
     },
     {
         "order": 3,
-        "post": "Ingénieur - transformation digitale",
+        "post": "Ingénieur en Transformation Digitale",
         "company": "Blispac",
-        "location": "France",
+        "location": "Balagny-sur-Thérain, France",
         "dates": "February 2022 – September 2022",
-        "description": "Digitalisation de l’entreprise avec la structuration des bases de données SQL et évolution de l'ERP. Mise en place d’un algorithme génétique pour optimiser les processus de fabrication. Automatisation d'un banc de test pour prothèses de hanches, et rééquipement des entrepôts logistiques."
+        "description": "Conduite de projets stratégiques de digitalisation, incluant la structuration des bases de données SQL et la mise à jour de l’ERP pour une meilleure traçabilité et gestion des commandes. Développement d’un algorithme génétique pour optimiser le positionnement des pièces dans les moules, réduisant les pertes de matériaux. Automatisation d’un banc de test pour prothèses médicales, améliorant la conformité aux normes ISO et réduisant les temps de validation des prototypes."
     },
     {
         "order": 4,
-        "post": "Consultant stratégie supply chain",
-        "company": "DIAGMA",
+        "post": "Consultant en Stratégie et Supply Chain",
+        "company": "Diagma",
         "location": "Paris, France",
         "dates": "September 2021 – February 2022",
-        "description": "Gestion d'une opération de Sale & Leaseback pour un entrepôt de 70 000m² d'un distributeur discount. Restructuration de la planification de production pour un laboratoire pharmaceutique avec optimisation linéaire en variables mixtes."
+        "description": "Participation à des missions stratégiques pour des clients de renom, incluant l’optimisation de la production pour Hermès via des modèles d’optimisation linéaire. Gestion d’une opération de Sale & Leaseback pour un entrepôt logistique de 70 000 m². Développement de modèles de prévision avancés avec AZAP pour améliorer la précision des prévisions et optimiser les niveaux de stock."
     },
     {
         "order": 5,
-        "post": "Analyste de marché LNG",
+        "post": "Analyste de Marché",
         "company": "TotalEnergies",
         "location": "Paris, France",
         "dates": "February 2020 – July 2020",
-        "description": "Analyse des marchés mondiaux de GNL et d'électricité pour le Total Energy Outlook. Développement d’un algorithme en Python utilisant Pandas pour analyser les routes des méthaniers GNL et automatiser les workflows de données."
+        "description": "Contribution à l’analyse stratégique des marchés énergétiques mondiaux dans le cadre du Total Energy Outlook. Développement d’un algorithme en Python pour analyser en temps réel les flux de tankers GNL, utilisant des méthodologies inédites inspirées du marché pétrolier. Création d’indicateurs innovants pour le suivi des dynamiques du marché GNL, appuyés par des visualisations interactives sur Power BI."
     },
     {
         "order": 6,
-        "post": "Project Coordinator",
-        "company": "L'Oeuvre d'Orient",
+        "post": "Coordinateur de Projets",
+        "company": "L’Œuvre d’Orient",
         "location": "Erbil, Irak",
         "dates": "June 2019 – February 2020",
-        "description": "Coordination de projets pour reconstruire et aider les minorités en Irak. Suivi administratif et financier de projets, gestion d’un atelier de menuiserie, et gestion d’un portefeuille de projets annuels de 6M€."
+        "description": "Supervision d’un portefeuille de plus de 100 projets humanitaires, incluant la reconstruction d’écoles, d’hôpitaux et de réseaux d’eau potable. Gestion d’une équipe multiculturelle et coordination avec des donateurs et partenaires internationaux pour garantir la réussite des projets. Réalisation de projets emblématiques tels que l’installation de systèmes solaires pour des villages isolés et la réhabilitation de villages déplacés."
     },
     {
         "order": 7,
-        "post": "Consultant junior",
+        "post": "Consultant Junior",
         "company": "Cdiscount",
         "location": "France",
         "dates": "October 2018 – February 2019",
-        "description": "Optimisation d’un entrepôt logistique en collaboration avec le département Génie Industriel de l'École des Ponts. Analyse des données et mise en œuvre de solutions basées sur des problèmes de routage de véhicules (VRP)."
+        "description": "Optimisation des entrepôts logistiques via des analyses quantitatives approfondies et des solutions basées sur le Vehicle Routing Problem (VRP). Collaboration avec des équipes techniques pour améliorer les processus de gestion des flux logistiques."
     }
 ]

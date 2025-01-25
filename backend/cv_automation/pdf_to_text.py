@@ -55,5 +55,5 @@ def convert_source_pdf_to_txt(profil):
 
 if __name__ == "__main__":
     # Exemple d'exécution pour un profil spécifique
-    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    profil = "Alexis1"
     convert_source_pdf_to_txt(profil)

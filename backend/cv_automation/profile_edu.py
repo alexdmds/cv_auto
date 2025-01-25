@@ -90,5 +90,5 @@ async def profile_edu(profil):
 
 
 if __name__ == "__main__":
-    profil = "j4WSNb5TuQVwVwSpq65N7o06GC52"
+    profil = "Alexis1"
     asyncio.run(profile_edu(profil))

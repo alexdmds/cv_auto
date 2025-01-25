@@ -31,7 +31,7 @@ class ProdConfig(BaseConfig):
     OPENAI_API_KEY = response.payload.data.decode("UTF-8")
 
 def load_config():
-    env = os.getenv("ENV", "dev")
+    env = os.getenv("ENV", "local")
     if env == "dev":
         return DevConfig()
     elif env == "prod":
