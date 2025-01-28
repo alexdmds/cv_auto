@@ -53,7 +53,7 @@ class ProdConfig(BaseConfig):
     BUCKET_NAME = "cv-generator-447314.firebasestorage.app"
     secret_manager_client = secretmanager.SecretManagerServiceClient()
     response = secret_manager_client.access_secret_version(request={"name": "projects/177360827241/secrets/OPENAI_API_KEY/versions/1"})
-    response.payload.data.decode("UTF-8")
+    OPENAI_API_KEY = response.payload.data.decode("UTF-8")
 
 def load_config():
     env = os.getenv("ENV", "local")

@@ -13,5 +13,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose le port 8080 pour Cloud Run
 EXPOSE 8080
 
-# Définit la commande pour démarrer l'application avec Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]
+# Définit la commande pour démarrer l'application avec Gunicorn avec un timeout de 300 secondes
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "300", "main:app"]

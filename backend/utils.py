@@ -263,9 +263,6 @@ def get_openai_api_key():
     Récupère la clé API OpenAI en fonction de l'environnement actif.
     :return: Clé API OpenAI.
     """
-    # Charger la configuration
-    config = load_config()
-
     # Récupérer la clé API
     return config.OPENAI_API_KEY
 
