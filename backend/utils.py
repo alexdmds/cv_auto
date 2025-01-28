@@ -5,7 +5,6 @@ from config import load_config
 
 from pathlib import Path
 from google.cloud import storage
-from config import load_config
 
 from firebase_init import db
 import time
@@ -13,16 +12,34 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import tiktoken
 from typing import Any, Dict
+import logging
+from firebase_admin import auth
+
+# Récupérer le logger
+logger = logging.getLogger(__name__)  # Le nom du module est utilisé comme identifiant
+
+config = load_config()
+
+# Ajouter la variable MOCK_OPENAI
+MOCK_OPENAI = config.MOCK_OPENAI
+CHECK_AUTH = config.CHECK_AUTH
 
 async def async_openai_call(user_id: str, client, **kwargs: Dict[str, Any]):
     """
-    Appelle l'API OpenAI de manière asynchrone en utilisant run_in_executor et en enregistrant les tokens.
+    Appelle l'API OpenAI de manière asynchrone ou renvoie un mock si MOCK_OPENAI est activé.
 
     :param user_id: ID de l'utilisateur pour enregistrer les tokens.
     :param client: Client OpenAI configuré.
     :param kwargs: Arguments pour l'appel de l'API OpenAI.
-    :return: Résultat de l'appel à OpenAI.
+    :return: Résultat de l'appel à OpenAI ou JSON simulé.
     """
+    # Vérifier si MOCK_OPENAI est activé
+    if MOCK_OPENAI:
+        logger.info(f"Mock OpenAI activé. Génération d'une réponse simulée pour l'utilisateur {user_id}.")
+        # Réponse mockée simulant une clé JSON avec une structure similaire à celle d'OpenAI
+        return "Response mockée simulant une clé JSON avec une structure similaire à celle d'OpenAI"
+
+    # Si MOCK_OPENAI n'est pas activé, effectuer l'appel réel à OpenAI
     loop = asyncio.get_event_loop()
 
     # Convertir la liste de messages en une chaîne pour compter les tokens
@@ -31,19 +48,19 @@ async def async_openai_call(user_id: str, client, **kwargs: Dict[str, Any]):
         message_str = "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages if "content" in msg)
         add_tokens_to_users(user_id, message_str)  # Compte et ajoute les tokens de l'entrée
     except Exception as e:
-        print(f"Erreur lors du comptage des tokens pour l'utilisateur {user_id}: {e}")
+        logger.error(f"Erreur lors du comptage des tokens pour l'utilisateur {user_id}: {e}")
 
     # Effectuer l'appel OpenAI dans un thread
     try:
         with ThreadPoolExecutor() as executor:
-            return await loop.run_in_executor(
-                executor, 
+            response = await loop.run_in_executor(
+                executor,
                 lambda: client.chat.completions.create(**kwargs)
             )
+            return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Erreur lors de l'appel OpenAI pour l'utilisateur {user_id}: {e}")
+        logger.error(f"Erreur lors de l'appel OpenAI pour l'utilisateur {user_id}: {e}")
         raise  # Relève l'exception pour gestion ultérieure
-
 
 def get_files_in_directory(chemin_relatif):
     """
@@ -137,8 +154,6 @@ def save_file(chemin_relatif, content):
     :param chemin_relatif: Chemin relatif à partir du profil (ex: "profil/cvs/augura/output.json").
     :param content: Contenu à enregistrer (décodé ou binaire).
     """
-    # Charger la configuration
-    config = load_config()
 
     # Construire le chemin complet selon l'environnement
     if config.ENV in ["local"]:
@@ -156,8 +171,12 @@ def save_file(chemin_relatif, content):
     extension = file_path.suffix.lower()
     if config.ENV in ["local"]:
         if extension == ".json":
+            # Sauvegarder le contenu JSON avec indentation et caractères spéciaux
             with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(content, f, indent=4)
+                if isinstance(content, str):
+                    # Si le contenu est une chaîne JSON encodée, le désérialiser d'abord
+                    content = json.loads(content)
+                json.dump(content, f, indent=4, ensure_ascii=False)
         elif extension == ".txt":
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -175,8 +194,11 @@ def save_file(chemin_relatif, content):
         blob = bucket.blob(chemin_relatif)
         
         # Déterminer le type de contenu
-        if isinstance(content, dict):  # JSON
-            content_str = json.dumps(content, indent=4)
+        if extension == ".json":  # JSON
+            if isinstance(content, str):
+                # Si le contenu est une chaîne JSON encodée, le désérialiser d'abord
+                content = json.loads(content)
+            content_str = json.dumps(content, indent=4, ensure_ascii=False)
             content_type = "application/json"
         elif isinstance(content, str):  # Texte brut
             content_str = content
@@ -341,6 +363,32 @@ def can_user_proceed(profil):
     except Exception as e:
         print(f"Erreur lors de la vérification des conditions pour l'utilisateur {profil} : {e}")
         return False
+
+def authenticate_user(auth_header):
+    """
+    Vérifie le token Firebase ID et renvoie l'UID utilisateur.
+    Si CHECK_AUTH est désactivé, renvoie un UID fictif.
+    """
+    if not CHECK_AUTH:
+        logger.info("Auth désactivée. Renvoi d'un utilisateur fictif pour l'environnement local.")
+        return "j4WSNb5TuQVwVwSpq65N7o06GC52"
+
+    if not auth_header or not auth_header.startswith("Bearer "):
+        logger.warning("Authorization header is missing or invalid")
+        raise ValueError("Authorization header missing or invalid")
+
+    id_token = auth_header.split(" ")[1]
+
+    try:
+        # Vérifier et décoder le token
+        logger.debug("Vérification du token Firebase ID")
+        decoded_token = auth.verify_id_token(id_token)
+        user_id = decoded_token["uid"]  # Récupérer l'UID utilisateur
+        logger.info(f"Token décodé avec succès. UID utilisateur : {user_id}")
+        return user_id
+    except Exception as e:
+        logger.error("Erreur de validation du token Firebase", exc_info=True)
+        raise ValueError(f"Invalid or expired token: {str(e)}")
 
 if __name__ == "__main__":
     # Exemple d'utilisation de can_user_proceed

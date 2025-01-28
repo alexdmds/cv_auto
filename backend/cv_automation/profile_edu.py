@@ -76,11 +76,8 @@ async def profile_edu(profil):
             presence_penalty=0,
         )
 
-        # Extraire le contenu généré
-        condensed_description = response.choices[0].message.content.strip()
-
         # Sauvegarder le fichier JSON
-        save_file(exp_output, condensed_description)
+        save_file(exp_output, response)
         print(f"Fichier JSON généré et sauvegardé dans : {exp_output}")
 
     except openai.APIError as e:

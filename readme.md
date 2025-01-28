@@ -22,3 +22,12 @@ gcloud run deploy backend-flask \
     --allow-unauthenticated \
     --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com \
     --set-env-vars ENV=prod
+
+###### TEST backend
+curl -X POST http://127.0.0.1:8080/generate-cv \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_FIREBASE_ID_TOKEN" \
+-d '{
+  "cv_name": "example_cv"
+}'
+{"success":true}

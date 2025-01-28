@@ -110,3 +110,32 @@ document.getElementById("generate-cv").addEventListener("click", async () => {
     alert("Une erreur inattendue est survenue.");
   }
 });
+
+// Vérification et téléchargement du CV généré
+document.getElementById("check-and-download-cv").addEventListener("click", async () => {
+  if (!auth.currentUser) {
+    alert("Aucun utilisateur connecté. Veuillez vous connecter pour télécharger un CV.");
+    return;
+  }
+
+  try {
+    const userId = auth.currentUser.uid; // Identifier l'utilisateur connecté
+    const cvGeneratedRef = ref(storage, `${userId}/cvs/${cvName}/cv.pdf`); // Référence au fichier PDF généré
+
+    // Vérifier si le fichier généré existe
+    const cvURL = await getDownloadURL(cvGeneratedRef);
+    if (cvURL) {
+      document.getElementById("download-status").textContent = "CV disponible. Téléchargement en cours...";
+      // Créer un lien pour télécharger le fichier
+      const link = document.createElement("a");
+      link.href = cvURL;
+      link.download = `${cvName}_generated_cv.pdf`;
+      link.click();
+      document.getElementById("download-status").textContent = "Téléchargement réussi.";
+    }
+  } catch (error) {
+    console.error("Erreur lors de la vérification/téléchargement du CV généré :", error);
+    document.getElementById("download-status").textContent =
+      "Aucun CV généré disponible pour le téléchargement.";
+  }
+});

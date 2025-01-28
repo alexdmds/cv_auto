@@ -5,6 +5,7 @@ from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 import logging
+import os
 
 # Configurer le logger
 logging.basicConfig(

@@ -1,5 +1,5 @@
 import { storage } from "./firebase-config.js";
-import { ref, listAll } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
+import { ref, listAll, uploadString } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
 
 // Fonction pour récupérer les CVs d'un utilisateur
@@ -50,11 +50,39 @@ function displayErrorMessage() {
   cvList.innerHTML = "<li>Erreur lors de la récupération des CVs.</li>";
 }
 
+// Fonction pour créer un nouveau CV
+async function createNewCV(userId, cvName) {
+  if (!cvName) {
+    alert("Veuillez renseigner un nom pour le CV.");
+    return;
+  }
+
+  const newCvPath = `${userId}/cvs/${cvName}/placeholder.txt`;
+  const newCvRef = ref(storage, newCvPath);
+
+  try {
+    // Création d'un dossier en téléversant un fichier vide (Firebase ne permet pas les dossiers vides)
+    await uploadString(newCvRef, "placeholder content");
+    alert("Nouveau CV créé avec succès !");
+    fetchCVs(userId); // Rafraîchir la liste des CVs
+  } catch (error) {
+    console.error("Erreur lors de la création du nouveau CV :", error);
+    alert("Une erreur est survenue lors de la création du CV.");
+  }
+}
+
 // Charger la liste des CVs après authentification
 const auth = getAuth();
 onAuthStateChanged(auth, (user) => {
   if (user) {
     fetchCVs(user.uid);
+
+    // Gestion du bouton pour créer un nouveau CV
+    const createCvButton = document.getElementById("create-cv-button");
+    createCvButton.addEventListener("click", () => {
+      const cvName = document.getElementById("new-cv-name").value.trim();
+      createNewCV(user.uid, cvName);
+    });
   } else {
     console.error("Aucun utilisateur connecté.");
   }

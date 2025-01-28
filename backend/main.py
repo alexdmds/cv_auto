@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from firebase_init import db
-from firebase_admin import auth
+
 
 #importer les fonctions de cv_automation
 from cv_automation.pdf_to_text import convert_source_pdf_to_txt
@@ -17,20 +17,15 @@ from cv_automation.get_hobbies import get_hobbies
 from cv_automation.agg_data_cv import aggregate_json_files
 from cv_automation.gen_pdf.main import build_pdf
 
-from utils import can_user_proceed
+from utils import can_user_proceed, authenticate_user
+from config import configure_logging
 
-import logging
+
 import asyncio
 
-# Configurer le logger
-logging.basicConfig(
-    level=logging.DEBUG,  # Niveau de log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler()  # Envoyer les logs à la sortie standard
-    ]
-)
+configure_logging()  # Configure les logs une fois pour toute
 
+import logging
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -48,21 +43,11 @@ async def generate_profile():
 
     # Vérification du token Firebase ID
     auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        logger.warning("Authorization header is missing or invalid")
-        return jsonify({"error": "Authorization header missing or invalid"}), 401
-
-    id_token = auth_header.split(" ")[1]
-
     try:
-        # Vérifier et décoder le token
-        logger.debug("Vérification du token Firebase ID")
-        decoded_token = auth.verify_id_token(id_token)
-        user_id = decoded_token["uid"]  # Récupérer l'UID utilisateur
-        logger.info(f"Token décodé avec succès. UID utilisateur : {user_id}")
-    except Exception as e:
-        logger.error("Erreur de validation du token Firebase", exc_info=True)
-        return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+        user_id = authenticate_user(auth_header)
+    except ValueError as e:
+        logger.warning(str(e))
+        return jsonify({"error": str(e)}), 401
 
     # Vérifier si l'utilisateur peut poursuivre
     if not can_user_proceed(user_id):
@@ -82,7 +67,6 @@ async def generate_profile():
         )
         logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
 
-        logger.info(f"Profil généré avec succès pour l'utilisateur {user_id}")
         return jsonify({"success": True}), 200
 
     except Exception as e:
@@ -96,52 +80,54 @@ async def generate_cv():
 
     # Vérification du token Firebase ID
     auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        logger.warning("Authorization header is missing or invalid")
-        return jsonify({"error": "Authorization header missing or invalid"}), 401
-
-    id_token = auth_header.split(" ")[1]
-
     try:
-        # Vérifier et décoder le token
-        logger.debug("Vérification du token Firebase ID")
-        decoded_token = auth.verify_id_token(id_token)
-        user_id = decoded_token["uid"]  # Récupérer l'UID utilisateur
-        logger.info(f"Token décodé avec succès. UID utilisateur : {user_id}")
-    except Exception as e:
-        logger.error("Erreur de validation du token Firebase", exc_info=True)
-        return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+        user_id = authenticate_user(auth_header)
+    except ValueError as e:
+        logger.warning(str(e))
+        return jsonify({"error": str(e)}), 401
 
-    #recuperer le nom du cv a generer
+    # Récupérer le nom du CV à générer
     cv_name = request.json.get("cv_name")
 
     # Vérifier si l'utilisateur peut poursuivre
     if not can_user_proceed(user_id):
         logger.warning("L'utilisateur ne peut pas poursuivre")
         return jsonify({"error": "User cannot proceed"}), 403
+
     try:
-        # Appeler les fonctions en utilisant l'UID utilisateur et le cv_name
-        logger.debug(f"Lancement du traitement pour l'utilisateur {user_id}")
+        logger.debug(f"Lancement du traitement pour l'utilisateur {user_id} avec le CV {cv_name}")
+
+        # Étape 1 : Exécuter refine_job_description
+        logger.info("Lancement de refine_job_description")
+        await refine_job_description(user_id, cv_name)
+        logger.info("refine_job_description terminé")
+
+        # Étape 2 : Exécuter les fonctions en parallèle
+        logger.info("Lancement des fonctions parallèles")
         await asyncio.gather(
-            refine_job_description(user_id, cv_name),
             get_head(user_id, cv_name),
             get_exp(user_id, cv_name),
             get_edu(user_id, cv_name),
             get_skills(user_id, cv_name),
             get_hobbies(user_id, cv_name),
         )
+        logger.info("Toutes les fonctions parallèles terminées")
+
+        # Étape 3 : Aggrégation des fichiers JSON
+        logger.info("Lancement de aggregate_json_files")
         aggregate_json_files(user_id, cv_name)
-        logger.info("Données agrégées")
+        logger.info("aggregate_json_files terminé")
+
+        # Étape 4 : Générer le PDF
+        logger.info("Lancement de build_pdf")
         build_pdf(user_id, cv_name)
-        logger.info("CV généré")
+        logger.info("build_pdf terminé")
 
         return jsonify({"success": True}), 200
 
     except Exception as e:
-        # Gérer les erreurs lors de l'exécution des fonctions
-        logger.error("Erreur lors de la génération du profil", exc_info=True)
-        return jsonify({"error": "Failed to generate profile", "details": str(e)}), 500
-
+        logger.error("Erreur lors de la génération du CV", exc_info=True)
+        return jsonify({"error": "Failed to generate CV", "details": str(e)}), 500
 
 @app.route("/get-total-tokens", methods=["GET"])
 def get_total_tokens():
@@ -150,11 +136,13 @@ def get_total_tokens():
     """
     logger.debug("Requête reçue sur /get-total-tokens")
 
-    # Récupérer l'ID utilisateur depuis les paramètres de la requête
-    user_id = request.args.get("user_id")
-    if not user_id:
-        logger.warning("Paramètre user_id manquant")
-        return jsonify({"error": "Missing user_id parameter"}), 400
+    # Vérification du token Firebase ID
+    auth_header = request.headers.get("Authorization")
+    try:
+        user_id = authenticate_user(auth_header)
+    except ValueError as e:
+        logger.warning(str(e))
+        return jsonify({"error": str(e)}), 401
 
     try:
         # Référence Firebase pour l'utilisateur

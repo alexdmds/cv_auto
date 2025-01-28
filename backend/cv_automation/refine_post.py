@@ -7,7 +7,12 @@ sys.path.append(str(ROOT_DIR))
 
 import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, add_tokens_to_users, async_openai_call
+from utils import get_openai_api_key, get_file, save_file, async_openai_call
+
+import logging
+
+logger = logging.getLogger(__name__)
+logger.propagate = True
 
 async def refine_job_description(profil, cv):
     """
@@ -16,7 +21,7 @@ async def refine_job_description(profil, cv):
     :param profil: Nom du profil (sous-dossier dans `data_local`).
     :param cv: Nom du CV (sous-dossier dans `profil/cvs`).
     """
-
+    logger.info("Lancement de refine_job_description")
     # Configurer l'API OpenAI
     api_key = get_openai_api_key()
     client = openai.OpenAI(api_key=api_key)
@@ -34,7 +39,7 @@ async def refine_job_description(profil, cv):
         with open(source_file, "r", encoding="utf-8") as file:
             job_description = file.read()
     except FileNotFoundError as e:
-        print(f"Erreur : {e}")
+        logger.error(f"Erreur : {e}")
         return
 
     # Préparer le message pour l'API
@@ -59,16 +64,16 @@ async def refine_job_description(profil, cv):
         )
 
         # Extraire le contenu généré
-        condensed_description = response.choices[0].message.content.strip()
-
+        logger.debug(f"response : {response}")
+  
         # Sauvegarder le contenu généré
-        save_file(output_path, condensed_description)
-        print(f"Fiche de poste condensée enregistrée dans : {output_path}")
+        save_file(output_path, response)
+        logger.info(f"Fiche de poste condensée enregistrée dans : {output_path}")
 
     except openai.APIError as e:
-        print(f"Erreur API : {e}")
+        logger.error(f"Erreur API : {e}")
     except Exception as e:
-        print(f"Erreur inattendue : {e}")
+        logger.error(f"Erreur inattendue : {e}")
 
 
 if __name__ == "__main__":

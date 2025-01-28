@@ -81,11 +81,8 @@ async def get_exp(profil, cv):
             presence_penalty=0,
         )
 
-        # Extraire le contenu généré
-        condensed_description = response.choices[0].message.content.strip()
-
         # Sauvegarder le contenu généré
-        save_file(output_path, condensed_description)
+        save_file(output_path, response)
         print(f"Fichier exp.json généré et sauvegardé dans : {output_path}")
 
     except openai.APIError as e:
