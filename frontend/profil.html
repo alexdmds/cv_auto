@@ -4,34 +4,58 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profil</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1 id="welcome-message">Bienvenue</h1>
+  <header>
+    <nav>
+      <div class="nav-left">
+        <h1 id="welcome-message">Bienvenue</h1>
+      </div>
+      <div class="nav-right">
+        <button id="view-cvs">Mes CV</button>
+        <button id="logout-button">Déconnexion</button>
+      </div>
+    </nav>
+  </header>
 
-  <h2>Upload de fichiers</h2>
-  <input type="file" id="file-uploader" />
-  <button id="upload-button">Upload</button>
-  <div id="upload-status"></div>
+  <main>
+    <section id="welcome-section">
+      <h2>Accueil</h2>
+    </section>
 
-  <h2>Fichiers existants</h2>
-  <ul id="file-list"></ul>
+    <section id="upload-section">
+      <h2>Upload de fichiers</h2>
+      <input type="file" id="file-uploader" />
+      <button id="upload-button">Upload</button>
+      <div id="upload-status"></div>
+    </section>
 
-  <h2>Informations</h2>
-  <textarea id="user-info" placeholder="Entrez vos informations ici..." rows="40" cols="100"></textarea>
-  <br />
-  <button id="save-info">Save</button>
-  <div id="info-status"></div>
+    <section id="file-list-section">
+      <h2>Fichiers existants</h2>
+      <ul id="file-list"></ul>
+    </section>
 
-  <h2>Génération de profil</h2>
-  <button id="generate-profile">Générer le profil</button>
-  <div id="generation-status"></div>
-  <pre id="profile-output"></pre>
+    <section id="info-section">
+      <h2>Informations</h2>
+      <textarea id="user-info" placeholder="Entrez vos informations ici..." rows="10" cols="50"></textarea>
+      <br />
+      <button id="save-info">Save</button>
+      <div id="info-status"></div>
+    </section>
 
-  <h2>Navigation</h2>
-  <button id="view-cvs">Mes CV</button>
+    <section id="generate-section">
+      <h2>Génération de profil</h2>
+      <button id="generate-profile">Générer le profil</button>
+      <div id="generation-status"></div>
+      <pre id="profile-output"></pre>
+    </section>
+  </main>
 
-  <!-- Inclusion des scripts -->
-  <script type="module" src="./firebase-config.js"></script>
-  <script type="module" src="./profil.js"></script>
+  <footer>
+    <p>© 2025 Mon Application</p>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
