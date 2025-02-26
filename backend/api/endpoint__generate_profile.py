@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from backend.utils import authenticate_user
+from firebase_admin import firestore
 
 load_dotenv()
 
@@ -63,8 +64,9 @@ def generate_profile_endpoint(user_id: str):
         profile = asyncio.run(generate_profile(combined_text))
 
         # Sauvegarder dans Firestore
-        from backend.firestore.firebase_init import db
-        db.reference(f'users/{user_id}/profile').set(profile)
+        db = firestore.Client()
+        doc_ref = db.collection('users').document(user_id)
+        doc_ref.set({'profile': profile}, merge=True)
         
         logger.info(f"Profil généré et sauvegardé pour l'utilisateur {user_id}")
         return jsonify({"success": True, "profile": profile}), 200
