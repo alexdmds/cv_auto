@@ -7,7 +7,7 @@ sys.path.append(str(ROOT_DIR))
 
 import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, async_openai_call
+from backend.utils_old import get_openai_api_key, get_file, save_file, get_prompt, async_openai_call
 import json
 
 async def get_exp(profil, cv):

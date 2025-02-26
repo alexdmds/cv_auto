@@ -6,7 +6,7 @@ from config import load_config
 from pathlib import Path
 from google.cloud import storage
 
-from firebase_init import db
+from backend.firestore.firebase_init import db
 import time
 import asyncio
 from concurrent.futures import ThreadPoolExecutor

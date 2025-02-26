@@ -1,3 +1,51 @@
 venv/
 *.pdf
 data_local/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environnements virtuels
+venv/
+ENV/
+env/
+.env
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Firebase/Google Cloud
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+
+# Autres
+.coverage
+htmlcov/
+.pytest_cache/

@@ -23,7 +23,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # Chemin vers 'backend
 sys.path.append(str(ROOT_DIR))
 
 # Import des fonctions utilitaires
-from utils import get_file, save_file
+from backend.utils_old import get_file, save_file
 
 # Import des sections
 from cv_automation.gen_pdf.sections.header import create_header
