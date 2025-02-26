@@ -25,20 +25,20 @@ def configure_logging():
 class BaseConfig:
     # Valeurs communes à tous les environnements
     TEMP_PATH = Path("/tmp")  # Chemin temporaire
-    CHECK_AUTH = True
     BUCKET_NAME = "cv-generator-447314.firebasestorage.app"
-
     ENV = None
     OPENAI_API_KEY = None
+    CHECK_AUTH = True  # Valeur par défaut
 
 class DevConfig(BaseConfig):
     ENV = "dev"
     MOCK_OPENAI = True
-    CHECK_AUTH = False
+    CHECK_AUTH = False  # Désactive l'authentification en dev
 
 class ProdConfig(BaseConfig):
     ENV = "prod"
     MOCK_OPENAI = False
+    CHECK_AUTH = True  # Active l'authentification en prod
     secret_manager_client = secretmanager.SecretManagerServiceClient()
     response = secret_manager_client.access_secret_version(request={"name": "projects/177360827241/secrets/OPENAI_API_KEY/versions/1"})
     OPENAI_API_KEY = response.payload.data.decode("UTF-8")

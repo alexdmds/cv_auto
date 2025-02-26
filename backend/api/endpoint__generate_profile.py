@@ -1,10 +1,11 @@
-from flask import jsonify
+from flask import jsonify, request
 from google.cloud import storage
 import logging
 from backend.config import load_config
 from dotenv import load_dotenv
 import os
 import asyncio
+from backend.utils import authenticate_user
 
 load_dotenv()
 
@@ -28,13 +29,25 @@ def generate_profile_endpoint(user_id: str):
         Response: Réponse JSON avec succès ou erreur
     """
     try:
+        # Authentification de l'utilisateur uniquement en prod
+        if config.CHECK_AUTH:
+            auth_header = request.headers.get('Authorization')
+            try:
+                authenticated_user_id = authenticate_user(auth_header)
+                if authenticated_user_id != user_id:
+                    logger.warning(f"Tentative d'accès non autorisé: {authenticated_user_id} essaie d'accéder aux données de {user_id}")
+                    return jsonify({"error": "Unauthorized access"}), 403
+            except ValueError as e:
+                logger.error(f"Erreur d'authentification: {str(e)}")
+                return jsonify({"error": "Authentication failed"}), 401
+
         # Initialiser le client Storage
         storage_client = storage.Client()
         bucket = storage_client.bucket(config.BUCKET_NAME)
 
         # Récupérer les fichiers texte
         text_files = []
-        for blob in bucket.list_blobs(prefix=f"users/{user_id}/texts/"):
+        for blob in bucket.list_blobs(prefix=f"{user_id}/sources/"):
             if blob.name.endswith(".txt"):
                 content = blob.download_as_string().decode("utf-8")
                 text_files.append(content)

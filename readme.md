@@ -24,10 +24,9 @@ gcloud run deploy backend-flask \
     --set-env-vars ENV=prod
 
 ###### TEST backend
-curl -X POST http://127.0.0.1:8080/generate-cv \
--H "Content-Type: application/json" \
--H "Authorization: Bearer YOUR_FIREBASE_ID_TOKEN" \
--d '{
-  "cv_name": "example_cv"
-}'
-{"success":true}
+
+curl -X POST "http://localhost:8080/api/generate-profile/test_user" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Votre texte de test ici"
+  }'
