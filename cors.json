@@ -1,8 +1,0 @@
-[
-    {
-      "origin": ["http://127.0.0.1:5500", "https://storage.googleapis.com"],
-      "method": ["GET", "PUT", "POST", "DELETE"],
-      "maxAgeSeconds": 3600,
-      "responseHeader": ["Content-Type", "Authorization"]
-    }
-  ]
