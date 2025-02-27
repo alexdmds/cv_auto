@@ -1,5 +1,4 @@
 from openai import OpenAI
-from config import load_config
 from ai_module.models.generate_profile import generate_structured_profile
 import logging
 
