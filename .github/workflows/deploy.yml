@@ -45,6 +45,16 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Create Artifact Registry Repository
+        run: |
+          if ! gcloud artifacts repositories describe cloud-run-images --location=$REGION 2>/dev/null; then
+            echo "Creating Artifact Registry repository..."
+            gcloud artifacts repositories create cloud-run-images \
+              --repository-format=docker \
+              --location=$REGION \
+              --description="Docker repository for Cloud Run images"
+          fi
+
       - name: Test Authentication
         run: |
           echo "Testing GCP Authentication..."
