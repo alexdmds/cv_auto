@@ -1,4 +1,4 @@
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
@@ -46,7 +46,7 @@ async def generate_structured_profile(text: str) -> Dict[str, Any]:
         
         # Configuration du modèle de chat
         chat = ChatOpenAI(
-            model_name="gpt-4",
+            model_name="gpt-4o-mini",
             temperature=0.2
         )
 
@@ -79,4 +79,33 @@ async def generate_structured_profile(text: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Erreur lors de la génération du profil structuré: {str(e)}")
         raise
+
+
+if __name__ == "__main__":
+    import asyncio
+    
+    # Exemple de texte pour tester
+    texte_test = """
+    Jean Dupont
+    Développeur Full Stack avec 5 ans d'expérience
+    
+    EXPÉRIENCE
+    Senior Developer chez TechCorp (2020-2023)
+    - Développement d'applications web avec React et Node.js
+    - Lead technique sur 3 projets majeurs
+    
+    FORMATION
+    Master en Informatique - Université de Paris (2018)
+    """
+    
+    async def test_generation():
+        try:
+            profil = await generate_structured_profile(texte_test)
+            print("Profil généré avec succès:")
+            print(profil)
+        except Exception as e:
+            print(f"Erreur lors du test: {e}")
+    
+    # Exécution du test
+    asyncio.run(test_generation())
 
