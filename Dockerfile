@@ -9,5 +9,6 @@ COPY ai_module/ ./ai_module
 RUN pip install --no-cache-dir -r ./backend/requirements.txt
 
 ENV PORT=8080
+ENV PYTHONPATH=/app
 
 CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 backend.main:app

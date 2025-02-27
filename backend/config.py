@@ -30,10 +30,18 @@ class BaseConfig:
     OPENAI_API_KEY = None
     CHECK_AUTH = True  # Valeur par défaut
 
-class DevConfig(BaseConfig):
-    ENV = "dev"
+class LocalConfig(BaseConfig):
+    ENV = "local"
     MOCK_OPENAI = True
     CHECK_AUTH = False  # Désactive l'authentification en dev
+
+class DevConfig(BaseConfig):
+    ENV = "dev"
+    MOCK_OPENAI = False
+    CHECK_AUTH = False
+    secret_manager_client = secretmanager.SecretManagerServiceClient()
+    response = secret_manager_client.access_secret_version(request={"name": "projects/177360827241/secrets/OPENAI_API_KEY/versions/1"})
+    OPENAI_API_KEY = response.payload.data.decode("UTF-8")
 
 class ProdConfig(BaseConfig):
     ENV = "prod"
@@ -44,8 +52,10 @@ class ProdConfig(BaseConfig):
     OPENAI_API_KEY = response.payload.data.decode("UTF-8")
 
 def load_config():
-    env = os.getenv("ENV", "dev")
+    env = os.getenv("ENV", "local")
     if env == "prod":
         return ProdConfig()
+    elif env == "local":
+        return LocalConfig()
     else:
         return DevConfig()
