@@ -75,8 +75,8 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --set-env-vars="ENV=${{ steps.env.outputs.environment }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
-            --set-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest"
+            --set-env-vars="ENV=${{ steps.env.outputs.environment }}" \
+            --update-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest"
 
       - name: Test Deployment
         run: |
