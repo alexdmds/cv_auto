@@ -1,17 +1,20 @@
-# Utilise une image Python officielle
-FROM python:3.13.1-slim
+# Utiliser une image Python officielle
+FROM python:3.13-slim
 
-# Configure le répertoire de travail dans le conteneur
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Copie les fichiers nécessaires depuis le répertoire backend/
-COPY . .
+# Copier les fichiers de requirements
+COPY requirements.txt .
 
-# Installe les dépendances spécifiées dans requirements.txt
+# Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose le port 8080 pour Cloud Run
-EXPOSE 8080
+# Copier le code source
+COPY . .
 
-# Définit la commande pour démarrer l'application avec Gunicorn avec un timeout de 300 secondes
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "300", "main:app"]
+# Variable d'environnement pour le port
+ENV PORT=8080
+
+# Commande pour démarrer l'application
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
