@@ -4,6 +4,7 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List
 import logging
+from backend.config import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +40,18 @@ async def generate_structured_profile(text: str) -> Dict[str, Any]:
         Dict[str, Any]: Dictionnaire structuré contenant les informations du profil
     """
     try:
+        config = load_config()  # Charger la configuration
+        
         logger.info("Initialisation du parser et du modèle...")
         
         # Configuration du parser de sortie
         parser = PydanticOutputParser(pydantic_object=ProfileStructure)
         
-        # Configuration du modèle de chat
+        # Configuration du modèle de chat avec la clé API
         chat = ChatOpenAI(
-            model_name="gpt-4o-mini",
-            temperature=0.2
+            model_name="gpt-4",
+            temperature=0.2,
+            openai_api_key=config.OPENAI_API_KEY  # Ajouter la clé API ici
         )
 
         # Création du template de prompt
