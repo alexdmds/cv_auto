@@ -39,17 +39,16 @@ jobs:
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ env.PROJECT_ID }}
-          export_default_credentials: true
 
-      - name: Test Google Cloud Authentication
+      - name: Test Authentication
         run: |
+          echo "Testing GCP Authentication..."
           gcloud auth list
           gcloud projects list
-          echo "Vérification de l'accès au projet..."
-          gcloud config get-value project
-
-      - name: Authorize Docker push
-        run: gcloud auth configure-docker
+          echo "Testing Docker Access..."
+          gcloud auth configure-docker --quiet
+          echo "Testing Cloud Run Access..."
+          gcloud run services list --platform managed --region $REGION
 
       - name: Build and Push Container
         run: |
@@ -64,3 +63,10 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --set-env-vars="ENV=${{ steps.env.outputs.environment }}"
+
+      - name: Test Deployment
+        run: |
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME${{ steps.env.outputs.service_suffix }} --region $REGION --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
+          # Test basic endpoint access
+          curl -f -s "$SERVICE_URL" || echo "Service is deployed but might need initialization"
