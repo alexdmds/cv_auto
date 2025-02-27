@@ -1,4 +1,3 @@
-from openai import OpenAI
 from ai_module.models.generate_profile import generate_structured_profile
 import logging
 
