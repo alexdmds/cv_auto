@@ -67,7 +67,7 @@ jobs:
 
       - name: Build and Push Container
         run: |
-          docker build -t $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }} backend/
+          docker build -t $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }} .
           docker push $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
