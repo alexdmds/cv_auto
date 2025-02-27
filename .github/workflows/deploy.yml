@@ -1,14 +1,10 @@
 name: Deploy to Cloud Run
 
-#déploiement en prod
 on:
   push:
     branches:
-      - main  # déploiement en prod
-      - develop  # déploiement en dev
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy.yml'
+      - main
+      - develop
 
 env:
   PROJECT_ID: cv-generator-447314
