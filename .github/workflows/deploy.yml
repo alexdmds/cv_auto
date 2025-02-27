@@ -15,6 +15,7 @@ env:
   REGION: europe-west1
   SERVICE_NAME: cv-generator-api
   REGISTRY: europe-west1-docker.pkg.dev
+  SERVICE_ACCOUNT: backend-flask@cv-generator-447314.iam.gserviceaccount.com
 
 jobs:
   deploy:
@@ -77,6 +78,7 @@ jobs:
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
+            --service-account ${{ env.SERVICE_ACCOUNT }} \
             --set-env-vars="ENV=${{ steps.env.outputs.environment }}"
 
       - name: Test Deployment
