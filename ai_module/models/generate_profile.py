@@ -49,7 +49,7 @@ async def generate_structured_profile(text: str) -> Dict[str, Any]:
         
         # Configuration du modèle de chat avec la clé API
         chat = ChatOpenAI(
-            model_name="gpt-4",
+            model_name="gpt-4o-mini",
             temperature=0.2,
             openai_api_key=config.OPENAI_API_KEY  # Ajouter la clé API ici
         )
