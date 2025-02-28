@@ -2,82 +2,92 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
+from typing import Dict
 import logging
 from backend.config import load_config
+from backend.utils.tokens import increment_token_count
+import tiktoken
 
 logger = logging.getLogger(__name__)
 
 class HeadData(BaseModel):
-    name: str = Field(description="Nom complet du candidat")
-    phone: str = Field(description="Numéro de téléphone du candidat")
-    email: str = Field(description="Adresse email du candidat")
-    general_title: str = Field(description="Titre et description générale du profil")
-    skills: str = Field(description="Description détaillée des compétences")
-    hobbies: str = Field(description="Description détaillée des centres d'intérêt")
+    name: str = Field(description="Nom complet")
+    phone: str = Field(description="Numéro de téléphone")
+    email: str = Field(description="Adresse email")
+    general_title: str = Field(description="Titre professionnel général")
+    skills: str = Field(description="Résumé des compétences principales")
+    hobbies: str = Field(description="Centres d'intérêt et loisirs")
 
-async def generate_structured_head(text: str) -> dict:
+def count_tokens(text: str) -> int:
+    """Compte le nombre de tokens dans un texte"""
+    encoding = tiktoken.get_encoding("cl100k_base")  # encoding pour gpt-3.5-turbo
+    return len(encoding.encode(text))
+
+async def generate_head(text: str, user_id: str) -> Dict:
     """
-    Génère un en-tête structuré à partir d'un texte brut en utilisant LangChain.
-    
-    Args:
-        text (str): Le texte brut contenant les informations de l'en-tête
-        
-    Returns:
-        dict: Dictionnaire structuré contenant les informations de l'en-tête
+    Génère l'en-tête du CV à partir d'un texte brut.
     """
     try:
         config = load_config()
         logger.info("Initialisation du parser et du modèle...")
 
-        # Initialisation du modèle LLM
         llm = ChatOpenAI(
-            model_name="gpt-4o-mini",
+            model_name="gpt-3.5-turbo",
             temperature=0,
             openai_api_key=config.OPENAI_API_KEY
         )
 
-        # Définir le parser JSON
         parser = JsonOutputParser(pydantic_object=HeadData)
 
-        # Création du prompt
+        prompt_template = """
+        Analyse le texte suivant et extrais les informations d'en-tête du CV.
+        Génère un JSON structuré avec :
+        
+        - "name": Nom complet de la personne
+        - "phone": Numéro de téléphone
+        - "email": Adresse email
+        - "general_title": Titre professionnel principal
+        - "skills": Résumé des compétences clés (format texte)
+        - "hobbies": Centres d'intérêt et loisirs (format texte)
+        
+        {format_instructions}
+        
+        Texte source :
+        {source}
+        """
+
         prompt = PromptTemplate(
-            template=(
-                """
-                Analyse le texte suivant décrivant un profil candidat et génère un JSON structuré.
-                Pour chaque champ, fournis une description détaillée et exhaustive au format texte.
-                
-                Le JSON doit contenir les champs suivants :
-                - "name": Le nom complet du candidat
-                - "phone": Le numéro de téléphone complet
-                - "email": L'adresse email complète
-                - "general_title": Une description détaillée du titre professionnel et du profil général
-                - "skills": Une description narrative et détaillée de toutes les compétences
-                - "hobbies": Une description narrative et détaillée de tous les centres d'intérêt
-                
-                Assure-toi que chaque champ contient une description exhaustive en texte libre,
-                pas seulement des listes ou des valeurs courtes.
-                
-                {format_instructions}
-                
-                Texte source :
-                {source}
-                """
-            ),
+            template=prompt_template,
             input_variables=["source"],
-            partial_variables={"format_instructions": parser.get_format_instructions()}
+            partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
-        # Création et exécution de la chaîne
+        # Compter les tokens d'entrée
+        input_text = prompt_template.format(
+            source=text,
+            format_instructions=parser.get_format_instructions()
+        )
+        input_tokens = count_tokens(input_text)
+
+        # Générer l'en-tête
         json_chain = prompt | llm | parser
+        response = await json_chain.ainvoke({"source": text})
         
-        logger.info("Génération de l'en-tête structuré via LangChain...")
-        head_data = json_chain.invoke({"source": text})
+        # Compter les tokens de sortie
+        output_tokens = count_tokens(str(response))
         
-        logger.info("En-tête structuré généré avec succès")
-        return head_data
+        # Mettre à jour les compteurs
+        await increment_token_count(
+            user_id=user_id,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens
+        )
+        
+        logger.info(f"Tokens utilisés - Entrée: {input_tokens}, Sortie: {output_tokens}")
+        return response
 
     except Exception as e:
-        logger.error(f"Erreur lors de la génération de l'en-tête structuré: {str(e)}")
+        logger.error(f"Erreur lors de la génération de l'en-tête: {str(e)}")
         raise
 
 if __name__ == "__main__":
@@ -87,23 +97,22 @@ if __name__ == "__main__":
     texte_test = """
     Jean Dupont
     Développeur Full Stack Senior
-    Email: jean.dupont@email.com | Tel: 06 12 34 56 78
+    Email: jean.dupont@email.com
+    Tél: 06 12 34 56 78
     
-    Expert en développement web avec 10 ans d'expérience dans la création 
-    d'applications complexes et innovantes.
+    Expert en Python, JavaScript et DevOps
+    10 ans d'expérience en développement web
     
-    Compétences: Python, JavaScript, React, DevOps, Gestion d'équipe
-    
-    Centres d'intérêt: Photographie, Randonnée, Musique
+    Passionné de nouvelles technologies, photographie et randonnée
     """
     
-    # Exécution du test et affichage du résultat
-    resultat = asyncio.run(generate_structured_head(texte_test))
-    print("\nRésultat du test :")
-    print("------------------")
-    print(f"Nom: {resultat['name']}")
-    print(f"Téléphone: {resultat['phone']}")
-    print(f"Email: {resultat['email']}")
-    print(f"Titre général: {resultat['general_title']}")
-    print(f"Compétences: {resultat['skills']}")
-    print(f"Centres d'intérêt: {resultat['hobbies']}")
+    async def test_generation():
+        try:
+            head = await generate_head(texte_test, "test_user")
+            print("En-tête généré avec succès:")
+            print(head)
+        except Exception as e:
+            print(f"Erreur lors du test: {e}")
+    
+    # Exécution du test
+    asyncio.run(test_generation())

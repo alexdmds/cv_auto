@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 import logging
 from backend.config import load_config
+from backend.utils.tokens import increment_token_count
+import tiktoken
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,12 @@ class ProfileData(BaseModel):
     experiences: List[Experience] = Field(description="Liste des expériences professionnelles")
     education: List[Education] = Field(description="Liste des formations académiques")
 
-async def generate_profile(text: str) -> Dict:
+def count_tokens(text: str) -> int:
+    """Compte le nombre de tokens dans un texte"""
+    encoding = tiktoken.get_encoding("cl100k_base")  # encoding pour gpt-3.5-turbo
+    return len(encoding.encode(text))
+
+async def generate_profile(text: str, user_id: str) -> Dict:
     """
     Génère un profil structuré à partir d'un texte brut.
     """
@@ -42,41 +49,59 @@ async def generate_profile(text: str) -> Dict:
 
         parser = JsonOutputParser(pydantic_object=ProfileData)
 
+        prompt_template = """
+        Analyse le texte suivant et extrais les expériences professionnelles et formations.
+        Génère un JSON structuré avec :
+        
+        - Pour chaque expérience :
+          - "intitule": Intitulé du poste
+          - "dates": Période d'emploi
+          - "etablissement": Nom de l'entreprise
+          - "lieu": Localisation
+          - "description": Description détaillée de l'expérience
+        
+        - Pour chaque formation :
+          - "intitule": Nom du diplôme
+          - "dates": Période de formation
+          - "etablissement": Nom de l'institution
+          - "lieu": Localisation
+          - "description": Description détaillée de la formation
+        
+        {format_instructions}
+        
+        Texte source :
+        {source}
+        """
+
         prompt = PromptTemplate(
-            template="""
-            Analyse le texte suivant et extrais les expériences professionnelles et formations.
-            Génère un JSON structuré avec :
-            
-            - Pour chaque expérience :
-              - "intitule": Intitulé du poste
-              - "dates": Période d'emploi
-              - "etablissement": Nom de l'entreprise
-              - "lieu": Localisation
-              - "description": Description détaillée de l'expérience
-            
-            - Pour chaque formation :
-              - "intitule": Nom du diplôme
-              - "dates": Période de formation
-              - "etablissement": Nom de l'institution
-              - "lieu": Localisation
-              - "description": Description détaillée de la formation
-            
-            {format_instructions}
-            
-            Texte source :
-            {source}
-            """,
+            template=prompt_template,
             input_variables=["source"],
             partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
+        # Compter les tokens d'entrée
+        input_text = prompt_template.format(
+            source=text,
+            format_instructions=parser.get_format_instructions()
+        )
+        input_tokens = count_tokens(input_text)
+
+        # Générer le profil
         json_chain = prompt | llm | parser
+        response = await json_chain.ainvoke({"source": text})
         
-        logger.info("Génération du profil structuré...")
-        profile_data = json_chain.invoke({"source": text})
+        # Compter les tokens de sortie
+        output_tokens = count_tokens(str(response))
         
-        logger.info("Profil structuré généré avec succès")
-        return profile_data
+        # Mettre à jour les compteurs
+        await increment_token_count(
+            user_id=user_id,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens
+        )
+        
+        logger.info(f"Tokens utilisés - Entrée: {input_tokens}, Sortie: {output_tokens}")
+        return response
 
     except Exception as e:
         logger.error(f"Erreur lors de la génération du profil: {str(e)}")
@@ -104,7 +129,7 @@ if __name__ == "__main__":
     
     async def test_generation():
         try:
-            profil = await generate_profile(texte_test)
+            profil = await generate_profile(texte_test, "test_user")
             print("Profil généré avec succès:")
             print(profil)
         except Exception as e:
