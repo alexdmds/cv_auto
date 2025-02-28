@@ -19,7 +19,7 @@ if config.MOCK_OPENAI:
 else:
     from ai_module.inference import generate_profile, generate_head
 
-def generate_profile_endpoint(user_id: str):
+async def generate_profile_endpoint(user_id: str):
     """
     Endpoint pour générer un profil structuré à partir des fichiers texte du bucket.
     
@@ -48,9 +48,9 @@ def generate_profile_endpoint(user_id: str):
         # Concaténer tous les textes
         text_to_analyze = "\n\n".join(text_files)
         
-        # Générer le profil et l'en-tête
-        profile = asyncio.run(generate_profile(text_to_analyze))
-        head = asyncio.run(generate_head(text_to_analyze))
+        # Passer l'user_id aux fonctions de génération
+        profile = await generate_profile(text_to_analyze, user_id)
+        head = await generate_head(text_to_analyze, user_id)
 
         # Structurer les données selon le format demandé
         cv_data = {
