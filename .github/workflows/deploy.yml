@@ -79,17 +79,19 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           DEV_IMAGE=${{ steps.get-dev-image.outputs.dev_image }}
-          # Extraire le SHA de l'image dev
           SHA=$(echo $DEV_IMAGE | cut -d':' -f2)
-          # Construire les noms d'images complets
           PROD_IMAGE=$REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME-prod:$SHA
           
           echo "Promoting dev image to prod:"
           echo "From: $DEV_IMAGE"
           echo "To: $PROD_IMAGE"
           
-          # Copier l'image avec le nouveau tag
-          gcloud artifacts docker tags add $DEV_IMAGE $PROD_IMAGE
+          # Pull l'image dev
+          docker pull $DEV_IMAGE
+          # Tag comme prod
+          docker tag $DEV_IMAGE $PROD_IMAGE
+          # Push l'image prod
+          docker push $PROD_IMAGE
 
       - name: Deploy to Cloud Run
         run: |
