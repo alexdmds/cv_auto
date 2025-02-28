@@ -5,15 +5,14 @@ from backend.config import load_config
 from dotenv import load_dotenv
 import os
 import asyncio
-from backend.utils import authenticate_user
 from firebase_admin import firestore
+from backend.utils import increment_token_usage
 
 load_dotenv()
-
 logger = logging.getLogger(__name__)
+config = load_config()
 
 # Import conditionnel basé sur la configuration
-config = load_config()
 if config.MOCK_OPENAI:
     from ai_module.mock_inference import generate_profile, generate_head
 else:
@@ -21,7 +20,7 @@ else:
 
 def generate_profile_endpoint(user_id: str):
     """
-    Endpoint pour générer un profil structuré à partir des fichiers texte du bucket.
+    Endpoint pour générer un profil structuré.
     
     Args:
         user_id (str): ID de l'utilisateur
@@ -51,6 +50,15 @@ def generate_profile_endpoint(user_id: str):
         # Générer le profil et l'en-tête
         profile = asyncio.run(generate_profile(text_to_analyze))
         head = asyncio.run(generate_head(text_to_analyze))
+
+        # Calculer le nombre total de tokens
+        input_text = text_to_analyze
+        output_text = str(profile) + str(head)
+        total_tokens = len(input_text.split()) + len(output_text.split())
+        
+        # Incrémenter l'utilisation des tokens
+        increment_token_usage(user_id, total_tokens)
+        logger.info(f"Tokens utilisés pour {user_id}: {total_tokens}")
 
         # Structurer les données selon le format demandé
         cv_data = {
@@ -90,3 +98,37 @@ def generate_profile_endpoint(user_id: str):
     except Exception as e:
         logger.error(f"Erreur lors de la génération du profil: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
+    import asyncio
+    
+    # Exemple de texte pour tester
+    texte_test = """
+    Jean Dupont
+    Développeur Full Stack avec 5 ans d'expérience
+    
+    EXPÉRIENCE
+    Senior Developer chez TechCorp (2020-2023) - Paris
+    - Développement d'applications web avec React et Node.js
+    - Lead technique sur 3 projets majeurs
+    
+    FORMATION
+    Master en Informatique - Université de Paris (2018) - Paris
+    - Spécialisation en développement web
+    - Major de promotion
+    """
+    
+    async def test_generation():
+        try:
+            profil = await generate_profile(texte_test)
+            head = await generate_head(texte_test)
+            print("Profil généré avec succès:")
+            print(profil)
+            print("En-tête généré avec succès:")
+            print(head)
+        except Exception as e:
+            print(f"Erreur lors du test: {e}")
+    
+    # Exécution du test
+    asyncio.run(test_generation())
