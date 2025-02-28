@@ -12,6 +12,8 @@ class HeadData(BaseModel):
     titre: str = Field(description="Titre ou poste actuel du candidat") 
     coordonnees: dict = Field(description="Coordonnées du candidat (email, téléphone, etc)")
     resume: str = Field(description="Résumé général du profil")
+    hobbies: list = Field(description="Liste des centres d'intérêt et loisirs")
+    competences: list = Field(description="Liste des compétences techniques et non-techniques")
 
 async def generate_structured_head(text: str) -> dict:
     """
@@ -29,7 +31,7 @@ async def generate_structured_head(text: str) -> dict:
 
         # Initialisation du modèle LLM
         llm = ChatOpenAI(
-            model_name="gpt-4-mini",
+            model_name="gpt-4o-mini",
             temperature=0,
             openai_api_key=config.OPENAI_API_KEY
         )
@@ -49,6 +51,8 @@ async def generate_structured_head(text: str) -> dict:
                 - "titre": Le titre ou poste actuel
                 - "coordonnees": Un objet contenant les coordonnées (email, téléphone, LinkedIn, etc)
                 - "resume": Le résumé général du profil
+                - "hobbies": Une liste des centres d'intérêt et loisirs du candidat
+                - "competences": Une liste des compétences techniques et non-techniques
                 
                 {format_instructions}
                 
@@ -84,6 +88,19 @@ if __name__ == "__main__":
     
     Expert en développement web avec 10 ans d'expérience dans la création 
     d'applications complexes et innovantes.
+    
+    Compétences: Python, JavaScript, React, DevOps, Gestion d'équipe
+    
+    Centres d'intérêt: Photographie, Randonnée, Musique
     """
     
-    asyncio.run(generate_structured_head(texte_test))
+    # Exécution du test et affichage du résultat
+    resultat = asyncio.run(generate_structured_head(texte_test))
+    print("\nRésultat du test :")
+    print("------------------")
+    print(f"Nom: {resultat['nom']}")
+    print(f"Titre: {resultat['titre']}")
+    print("Coordonnées:", resultat['coordonnees'])
+    print(f"Résumé: {resultat['resume']}")
+    print("Compétences:", resultat['competences'])
+    print("Hobbies:", resultat['hobbies'])
