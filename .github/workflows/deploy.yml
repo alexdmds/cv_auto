@@ -99,9 +99,29 @@ jobs:
             --set-env-vars="ENV=${{ steps.env.outputs.environment }}" \
             --update-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest"
 
-      - name: Test Deployment
+      - name: Test Health Endpoint (Dev Only)
+        if: github.ref != 'refs/heads/main'
         run: |
           SERVICE_URL=$(gcloud run services describe $SERVICE_NAME${{ steps.env.outputs.service_suffix }} --region $REGION --format 'value(status.url)')
           echo "Service URL: $SERVICE_URL"
-          # Test basic endpoint access
+          
+          # Attendre que le service soit prêt (max 60 secondes)
+          for i in {1..12}; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/health")
+            if [ "$response" = "200" ]; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Waiting for service to be ready... (attempt $i/12)"
+            sleep 5
+          done
+          
+          echo "Health check failed after 60 seconds"
+          exit 1
+
+      - name: Test Deployment (Prod Only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME${{ steps.env.outputs.service_suffix }} --region $REGION --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
           curl -f -s "$SERVICE_URL" || echo "Service is deployed but might need initialization"
