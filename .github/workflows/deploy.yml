@@ -85,10 +85,16 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            IMAGE=$REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }}
+            # Pour prod, utiliser l'image promue depuis dev
+            PROD_IMAGE=${{ steps.get-dev-image.outputs.dev_image }}
+            PROD_IMAGE=$(echo $PROD_IMAGE | sed 's/-dev:/-prod:/')
+            IMAGE=$PROD_IMAGE
           else
-            IMAGE=${{ steps.get-dev-image.outputs.dev_image }}
+            # Pour dev, utiliser la nouvelle image construite
+            IMAGE=$REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }}
           fi
+          
+          echo "Deploying image: $IMAGE"
           
           gcloud run deploy $SERVICE_NAME${{ steps.env.outputs.service_suffix }} \
             --image $IMAGE \
