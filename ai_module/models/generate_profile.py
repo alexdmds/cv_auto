@@ -35,7 +35,7 @@ async def generate_profile(text: str) -> Dict:
         logger.info("Initialisation du parser et du modèle...")
 
         llm = ChatOpenAI(
-            model_name="gpt-3.5-turbo",
+            model_name="gpt-4o-mini",
             temperature=0,
             openai_api_key=config.OPENAI_API_KEY
         )
