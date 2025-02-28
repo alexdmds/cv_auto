@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 # Import conditionnel basé sur la configuration
 config = load_config()
 if config.MOCK_OPENAI:
-    from ai_module.mock_inference import generate_profile
+    from ai_module.mock_inference import generate_profile, generate_head
 else:
-    from ai_module.inference import generate_profile
+    from ai_module.inference import generate_profile, generate_head
 
 def generate_profile_endpoint(user_id: str):
     """
@@ -60,16 +60,44 @@ def generate_profile_endpoint(user_id: str):
         # Concaténer tous les textes
         combined_text = "\n\n".join(text_files)
         
-        # Générer le profil structuré en utilisant asyncio pour exécuter la fonction asynchrone
+        # Générer le profil et l'en-tête structurés en utilisant asyncio
         profile = asyncio.run(generate_profile(combined_text))
+        head = asyncio.run(generate_head(combined_text))
+
+        # Structurer les données selon le format demandé
+        cv_data = {
+            'head': {
+                'name': head.get('name', ''),
+                'phone': head.get('phone', ''),
+                'email': head.get('email', ''),
+                'general_title': head.get('general_title', '')
+            },
+            'experiences': {
+                'experiences': profile.get('experiences', [])
+            },
+            'education': {
+                'educations': profile.get('education', [])
+            },
+            'skills': {
+                'description': head.get('skills', '')
+            },
+            'hobbies': {
+                'description': head.get('hobbies', '')
+            }
+        }
 
         # Sauvegarder dans Firestore
         db = firestore.Client()
         doc_ref = db.collection('users').document(user_id)
-        doc_ref.set({'profile': profile}, merge=True)
+        doc_ref.set({
+            'cv_data': cv_data
+        }, merge=True)
         
-        logger.info(f"Profil généré et sauvegardé pour l'utilisateur {user_id}")
-        return jsonify({"success": True, "profile": profile}), 200
+        logger.info(f"Profil et en-tête générés et sauvegardés pour l'utilisateur {user_id}")
+        return jsonify({
+            "success": True, 
+            "cv_data": cv_data
+        }), 200
 
     except Exception as e:
         logger.error(f"Erreur lors de la génération du profil: {str(e)}", exc_info=True)

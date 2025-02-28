@@ -8,12 +8,12 @@ from backend.config import load_config
 logger = logging.getLogger(__name__)
 
 class HeadData(BaseModel):
-    nom: str = Field(description="Nom complet du candidat")
-    titre: str = Field(description="Titre ou poste actuel du candidat") 
-    coordonnees: dict = Field(description="Coordonnées du candidat (email, téléphone, etc)")
-    resume: str = Field(description="Résumé général du profil")
-    hobbies: list = Field(description="Liste des centres d'intérêt et loisirs")
-    competences: list = Field(description="Liste des compétences techniques et non-techniques")
+    name: str = Field(description="Nom complet du candidat")
+    phone: str = Field(description="Numéro de téléphone du candidat")
+    email: str = Field(description="Adresse email du candidat")
+    general_title: str = Field(description="Titre et description générale du profil")
+    skills: str = Field(description="Description détaillée des compétences")
+    hobbies: str = Field(description="Description détaillée des centres d'intérêt")
 
 async def generate_structured_head(text: str) -> dict:
     """
@@ -43,16 +43,19 @@ async def generate_structured_head(text: str) -> dict:
         prompt = PromptTemplate(
             template=(
                 """
-                Analyse le texte suivant décrivant un profil candidat et génère un JSON structuré 
-                contenant uniquement les informations d'en-tête.
+                Analyse le texte suivant décrivant un profil candidat et génère un JSON structuré.
+                Pour chaque champ, fournis une description détaillée et exhaustive au format texte.
                 
                 Le JSON doit contenir les champs suivants :
-                - "nom": Le nom complet du candidat
-                - "titre": Le titre ou poste actuel
-                - "coordonnees": Un objet contenant les coordonnées (email, téléphone, LinkedIn, etc)
-                - "resume": Le résumé général du profil
-                - "hobbies": Une liste des centres d'intérêt et loisirs du candidat
-                - "competences": Une liste des compétences techniques et non-techniques
+                - "name": Le nom complet du candidat
+                - "phone": Le numéro de téléphone complet
+                - "email": L'adresse email complète
+                - "general_title": Une description détaillée du titre professionnel et du profil général
+                - "skills": Une description narrative et détaillée de toutes les compétences
+                - "hobbies": Une description narrative et détaillée de tous les centres d'intérêt
+                
+                Assure-toi que chaque champ contient une description exhaustive en texte libre,
+                pas seulement des listes ou des valeurs courtes.
                 
                 {format_instructions}
                 
@@ -98,9 +101,9 @@ if __name__ == "__main__":
     resultat = asyncio.run(generate_structured_head(texte_test))
     print("\nRésultat du test :")
     print("------------------")
-    print(f"Nom: {resultat['nom']}")
-    print(f"Titre: {resultat['titre']}")
-    print("Coordonnées:", resultat['coordonnees'])
-    print(f"Résumé: {resultat['resume']}")
-    print("Compétences:", resultat['competences'])
-    print("Hobbies:", resultat['hobbies'])
+    print(f"Nom: {resultat['name']}")
+    print(f"Téléphone: {resultat['phone']}")
+    print(f"Email: {resultat['email']}")
+    print(f"Titre général: {resultat['general_title']}")
+    print(f"Compétences: {resultat['skills']}")
+    print(f"Centres d'intérêt: {resultat['hobbies']}")

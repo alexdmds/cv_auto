@@ -16,39 +16,38 @@ async def generate_profile(text: str) -> Dict[str, Any]:
     logger.info("Utilisation du mock generate_profile")
     
     return {
-        "informations_personnelles": {
-            "nom": "Dupont",
-            "prenom": "Jean", 
-            "email": "jean.dupont@email.com",
-            "telephone": "0612345678",
-            "localisation": "Paris, France"
-        },
-        "resume_professionnel": "Développeur fullstack avec 5 ans d'expérience",
-        "experiences_professionnelles": [
+        "experiences": [
             {
-                "titre": "Développeur Senior",
-                "entreprise": "Tech Company",
+                "intitule": "Développeur Senior",
                 "dates": "2020-2023",
-                "description": "Développement d'applications web"
-            }
-        ],
-        "formation": [
+                "etablissement": "Tech Company",
+                "lieu": "Paris",
+                "description": "Développement d'applications web avec React et Node.js. Lead technique sur 3 projets majeurs."
+            },
             {
-                "titre": "Master Informatique",
-                "etablissement": "Université de Paris",
-                "dates": "2015-2020"
+                "intitule": "Développeur Full Stack",
+                "dates": "2018-2020",
+                "etablissement": "StartupCo",
+                "lieu": "Lyon",
+                "description": "Développement full stack avec Python et Vue.js. Mise en place de l'architecture microservices."
             }
         ],
-        "competences_techniques": [
-            "Python",
-            "JavaScript",
-            "React",
-            "Docker"
-        ],
-        "langues": {
-            "Français": "Natif",
-            "Anglais": "Courant"
-        }
+        "education": [
+            {
+                "intitule": "Master Informatique",
+                "dates": "2016-2018",
+                "etablissement": "Université de Paris",
+                "lieu": "Paris",
+                "description": "Spécialisation en développement web. Major de promotion."
+            },
+            {
+                "intitule": "Licence Informatique",
+                "dates": "2013-2016",
+                "etablissement": "Université de Lyon",
+                "lieu": "Lyon",
+                "description": "Formation généraliste en informatique. Projet de fin d'études sur le machine learning."
+            }
+        ]
     }
 
 async def generate_head(text: str) -> Dict[str, Any]:
@@ -64,27 +63,10 @@ async def generate_head(text: str) -> Dict[str, Any]:
     logger.info("Utilisation du mock generate_head")
     
     return {
-        "nom": "Jean Dupont",
-        "titre": "Développeur Full Stack Senior",
-        "coordonnees": {
-            "email": "jean.dupont@email.com",
-            "telephone": "06 12 34 56 78",
-            "linkedin": "linkedin.com/in/jeandupont",
-            "localisation": "Paris, France"
-        },
-        "resume": "Expert en développement web avec 10 ans d'expérience dans la création d'applications complexes et innovantes.",
-        "hobbies": [
-            "Photographie",
-            "Randonnée",
-            "Musique"
-        ],
-        "competences": [
-            "Python",
-            "JavaScript",
-            "React",
-            "DevOps",
-            "Gestion d'équipe",
-            "Architecture logicielle",
-            "Agilité"
-        ]
+        "name": "Jean Dupont",
+        "phone": "06 12 34 56 78",
+        "email": "jean.dupont@email.com",
+        "general_title": "Développeur Full Stack Senior avec 5 ans d'expérience",
+        "skills": "Expert en Python, JavaScript, React et Node.js. Maîtrise des architectures microservices et du DevOps.",
+        "hobbies": "Passionné de photographie et de randonnée. Contributeur open source actif."
     }
