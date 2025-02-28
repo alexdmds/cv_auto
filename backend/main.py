@@ -4,6 +4,7 @@ import logging
 from backend.api.endpoint__generate_profile import generate_profile_endpoint
 from backend.config import configure_logging, load_config
 from backend.auth import auth_required
+from backend.decorators import check_rate_limit
 import firebase_admin
 import os
 
@@ -42,6 +43,7 @@ def health_check():
 
 @app.route('/api/generate-profile', methods=['POST'])
 @auth_required
+@check_rate_limit
 def generate_profile():
     """Génère un profil pour l'utilisateur authentifié"""
     user_id = request.user_id  # Injecté par le décorateur auth_required
