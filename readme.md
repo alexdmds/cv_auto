@@ -25,16 +25,10 @@ gcloud run deploy backend-flask \
 
 ###### TEST backend
 
-curl -X POST "http://localhost:8080/api/generate-profile/test_user" \
+curl -X POST "http://localhost:8080/api/generate-profile" \
   -H "Content-Type: application/json" \
-  -d '{
-    "text": "Votre texte de test ici"
-  }'
+  -v
 
-
-  curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-profile/test_user" \
+curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-profile" \
   -H "Content-Type: application/json" \
-  -d '{
-    "text": "John Doe\nDéveloppeur Full Stack\n\nExpérience:\n- Senior Dev chez Tech Corp"
-  }' \
   -v
