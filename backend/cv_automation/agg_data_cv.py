@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 import json
-from utils import get_file, save_file
+from backend.utils_old import get_file, save_file
 
 def aggregate_json_files(profil, cv):
     """

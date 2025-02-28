@@ -7,7 +7,7 @@ sys.path.append(str(ROOT_DIR))
 
 import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, async_openai_call
+from backend.utils_old import get_openai_api_key, get_file, save_file, get_prompt, get_files_in_directory, async_openai_call
 
 # Ajouter le répertoire racine au chemin Python
 ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'

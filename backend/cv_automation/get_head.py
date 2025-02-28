@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import asyncio
 import openai
-from utils import get_openai_api_key, get_file, save_file, get_prompt, async_openai_call
+from backend.utils_old import get_openai_api_key, get_file, save_file, get_prompt, async_openai_call
 
 logger = logging.getLogger(__name__)
 logger.propagate = True

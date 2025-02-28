@@ -6,7 +6,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent  # Chemin vers 'backend'
 sys.path.append(str(ROOT_DIR))
 
 from PyPDF2 import PdfReader
-from utils import get_files_in_directory, save_file, get_file
+from backend.utils_old import get_files_in_directory, save_file, get_file
 
 def extract_text_from_pdf(pdf_path):
     """

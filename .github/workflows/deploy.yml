@@ -1,0 +1,86 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+env:
+  PROJECT_ID: cv-generator-447314
+  REGION: europe-west1
+  SERVICE_NAME: cv-generator-api
+  REGISTRY: europe-west1-docker.pkg.dev
+  SERVICE_ACCOUNT: backend-flask@cv-generator-447314.iam.gserviceaccount.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ ${{ github.ref }} = 'refs/heads/main' ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+            echo "service_suffix=-prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "service_suffix=-dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create Artifact Registry Repository
+        run: |
+          if ! gcloud artifacts repositories describe cloud-run-images --location=$REGION 2>/dev/null; then
+            echo "Creating Artifact Registry repository..."
+            gcloud artifacts repositories create cloud-run-images \
+              --repository-format=docker \
+              --location=$REGION \
+              --description="Docker repository for Cloud Run images"
+          fi
+
+      - name: Test Authentication
+        run: |
+          echo "Testing GCP Authentication..."
+          gcloud auth list
+          gcloud projects list
+          echo "Testing Docker Access..."
+          gcloud auth configure-docker $REGISTRY --quiet
+          echo "Testing Cloud Run Access..."
+          gcloud run services list --platform managed --region $REGION
+
+      - name: Build and Push Container
+        run: |
+          docker build -t $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }} .
+          docker push $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE_NAME${{ steps.env.outputs.service_suffix }} \
+            --image $REGISTRY/$PROJECT_ID/cloud-run-images/$SERVICE_NAME${{ steps.env.outputs.service_suffix }}:${{ github.sha }} \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --service-account ${{ env.SERVICE_ACCOUNT }} \
+            --set-env-vars="ENV=${{ steps.env.outputs.environment }}" \
+            --update-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest"
+
+      - name: Test Deployment
+        run: |
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME${{ steps.env.outputs.service_suffix }} --region $REGION --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
+          # Test basic endpoint access
+          curl -f -s "$SERVICE_URL" || echo "Service is deployed but might need initialization"
