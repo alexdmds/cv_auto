@@ -50,7 +50,7 @@ def download_user_document(user_id):
         raise
 
 if __name__ == "__main__":
-    user_id = "4Rpnl8576DXRdUv7MddqqPLnT2j2"
+    user_id = "test_user"
     data = download_user_document(user_id)
     if data is not None:
         print("\nDonnées téléchargées :")
