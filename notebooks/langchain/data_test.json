@@ -1,0 +1,95 @@
+{
+    "cv_data": {
+        "head": {
+            "general_title": "Data Engineer / Data Scientist | Expert Cloud et Data. Alexis de Monts est un ingénieur des Ponts et Chaussées, spécialisé en Data Science, qui aide les entreprises à transformer leurs données en valeur. Avec une expertise approfondie dans les domaines du Cloud (GCP, AWS), DevOps (CI/CD, Docker) et MLOps, il intègre des solutions d'intelligence artificielle et de machine learning dans des systèmes informatiques complexes. Son parcours professionnel est marqué par des réalisations significatives, telles que la création d'un Data Hub centralisé pour Renault et le développement d'une application mobile innovante intégrant une IA d'analyse.",
+            "email": "alexis.demonts.s@gmail.com",
+            "phone": "07 81 37 86 80",
+            "name": "Alexis de Monts"
+        },
+        "skills": {
+            "description": "Alexis possède un large éventail de compétences techniques et managériales. En tant que Senior Data Scientist chez EY, il a démontré son expertise en management technique, en encadrant une équipe de data engineers et en mettant en place des méthodologies de travail modernes. Il a également développé des pipelines CI/CD et a introduit des pratiques DevOps dans des environnements cloud. En tant que co-fondateur et CTO de Kadi, il a dirigé le développement d'une application mobile innovante, intégrant des modèles de machine learning pour l'analyse automatique de tickets de caisse. Ses compétences en optimisation des processus, en digitalisation des entreprises, et en gestion de projets complexes sont également notables, ayant travaillé sur des projets stratégiques pour des entreprises de renom comme Renault et Hermès. Alexis est également à l'aise avec des outils technologiques avancés tels que Python, SQL, et des plateformes cloud comme GCP et AWS."
+        },
+        "education": {
+            "educations": [
+                {
+                    "etablissement": "École des Ponts ParisTech",
+                    "description": "Formation scientifique et technique de haut niveau, avec des enseignements spécialisés en supply chain et en machine learning.",
+                    "dates": "2017 – 2021",
+                    "lieu": "Non spécifié",
+                    "intitule": "Diplôme d’ingénieur"
+                },
+                {
+                    "etablissement": "Politecnico di Milano",
+                    "description": "Approfondissement des connaissances en mathématiques appliquées, finance computationnelle, machine learning et supply chain management.",
+                    "dates": "2020 – 2021",
+                    "lieu": "Non spécifié",
+                    "intitule": "Master 2 en Mathematical Engineering"
+                },
+                {
+                    "etablissement": "Collège Stanislas Paris",
+                    "description": "Formation académique exigeante préparant aux concours des grandes écoles d’ingénieurs.",
+                    "dates": "2015 – 2017",
+                    "lieu": "Non spécifié",
+                    "intitule": "Classe préparatoire scientifique"
+                }
+            ]
+        },
+        "hobbies": {
+            "description": "En dehors de ses compétences techniques, Alexis a un intérêt marqué pour l'innovation technologique et l'entrepreneuriat. Il s'engage également dans des activités humanitaires, ayant coordonné des projets de reconstruction en Irak pour L'Œuvre d'Orient, où il a supervisé des initiatives visant à améliorer les conditions de vie des populations touchées par la guerre. Alexis est passionné par l'apprentissage continu et l'exploration de nouvelles technologies, ce qui l'amène à se tenir informé des dernières tendances en matière de data science et d'intelligence artificielle. Il apprécie également les activités de plein air et les voyages, ce qui lui permet de découvrir de nouvelles cultures et d'élargir ses horizons."
+        },
+        "experiences": {
+            "experiences": [
+                {
+                    "etablissement": "EY",
+                    "description": "Mission chez Renault (FLMDH – Fleet Management Data Hub) pour moderniser et structurer les équipes data engineering, pilotant des projets clés pour accompagner la transition vers le leasing et le véhicule électrique.",
+                    "dates": "février 2023 – présent",
+                    "lieu": "Ville de Paris, Île-de-France, France",
+                    "intitule": "Senior Data Scientist"
+                },
+                {
+                    "etablissement": "Kadi",
+                    "description": "Dirige le développement d’une application mobile innovante pour l’analyse automatique de tickets de caisse, incluant la définition de l’architecture technique et la mise en œuvre de solutions basées sur l’intelligence artificielle.",
+                    "dates": "décembre 2022 – présent",
+                    "lieu": "Non spécifié",
+                    "intitule": "Co-fondateur et CTO"
+                },
+                {
+                    "etablissement": "Blispac",
+                    "description": "Conduit plusieurs projets stratégiques pour moderniser et optimiser les processus internes, incluant la digitalisation de l'entreprise et l'optimisation des processus de fabrication.",
+                    "dates": "février 2022 – septembre 2022",
+                    "lieu": "Balagny-sur-Thérain (60)",
+                    "intitule": "Ingénieur en Transformation Digitale"
+                },
+                {
+                    "etablissement": "Diagma",
+                    "description": "Participe à des missions stratégiques pour optimiser la supply chain et résoudre des problématiques complexes via des approches quantitatives.",
+                    "dates": "septembre 2021 – février 2022",
+                    "lieu": "Ville de Paris, Île-de-France, France",
+                    "intitule": "Consultant en Stratégie et Supply Chain"
+                },
+                {
+                    "etablissement": "Total",
+                    "description": "Contribue à l’analyse stratégique des marchés énergétiques mondiaux, en développant des algorithmes pour le suivi des dynamiques énergétiques à long terme.",
+                    "dates": "février 2020 – juillet 2020",
+                    "lieu": "Région de Paris, France",
+                    "intitule": "Analyste de Marché"
+                },
+                {
+                    "etablissement": "L’Œuvre d’Orient",
+                    "description": "Gestion de projets humanitaires, supervisant la reconstruction et l’aide au développement dans des zones touchées par la guerre.",
+                    "dates": "juin 2019 – février 2020",
+                    "lieu": "Irak",
+                    "intitule": "Coordinateur de Projets"
+                },
+                {
+                    "etablissement": "Cdiscount",
+                    "description": "Optimisation d’entrepôts et résolution de problèmes logistiques complexes.",
+                    "dates": "octobre 2018 – février 2019",
+                    "lieu": "Non spécifié",
+                    "intitule": "Consultant junior"
+                }
+            ]
+        }
+    },
+    "user_id": "4Rpnl8576DXRdUv7MddqqPLnT2j2"
+}
