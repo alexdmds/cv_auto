@@ -44,22 +44,34 @@ async def generate_profile(text: str) -> Dict:
 
         prompt = PromptTemplate(
             template="""
-            Analyse le texte suivant et extrais les expériences professionnelles et formations.
-            Génère un JSON structuré avec :
+            Analyse méticuleusement le texte suivant et extrais toutes les informations concernant les expériences professionnelles et formations.
+            Génère un JSON structuré en incluant absolument tous les détails présents dans le texte source, sans omettre aucune information :
             
             - Pour chaque expérience :
-              - "intitule": Intitulé du poste
-              - "dates": Période d'emploi
-              - "etablissement": Nom de l'entreprise
-              - "lieu": Localisation
-              - "description": Description détaillée de l'expérience
+              - "intitule": Intitulé exact et complet du poste
+              - "dates": Période d'emploi précise
+              - "etablissement": Nom complet de l'entreprise
+              - "lieu": Localisation détaillée
+              - "description": Description EXHAUSTIVE de l'expérience, incluant :
+                * Toutes les responsabilités mentionnées
+                * Tous les projets cités
+                * Toutes les technologies utilisées
+                * Tous les accomplissements
+                * Tout autre détail présent dans le texte source
             
             - Pour chaque formation :
-              - "intitule": Nom du diplôme
-              - "dates": Période de formation
-              - "etablissement": Nom de l'institution
-              - "lieu": Localisation
-              - "description": Description détaillée de la formation
+              - "intitule": Nom complet et exact du diplôme
+              - "dates": Période précise de formation
+              - "etablissement": Nom complet de l'institution
+              - "lieu": Localisation détaillée
+              - "description": Description EXHAUSTIVE de la formation, incluant :
+                * Toutes les spécialisations
+                * Tous les résultats académiques
+                * Tous les projets réalisés
+                * Toutes les compétences acquises
+                * Tout autre détail présent dans le texte source
+            
+            IMPORTANT : Ne fais aucune synthèse ou résumé. Inclus absolument tous les détails mentionnés dans le texte source.
             
             {format_instructions}
             
