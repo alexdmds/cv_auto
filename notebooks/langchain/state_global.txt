@@ -1,0 +1,69 @@
+state = {
+    "head": {
+        "name": str,              # Nom du profil
+        "title_raw": str,         # Titre brut du profil
+        "title_refined": str,      # Titre nettoyé et formaté
+        "mail": str,              # Adresse email
+        "tel_raw": str,           # Numéro de téléphone brut
+        "tel_refined": str        # Numéro de téléphone après nettoyage
+    },
+
+    "sections": {
+        "experiences": "Expériences Professionnelles",
+        "education": "Education", 
+        "competences": "Compétences",
+        "hobbies": "Centres d'intérêt",
+        "langues": "Langues"
+    },
+
+    "experiences": [
+        {
+            "title_raw": str,       # Titre brut du poste
+            "title_refined": str,   # Titre formaté
+            "company_raw": str,     # Nom brut de l'entreprise
+            "company_refined": str, # Nom formaté
+            "location_raw": str,    # Lieu brut
+            "location_refined": str,# Lieu formaté
+            "dates_raw": str,       # Dates brutes (ex: "Jan 2020 - Dec 2023")
+            "dates_refined": str,   # Dates formatées (ex: "2020-01 - 2023-12")
+            "description_raw": str, # Description brute
+            "description_refined": str, # Description formatée
+            "summary": str,         # Résumé court de l'expérience
+            "bullets": List[str],   # Liste des tâches et réalisations clés
+            "weight": float,         # Importance relative pour le CV (0-1)
+            "order": int or null    #Ordre de cette expérience sur le CV
+        }
+    ],
+
+    "education": [
+        {
+            "degree_raw": str,       # Diplôme brut
+            "degree_refined": str,   # Diplôme formaté
+            "institution_raw": str,  # Nom brut de l'établissement
+            "institution_refined": str, # Nom formaté
+            "location_raw": str,     # Lieu brut
+            "location_refined": str, # Lieu formaté
+            "dates_raw": str,        # Dates brutes (ex: "Sep 2016 - Jun 2019")
+            "dates_refined": str,    # Dates formatées (ex: "2016-09 - 2019-06")
+            "description_raw": str,  # Description brute
+            "description_refined": str, # Description formatée
+            "summary": str,          # Résumé court
+            "weight": float          # Importance relative pour le CV (0-1)
+            "order": int or null    #Ordre de cette formation sur le CV
+        }
+    ],
+
+    "competences": {
+        "rubriques": {}  # Dictionnaire dynamique : Clé = Nom libre de la rubrique, Valeur = Liste de compétences
+    },
+
+    "langues": [
+        {
+            "language": str,   # Nom de la langue
+            "level": str       # Niveau (ex: "Fluent", "Intermediate", "Beginner")
+        }
+    ],
+
+    "hobbies_raw": str,    # Centres d'intérêts et loisirs bruts
+    "hobbies_refined": str # Centres d'intérêts et loisirs formatés
+}
