@@ -1,5 +1,5 @@
 import operator
-from typing import List
+from typing import List, Dict
 from typing_extensions import TypedDict, Annotated
 
 # LangGraph
@@ -7,6 +7,8 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 
 from langchain_openai import ChatOpenAI
+
+from data_structures import Experience
 
 llm = ChatOpenAI(
     model="gpt-4o-mini",
@@ -16,101 +18,57 @@ llm = ChatOpenAI(
 # 1. Définition des structures de données (state principal, worker state)
 ##############################################################################
 
-class Experience(TypedDict):
-    titre: str
-    dates: str
-    entreprise: str
-    lieu: str
-    description_raw: str
-    sumup: str  # Résumé généré pour cette expérience
-
-class State(TypedDict):
-    """État principal du workflow."""
+class ExpState(TypedDict):
     experiences: List[Experience]
-    sumups: Annotated[List[str], operator.add]  # liste de résumés
-    final_synthesis: str  # texte final agrégé
+    sumups: Annotated[List[str], operator.add]
+    final_synthesis: str
 
 class WorkerState(TypedDict):
-    """État transmis à chaque worker."""
     experience: Experience
-    sumups: Annotated[List[str], operator.add]  # chaque worker ajoute son résumé
+    sumups: Annotated[List[str], operator.add]
 
 ##############################################################################
 # 2. Définition des noeuds (fonctions) du graphe
 ##############################################################################
 
-def orchestrator(state: State):
-    """
-    Orchestrator : distribue les expériences aux workers.
-    """
-    # On ne modifie pas l'état principal ici
-    return {}
-
 def summarize_exp(worker_state: WorkerState):
-    """
-    Worker : génère le résumé pour une expérience donnée.
-    """
-    exp_data = worker_state["experience"]
-
-    # Appel au LLM pour résumer l'expérience
+    """Worker : génère le résumé pour une expérience."""
+    exp = worker_state["experience"]
     prompt = f"""
-    Résume cette expérience professionnelle de façon concise et impactante :
-    Poste : {exp_data['titre']}
-    Période : {exp_data['dates']}
-    Entreprise : {exp_data['entreprise']}
-    Lieu : {exp_data['lieu']}
-    Description : {exp_data['description_raw']}
-    
-    Mets en valeur :
-    1. Les responsabilités clés
-    2. Les réalisations concrètes
-    3. Les compétences démontrées
+    Résume cette expérience professionnelle de façon concise :
+    Poste : {exp['title_raw']}
+    Entreprise : {exp['company_raw']}
+    Période : {exp['dates_raw']}
+    Description : {exp['description_raw']}
     """
-    
     response = llm.invoke(prompt)
-    summary_text = response.content
+    return {"sumups": [response.content]}
 
-    return {"sumups": [summary_text]}
-
-def synthesize(state: State):
-    """
-    Synthétise tous les résumés en un texte cohérent.
-    """
-    all_sumups = state["sumups"]
-    final_report = "Synthèse du parcours professionnel :\n\n"
-
-    # Création d'une synthèse structurée
-    for idx, sumup in enumerate(all_sumups, start=1):
-        final_report += f"Expérience {idx}:\n{sumup}\n\n"
-
+def synthesize(state: ExpState):
+    """Synthétise tous les résumés."""
+    final_report = "Synthèse des expériences professionnelles :\n\n"
+    for idx, sumup in enumerate(state["sumups"], 1):
+        final_report += f"{idx}. {sumup}\n\n"
     return {"final_synthesis": final_report}
 
 ##############################################################################
 # 3. Construction du graphe
 ##############################################################################
 
-# Création du graphe
-graph = StateGraph(State)
+# Construction du graphe
+exp_graph = StateGraph(ExpState)
+exp_graph.add_node("summarize_exp", summarize_exp)
+exp_graph.add_node("synthesize", synthesize)
 
-# Ajout des noeuds
-graph.add_node("orchestrator", orchestrator)
-graph.add_node("summarize_exp", summarize_exp)
-graph.add_node("synthesize", synthesize)
-
-# 4. Définition des transitions
-def route_experiences(state: State):
-    """
-    Crée un worker 'summarize_exp' pour chaque expérience.
-    """
+def route_experiences(state: ExpState):
     return [Send("summarize_exp", {"experience": exp}) for exp in state["experiences"]]
 
-graph.add_edge(START, "orchestrator")
-graph.add_conditional_edges("orchestrator", route_experiences, ["summarize_exp"])
-graph.add_edge("summarize_exp", "synthesize")
-graph.add_edge("synthesize", END)
+exp_graph.add_conditional_edges(START, route_experiences, ["summarize_exp"])
+exp_graph.add_edge("summarize_exp", "synthesize")
+exp_graph.add_edge("synthesize", END)
 
 # Compilation du workflow
-compiled_graph = graph.compile()
+compiled_exp_graph = exp_graph.compile()
 
 ##############################################################################
 # 5. Exécution du workflow
@@ -121,17 +79,15 @@ if __name__ == "__main__":
     initial_state = {
         "experiences": [
             {
-                "titre": "Lead Developer",
-                "dates": "2020 - 2023",
-                "entreprise": "TechCorp",
-                "lieu": "Paris",
+                "title_raw": "Lead Developer",
+                "dates_raw": "2020 - 2023",
+                "company_raw": "TechCorp",
                 "description_raw": "Direction d'une équipe de 5 développeurs. Mise en place d'une architecture microservices. Amélioration de 40% des performances."
             },
             {
-                "titre": "Développeur Full Stack",
-                "dates": "2018 - 2020",
-                "entreprise": "StartupXYZ",
-                "lieu": "Lyon",
+                "title_raw": "Développeur Full Stack",
+                "dates_raw": "2018 - 2020",
+                "company_raw": "StartupXYZ",
                 "description_raw": "Développement d'une application web avec React et Node.js. Mise en place de CI/CD. Réduction de 50% du temps de déploiement."
             },
         ],
@@ -140,7 +96,7 @@ if __name__ == "__main__":
     }
 
     # Invocation
-    result_state = compiled_graph.invoke(initial_state)
+    result_state = compiled_exp_graph.invoke(initial_state)
 
     # Affichage du résultat
     print("=== RÉSUMÉS GÉNÉRÉS ===")

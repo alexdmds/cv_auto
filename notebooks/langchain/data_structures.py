@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from typing_extensions import TypedDict
 
 class Head(TypedDict):
@@ -23,7 +23,7 @@ class Experience(TypedDict):
     summary: str
     bullets: List[str]
     weight: float
-    order: int
+    order: Optional[int]
 
 class Education(TypedDict):
     degree_raw: str
@@ -38,7 +38,7 @@ class Education(TypedDict):
     description_refined: str
     summary: str
     weight: float
-    order: int
+    order: Optional[int]
 
 class Language(TypedDict):
     language: str
