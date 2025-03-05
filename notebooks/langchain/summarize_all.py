@@ -91,7 +91,7 @@ EXPÉRIENCES
     return {"final_output": final_output}
 
 ##############################################################################
-# 3. Construction du graphe principal
+# 2. Construction du graphe principal
 ##############################################################################
 
 # Création du graphe
@@ -103,10 +103,12 @@ main_graph.add_node("process_experiences", process_experiences)
 main_graph.add_node("process_education", process_education)
 main_graph.add_node("aggregate_results", aggregate_results)
 
-# Définition des transitions
+# Configuration des transitions pour le parallélisme
 main_graph.add_edge(START, "summarize_job")
-main_graph.add_edge("summarize_job", "process_experiences")
-main_graph.add_edge("process_experiences", "process_education")
+main_graph.add_edge(START, "process_experiences")
+main_graph.add_edge(START, "process_education")
+main_graph.add_edge("summarize_job", "aggregate_results")
+main_graph.add_edge("process_experiences", "aggregate_results")
 main_graph.add_edge("process_education", "aggregate_results")
 main_graph.add_edge("aggregate_results", END)
 
