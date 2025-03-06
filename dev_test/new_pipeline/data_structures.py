@@ -1,7 +1,7 @@
 from typing import List, Dict, Optional
-from typing_extensions import TypedDict
+from pydantic import BaseModel
 
-class Head(TypedDict):
+class Head(BaseModel):
     name: str
     title_raw: str
     title_refined: str
@@ -9,7 +9,7 @@ class Head(TypedDict):
     tel_raw: str
     tel_refined: str
 
-class Experience(TypedDict):
+class Experience(BaseModel):
     title_raw: str
     title_refined: str
     company_raw: str
@@ -24,8 +24,9 @@ class Experience(TypedDict):
     bullets: List[str]
     weight: float
     order: Optional[int]
+    nb_bullets: int
 
-class Education(TypedDict):
+class Education(BaseModel):
     degree_raw: str
     degree_refined: str
     institution_raw: str
@@ -39,12 +40,13 @@ class Education(TypedDict):
     summary: str
     weight: float
     order: Optional[int]
+    nb_bullets: int
 
-class Language(TypedDict):
+class Language(BaseModel):
     language: str
     level: str
 
-class GlobalState(TypedDict):
+class GlobalState(BaseModel):
     """État global du workflow."""
     head: Head
     sections: Dict[str, str]
@@ -56,4 +58,3 @@ class GlobalState(TypedDict):
     hobbies_refined: str
     job_raw: str
     job_refined: str
-    final_output: str 

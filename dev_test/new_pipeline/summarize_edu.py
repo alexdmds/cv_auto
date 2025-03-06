@@ -1,4 +1,5 @@
 import operator
+import os
 from typing import List, Dict
 from typing_extensions import TypedDict, Annotated
 
@@ -9,6 +10,11 @@ from langgraph.constants import Send
 from langchain_openai import ChatOpenAI
 
 from data_structures import Education
+from data_converter import convert_to_global_state
+
+# Chemin vers le fichier de données
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(CURRENT_DIR, "data_test.json")
 
 llm = ChatOpenAI(
     model="gpt-4o-mini",
@@ -37,10 +43,10 @@ def summarize_edu(worker_state: WorkerState):
     edu = worker_state["education"]
     prompt = f"""
     Résume cette formation de façon concise :
-    Diplôme : {edu['degree_raw']}
-    Établissement : {edu['institution_raw']}
-    Période : {edu['dates_raw']}
-    Description : {edu['description_raw']}
+    Diplôme : {edu.degree_raw}
+    Établissement : {edu.institution_raw}
+    Période : {edu.dates_raw}
+    Description : {edu.description_raw}
     """
     response = llm.invoke(prompt)
     return {"sumups": [response.content]}
@@ -89,22 +95,23 @@ compiled_edu_graph = edu_graph.compile()
 ##############################################################################
 
 if __name__ == "__main__":
-    # Exemple d'input : 2 éducation(s)
+    # Chargement et conversion des données de test
+    import json
+    
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"Erreur : Impossible de trouver le fichier {DATA_FILE}")
+        print(f"Dossier courant : {os.getcwd()}")
+        exit(1)
+    
+    # Conversion en GlobalState
+    global_state = convert_to_global_state(data)
+    
+    # Préparation de l'état initial pour le workflow
     initial_state = {
-        "education": [
-            {
-                "degree_raw": "Master en Informatique",
-                "dates_raw": "2018 - 2020",
-                "institution_raw": "Université de Paris",
-                "description_raw": "Formation en intelligence artificielle..."
-            },
-            {
-                "degree_raw": "Licence en Mathématiques",
-                "dates_raw": "2015 - 2018",
-                "institution_raw": "Université de Lyon",
-                "description_raw": "Approfondissement en analyse, algèbre..."
-            },
-        ],
+        "education": global_state.education,
         "sumups": [],
         "final_synthesis": ""
     }
@@ -115,7 +122,7 @@ if __name__ == "__main__":
     # Affichage du résultat
     print("=== RÉSUMÉS GÉNÉRÉS ===")
     for idx, summary in enumerate(result_state["sumups"], start=1):
-        print(f"{idx}. {summary}")
+        print(f"{idx}. {summary}\n")
         
     print("\n=== SYNTHÈSE FINALE ===")
     print(result_state["final_synthesis"])
