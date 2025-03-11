@@ -6,50 +6,51 @@ from typing_extensions import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 
-from langchain_openai import ChatOpenAI
-
+from dev_test.models_langchain.llm_config import get_llm
 from data_structures import Experience
-
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-)
 
 ##############################################################################
 # 1. Définition des structures de données (state principal, worker state)
 ##############################################################################
 
 class ExpState(TypedDict):
-    experiences: List[Experience]
-    sumups: Annotated[List[str], operator.add]
-    final_synthesis: str
+    experiences_raw: List[Experience]
+    experiences_refined: Annotated[List[Experience], operator.add]
 
 class WorkerState(TypedDict):
     experience: Experience
-    sumups: Annotated[List[str], operator.add]
 
 ##############################################################################
 # 2. Définition des noeuds (fonctions) du graphe
 ##############################################################################
 
-def summarize_exp(worker_state: WorkerState):
-    """Worker : génère le résumé pour une expérience."""
-    exp = worker_state["experience"]
-    prompt = f"""
-    Résume cette expérience professionnelle de façon concise :
-    Poste : {exp['title_raw']}
-    Entreprise : {exp['company_raw']}
-    Période : {exp['dates_raw']}
-    Description : {exp['description_raw']}
+def summarize_exp(state: WorkerState) -> dict:
     """
-    response = llm.invoke(prompt)
-    return {"sumups": [response.content]}
+    Résume une expérience professionnelle.
+    """
+    llm = get_llm()
+    exp = state["experience"]
+    
+    prompt = f"""
+    Résume le contenu de cette expérience en 50 mots maximum :
+    
+    Poste : {exp.title_raw}
+    Entreprise : {exp.company_raw}
+    Lieu : {exp.location_raw}
+    Dates : {exp.dates_raw}
+    Description : {exp.description_raw}
 
-def synthesize(state: ExpState):
-    """Synthétise tous les résumés."""
-    final_report = "Synthèse des expériences professionnelles :\n\n"
-    for idx, sumup in enumerate(state["sumups"], 1):
-        final_report += f"{idx}. {sumup}\n\n"
-    return {"final_synthesis": final_report}
+    Donne seulement le résumé, pas besoin de rappeler les informations de l'expérience.
+    """
+    
+    response = llm.invoke(prompt)
+
+    # Création d'une nouvelle expérience en copiant l'originale et en mettant à jour les champs
+    experience_refined = Experience(**exp.model_dump())  # Copie tous les champs
+    experience_refined.summary = response.content  # Met le résumé comme summary
+    
+    return {"experiences_refined": [experience_refined]}
+
 
 ##############################################################################
 # 3. Construction du graphe
@@ -58,51 +59,34 @@ def synthesize(state: ExpState):
 # Construction du graphe
 exp_graph = StateGraph(ExpState)
 exp_graph.add_node("summarize_exp", summarize_exp)
-exp_graph.add_node("synthesize", synthesize)
 
 def route_experiences(state: ExpState):
+    """Route chaque expérience vers le worker de résumé"""
     return [Send("summarize_exp", {"experience": exp}) for exp in state["experiences"]]
 
 exp_graph.add_conditional_edges(START, route_experiences, ["summarize_exp"])
-exp_graph.add_edge("summarize_exp", "synthesize")
-exp_graph.add_edge("synthesize", END)
-
+exp_graph.add_edge("summarize_exp", END)
 # Compilation du workflow
 compiled_exp_graph = exp_graph.compile()
 
-##############################################################################
-# 5. Exécution du workflow
-##############################################################################
-
-if __name__ == "__main__":
-    # Exemple d'input : 2 expérience(s)
-    initial_state = {
-        "experiences": [
-            {
-                "title_raw": "Lead Developer",
-                "dates_raw": "2020 - 2023",
-                "company_raw": "TechCorp",
-                "description_raw": "Direction d'une équipe de 5 développeurs. Mise en place d'une architecture microservices. Amélioration de 40% des performances."
-            },
-            {
-                "title_raw": "Développeur Full Stack",
-                "dates_raw": "2018 - 2020",
-                "company_raw": "StartupXYZ",
-                "description_raw": "Développement d'une application web avec React et Node.js. Mise en place de CI/CD. Réduction de 50% du temps de déploiement."
-            },
-        ],
-        "sumups": [],
-        "final_synthesis": ""
-    }
-
-    # Invocation
-    result_state = compiled_exp_graph.invoke(initial_state)
-
-    # Affichage du résultat
-    print("=== RÉSUMÉS GÉNÉRÉS ===")
-    for idx, summary in enumerate(result_state["sumups"], start=1):
-        print(f"\nExpérience {idx}:")
-        print(summary)
+def summarize_exps(experiences: List[Experience]) -> List[Experience]:
+    """
+    Résume une liste d'expériences en utilisant le graphe de traitement.
+    
+    Args:
+        experiences: Liste des expériences à traiter
         
-    print("\n=== SYNTHÈSE FINALE ===")
-    print(result_state["final_synthesis"]) 
+    Returns:
+        Liste des expériences enrichies avec leurs résumés
+    """
+    # Prépare l'état initial
+    state = {
+        "experiences": experiences,
+        "experiences_refined": []
+    }
+    
+    # Exécute le graphe
+    result = compiled_exp_graph.invoke(state)
+    
+    # Retourne les expériences enrichies
+    return result["experiences_refined"]

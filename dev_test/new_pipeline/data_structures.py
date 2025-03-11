@@ -26,6 +26,20 @@ class Experience(BaseModel):
     order: Optional[int]
     nb_bullets: int
 
+    def __init__(self, **data):
+        # Initialise les champs refined avec des valeurs par défaut vides
+        data.setdefault('title_refined', '')
+        data.setdefault('company_refined', '')
+        data.setdefault('location_refined', '')
+        data.setdefault('dates_refined', '')
+        data.setdefault('description_refined', '')
+        data.setdefault('summary', '')
+        data.setdefault('bullets', [])
+        data.setdefault('weight', 0.0)
+        data.setdefault('order', None)
+        data.setdefault('nb_bullets', 0)
+        super().__init__(**data)
+
 class Education(BaseModel):
     degree_raw: str
     degree_refined: str
@@ -58,3 +72,13 @@ class GlobalState(BaseModel):
     hobbies_refined: str
     job_raw: str
     job_refined: str
+
+class SelectExpState(BaseModel):
+    exp: Experience
+    job_summary: str
+    choix_exp: str
+
+class SelectEduState(BaseModel):
+    edu: Education
+    job_summary: str
+    choix_edu: str
