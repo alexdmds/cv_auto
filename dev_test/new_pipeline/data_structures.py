@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, ClassVar
 from pydantic import BaseModel
 
 class Head(BaseModel):
@@ -72,6 +72,37 @@ class GlobalState(BaseModel):
     hobbies_refined: str
     job_raw: str
     job_refined: str
+
+    @classmethod
+    def from_json(cls, data: dict) -> "GlobalState":
+        """
+        Crée une instance de GlobalState à partir d'un dictionnaire JSON.
+        
+        Args:
+            data: Dictionnaire contenant les données du CV
+            
+        Returns:
+            Instance de GlobalState
+        """
+        # Conversion des sous-éléments
+        head = Head(**data.get("head", {}))
+        experiences = [Experience(**exp) for exp in data.get("experiences", [])]
+        education = [Education(**edu) for edu in data.get("education", [])]
+        langues = [Language(**lang) for lang in data.get("langues", [])]
+        
+        # Construction de l'instance
+        return cls(
+            head=head,
+            sections=data.get("sections", {}),
+            experiences=experiences,
+            education=education,
+            competences=data.get("competences", {}),
+            langues=langues,
+            hobbies_raw=data.get("hobbies_raw", ""),
+            hobbies_refined=data.get("hobbies_refined", ""),
+            job_raw=data.get("job_raw", ""),
+            job_refined=data.get("job_refined", "")
+        )
 
 class SelectExpState(BaseModel):
     exp: Experience
