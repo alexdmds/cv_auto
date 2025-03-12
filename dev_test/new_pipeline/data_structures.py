@@ -50,11 +50,26 @@ class Education(BaseModel):
     dates_raw: str
     dates_refined: str
     description_raw: str
+    description_generated: str
     description_refined: str
     summary: str
     weight: float
     order: Optional[int]
-    nb_bullets: int
+    nb_mots: int
+
+    def __init__(self, **data):
+        # Initialise les champs refined avec des valeurs par défaut vides
+        data.setdefault('degree_refined', '')
+        data.setdefault('institution_refined', '')
+        data.setdefault('location_refined', '')
+        data.setdefault('dates_refined', '')
+        data.setdefault('description_generated', '')
+        data.setdefault('description_refined', '')
+        data.setdefault('summary', '')
+        data.setdefault('weight', 0.0)
+        data.setdefault('order', None)
+        data.setdefault('nb_mots', 0)  # Valeur par défaut pour nb_mots
+        super().__init__(**data)
 
 class Language(BaseModel):
     language: str
