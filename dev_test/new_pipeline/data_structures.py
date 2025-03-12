@@ -1,9 +1,10 @@
 from typing import List, Dict, Optional, ClassVar
 from pydantic import BaseModel
-
+import json
 class Head(BaseModel):
     name: str
     title_raw: str
+    title_generated: str
     title_refined: str
     mail: str
     tel_raw: str
@@ -82,6 +83,7 @@ class GlobalState(BaseModel):
     experiences: List[Experience]
     education: List[Education]
     competences: Dict[str, List[str]]
+    skills_raw: str
     langues: List[Language]
     hobbies_raw: str
     hobbies_refined: str
@@ -112,12 +114,37 @@ class GlobalState(BaseModel):
             experiences=experiences,
             education=education,
             competences=data.get("competences", {}),
+            skills_raw=data.get("skills_raw", ""),
             langues=langues,
             hobbies_raw=data.get("hobbies_raw", ""),
             hobbies_refined=data.get("hobbies_refined", ""),
             job_raw=data.get("job_raw", ""),
             job_refined=data.get("job_refined", "")
         )
+
+    def to_json(self, filepath: str) -> None:
+        """
+        Sauvegarde l'état global dans un fichier JSON.
+        
+        Args:
+            filepath: Chemin du fichier de sortie
+        """
+        output_data = {
+            "head": self.head.dict(),
+            "sections": self.sections,
+            "experiences": [exp.dict() for exp in self.experiences],
+            "education": [edu.dict() for edu in self.education],
+            "competences": self.competences,
+            "skills_raw": self.skills_raw,
+            "langues": [lang.dict() for lang in self.langues],
+            "hobbies_raw": self.hobbies_raw,
+            "hobbies_refined": self.hobbies_refined,
+            "job_raw": self.job_raw,
+            "job_refined": self.job_refined
+        }
+        
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(output_data, f, ensure_ascii=False, indent=2)
 
 class SelectExpState(BaseModel):
     exp: Experience

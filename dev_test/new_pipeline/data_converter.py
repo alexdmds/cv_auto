@@ -5,12 +5,13 @@ Convertit les données JSON brutes en GlobalState structuré.
 from typing import Dict, Any
 from data_structures import GlobalState, Head, Experience, Education, Language
 
-def convert_to_global_state(data: Dict[str, Any]) -> GlobalState:
+def convert_to_global_state(data: Dict[str, Any], job_raw: str) -> GlobalState:
     """
     Convertit les données JSON brutes en GlobalState.
     
     Args:
         data: Dictionnaire contenant les données JSON brutes
+        job_raw: Description brute du poste
     
     Returns:
         GlobalState: État global structuré
@@ -22,6 +23,7 @@ def convert_to_global_state(data: Dict[str, Any]) -> GlobalState:
     head = Head(
         name=head_data["name"],
         title_raw=head_data["general_title"],
+        title_generated="",  # Champ ajouté avec valeur par défaut vide
         title_refined="",  # À remplir par le LLM
         mail=head_data["email"],
         tel_raw=head_data["phone"],
@@ -81,10 +83,11 @@ def convert_to_global_state(data: Dict[str, Any]) -> GlobalState:
         experiences=experiences,
         education=education,
         competences={},  # À remplir par le LLM
+        skills_raw=cv_data["skills"]["description"],
         langues=[],  # À remplir par le LLM
         hobbies_raw=cv_data["hobbies"]["description"],
         hobbies_refined="",  # À remplir par le LLM
-        job_raw="",  # À extraire du titre général
+        job_raw=job_raw,  # Utilisation du paramètre job_raw
         job_refined=""  # À remplir par le LLM
     )
 
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     with open("data_test.json", "r", encoding="utf-8") as f:
         data = json.load(f)
     
-    state = convert_to_global_state(data)
+    state = convert_to_global_state(data, "")  # Ajout d'une chaîne vide pour job_raw
     print("État global créé avec succès !")
     print(f"Nombre d'expériences : {len(state.experiences)}")
     print(f"Nombre de formations : {len(state.education)}") 

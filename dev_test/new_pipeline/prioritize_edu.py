@@ -112,8 +112,8 @@ def collect_weighted_educations(state: State) -> dict:
     """Collecte toutes les éducations pondérées et les transmet aux workers de génération de bullets"""
     # Met à jour le nombre de mots en fonction du poids
     for education in state["educations_weighted"]:
-        # Calcul proportionnel entre 30 et 80 mots basé sur le weight (0-1)
-        education.nb_mots = int(30 + (education.weight * 50))
+        # Calcul proportionnel entre 20 et 50 mots basé sur le weight (0-1)
+        education.nb_mots = int(20 + (education.weight * 30))
             
     return {"educations_nb_mots": state["educations_weighted"]}
 
