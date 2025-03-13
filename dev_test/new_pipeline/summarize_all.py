@@ -227,7 +227,7 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.join(script_dir, "data_test.json")
     output_path = os.path.join(script_dir, "output.json")
-    job_path = os.path.join(script_dir, "poste_trading.txt")
+    job_path = os.path.join(script_dir, "red_river.txt")
     
     # Ouvrir le fichier en utilisant le chemin absolu
     with open(data_path, "r", encoding="utf-8") as f:

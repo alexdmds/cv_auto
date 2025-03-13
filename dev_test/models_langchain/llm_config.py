@@ -2,8 +2,9 @@
 
 from langchain_openai import ChatOpenAI
 
-def get_llm():
+def get_llm(model: str = "gpt-4o-mini", temperature: float = 0.2):
     """Retourne une instance configurée du LLM"""
     return ChatOpenAI(
-        model="gpt-4o-mini",
-    ) 
+        model=model,
+        temperature=temperature
+    )

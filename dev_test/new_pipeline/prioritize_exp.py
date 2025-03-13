@@ -32,7 +32,7 @@ class PlanWeight(BaseModel):
 
 def generate_markdown_choice(state: State) -> dict:
     """Génère un markdown de choix d'expériences à partir du résumé de poste et des expériences brutes"""
-    llm = get_llm()
+    llm = get_llm(model="gpt-4o")
     job_summary = state["job_summary"]
     experiences = state["experiences_raw"]
     
