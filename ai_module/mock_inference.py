@@ -68,5 +68,6 @@ async def generate_head(text: str) -> Dict[str, Any]:
         "email": "jean.dupont@email.com",
         "general_title": "Développeur Full Stack Senior avec 5 ans d'expérience",
         "skills": "Expert en Python, JavaScript, React et Node.js. Maîtrise des architectures microservices et du DevOps.",
-        "hobbies": "Passionné de photographie et de randonnée. Contributeur open source actif."
+        "hobbies": "Passionné de photographie et de randonnée. Contributeur open source actif.",
+        "langues": "Français (langue maternelle), Anglais (courant), Espagnol (intermédiaire)"
     }

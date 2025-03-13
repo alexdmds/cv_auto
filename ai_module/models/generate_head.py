@@ -12,7 +12,8 @@ class HeadData(BaseModel):
     phone: str = Field(description="Numéro de téléphone du candidat")
     email: str = Field(description="Adresse email du candidat")
     general_title: str = Field(description="Titre et description générale du profil")
-    skills: str = Field(description="Description détaillée des compétences")
+    skills: str = Field(description="Description détaillée des compétences techniques et professionnelles")
+    langues: str = Field(description="Description détaillée des langues parlées et niveaux")
     hobbies: str = Field(description="Description détaillée des centres d'intérêt")
 
 async def generate_structured_head(text: str) -> dict:
@@ -44,18 +45,16 @@ async def generate_structured_head(text: str) -> dict:
             template=(
                 """
                 Analyse le texte suivant décrivant un profil candidat et génère un JSON structuré.
-                Pour chaque champ, fournis une description détaillée et exhaustive au format texte.
+                Pour chaque champ, fournis une description concise mais exhaustive, sans phrases complètes.
                 
                 Le JSON doit contenir les champs suivants :
-                - "name": Le nom complet du candidat
-                - "phone": Le numéro de téléphone complet
-                - "email": L'adresse email complète
-                - "general_title": Une description détaillée du titre professionnel et du profil général
-                - "skills": Une description narrative et détaillée de toutes les compétences
-                - "hobbies": Une description narrative et détaillée de tous les centres d'intérêt
-                
-                Assure-toi que chaque champ contient une description exhaustive en texte libre,
-                pas seulement des listes ou des valeurs courtes.
+                - "name": Nom complet uniquement
+                - "phone": Numéro de téléphone uniquement
+                - "email": Adresse email uniquement
+                - "general_title": Titre professionnel et profil général en quelques mots clés
+                - "skills": Liste exhaustive des compétences techniques et professionnelles, séparées par des virgules
+                - "langues": Liste des langues avec niveau et détails pertinents (certifications, séjours, etc.)
+                - "hobbies": Liste des centres d'intérêt avec détails pertinents, séparés par des virgules"
                 
                 {format_instructions}
                 
@@ -85,16 +84,33 @@ if __name__ == "__main__":
     
     # Exemple de texte pour tester
     texte_test = """
-    Jean Dupont
-    Développeur Full Stack Senior
-    Email: jean.dupont@email.com | Tel: 06 12 34 56 78
-    
-    Expert en développement web avec 10 ans d'expérience dans la création 
-    d'applications complexes et innovantes.
-    
-    Compétences: Python, JavaScript, React, DevOps, Gestion d'équipe
-    
-    Centres d'intérêt: Photographie, Randonnée, Musique
+    Jean-Michel Dupont
+    Architecte Solutions & Lead Developer
+    Email: jm.dupont@email.com | Tel: 06 12 34 56 78
+    LinkedIn: linkedin.com/in/jmdupont
+
+    Expert en architecture logicielle et développement full-stack avec 12 ans d'expérience 
+    dans la conception et le déploiement de solutions cloud à grande échelle. 
+    Passionné par l'innovation technologique et le leadership technique.
+
+    Compétences: 
+    - Backend: Python, Java, Node.js, GraphQL, REST APIs
+    - Frontend: React, Vue.js, TypeScript, HTML5/CSS3
+    - Cloud & DevOps: AWS, Docker, Kubernetes, CI/CD, Terraform
+    - Base de données: PostgreSQL, MongoDB, Redis
+    - Management: Gestion d'équipe, Méthodologies Agiles, Formation technique
+
+    Langues:
+    - Français (Langue maternelle)
+    - Anglais (Bilingue, TOEIC 985/990)
+    - Allemand (Niveau C1, séjour de 2 ans à Berlin)
+    - Espagnol (Niveau B2)
+
+    Centres d'intérêt: 
+    - Photographie (exposition amateur 2022)
+    - Musique (guitariste dans un groupe de jazz)
+    - Course à pied (semi-marathon de Paris 2023)
+    - Contribution open source (maintainer sur 3 projets Python)
     """
     
     # Exécution du test et affichage du résultat
@@ -106,4 +122,5 @@ if __name__ == "__main__":
     print(f"Email: {resultat['email']}")
     print(f"Titre général: {resultat['general_title']}")
     print(f"Compétences: {resultat['skills']}")
+    print(f"Langues: {resultat['langues']}")
     print(f"Centres d'intérêt: {resultat['hobbies']}")
