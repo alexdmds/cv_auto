@@ -52,12 +52,12 @@ def cv_data_to_global_state_format(cv_data: Dict[str, Any]) -> Dict[str, Any]:
                 "location_refined": exp.get("location", ""),
                 "dates_raw": exp.get("dates", ""),
                 "dates_refined": exp.get("dates", ""),
-                "description_raw": description,  # Champ requis manquant ajouté
-                "description_refined": description,  # Ajout du champ raffiné
+                "description_raw": description,
+                "description_refined": description,
                 "bullets": exp.get("bullets", []),
-                "summary": "",  # Champ requis par GlobalState
-                "weight": 1.0,  # Valeur par défaut
-                "order": 1,     # Valeur par défaut
+                "summary": "",
+                "weight": 1.0,
+                "order": 1,
                 "nb_bullets": len(exp.get("bullets", []))
             }
             global_state_data["experiences"].append(exp_converted)
@@ -75,12 +75,12 @@ def cv_data_to_global_state_format(cv_data: Dict[str, Any]) -> Dict[str, Any]:
                 "dates_raw": edu.get("dates", ""),
                 "dates_refined": edu.get("dates", ""),
                 "description_raw": edu.get("description", ""),
-                "description_generated": edu.get("description", ""),  # Pour compléter le modèle
+                "description_generated": edu.get("description", ""),
                 "description_refined": edu.get("description", ""),
-                "summary": "",  # Champ requis par GlobalState
-                "weight": 1.0,  # Valeur par défaut
-                "order": 1,     # Valeur par défaut
-                "nb_mots": 0    # Valeur par défaut
+                "summary": "",
+                "weight": 1.0,
+                "order": 1,
+                "nb_mots": 0
             }
             global_state_data["education"].append(edu_converted)
     
