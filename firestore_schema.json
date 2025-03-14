@@ -1,0 +1,98 @@
+{
+  "collections": {
+    "users": {
+      "fields": {
+        "email": "string",
+        "name": "string",
+        "created_at": "timestamp",
+        "last_login": "timestamp"
+      },
+      "subcollections": {
+        "resumes": {
+          "fields": {
+            "created_at": "timestamp",
+            "updated_at": "timestamp",
+            "job_raw": "string",
+            "job_refined": "string",
+            "skills_raw": "string",
+            "hobbies_raw": "string",
+            "hobbies_refined": "string"
+          },
+          "subcollections": {
+            "head": {
+              "fields": {
+                "name": "string",
+                "title_raw": "string",
+                "title_generated": "string",
+                "title_refined": "string",
+                "mail": "string",
+                "tel_raw": "string",
+                "tel_refined": "string"
+              }
+            },
+            "experiences": {
+              "fields": {
+                "title_raw": "string",
+                "title_refined": "string",
+                "company_raw": "string",
+                "company_refined": "string",
+                "location_raw": "string",
+                "location_refined": "string",
+                "dates_raw": "string",
+                "dates_refined": "string",
+                "description_raw": "string",
+                "description_refined": "string",
+                "description_generated": "string",
+                "summary": "string",
+                "bullets": "array",
+                "weight": "number",
+                "order": "number",
+                "nb_bullets": "number"
+              }
+            },
+            "education": {
+              "fields": {
+                "degree_raw": "string",
+                "degree_refined": "string",
+                "institution_raw": "string",
+                "institution_refined": "string",
+                "location_raw": "string",
+                "location_refined": "string",
+                "dates_raw": "string",
+                "dates_refined": "string",
+                "description_raw": "string",
+                "description_generated": "string",
+                "description_refined": "string",
+                "summary": "string",
+                "weight": "number",
+                "order": "number",
+                "nb_mots": "number"
+              }
+            },
+            "languages": {
+              "fields": {
+                "language": "string",
+                "level": "string"
+              }
+            },
+            "skills": {
+              "fields": {
+                "category": "string",
+                "skills": "array"
+              }
+            }
+          }
+        }
+      }
+    },
+    "jobs": {
+      "fields": {
+        "title": "string",
+        "description": "string",
+        "company": "string",
+        "location": "string",
+        "created_at": "timestamp"
+      }
+    }
+  }
+} 
