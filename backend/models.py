@@ -223,19 +223,15 @@ class UserModel(FirestoreModel):
     """Modèle pour la collection 'users'"""
     collection_name = "users"
     
-    def __init__(self, email=None, name=None, created_at=None, cvs=None, profile=None, **kwargs):
+    def __init__(self, cvs=None, profile=None, **kwargs):
         self.id = None
-        self.email = email
-        self.name = name
-        self.created_at = created_at or datetime.datetime.now()
+        # Suivre strictement la structure du schéma
         self.cvs = cvs or []  # Liste des CV
         self.profile = profile or {}  # Données de profil
-        self.cv_data = kwargs.get('cv_data', None)  # Pour compatibilité avec l'ancien format
         
-        # Ajouter tous les autres attributs
-        for key, value in kwargs.items():
-            if key != 'cv_data':  # Éviter la duplication
-                setattr(self, key, value)
+        # Ne pas inclure d'autres champs qui ne sont pas dans le schéma
+        # Les attributs comme 'email', 'name', 'created_at' ne doivent pas être dans le modèle
+        # si nous voulons suivre strictement le schéma
     
     @classmethod
     def get_by_email(cls, email: str) -> Optional['UserModel']:
@@ -319,7 +315,7 @@ class UserModel(FirestoreModel):
         self.save()
         return True
 
-    def create_cv_from_global_state(self, result_state, original_cv_name=None, original_cv_data=None):
+    def create_cv_from_global_state(self, result_state, original_cv_name=None, original_cv_data=None, save_to_firestore=False):
         """
         Crée un nouveau CV à partir d'un objet GlobalState et l'ajoute à l'utilisateur
         
@@ -327,6 +323,7 @@ class UserModel(FirestoreModel):
             result_state: Objet GlobalState contenant les données traitées
             original_cv_name: Nom du CV original (pour le nommage du nouveau CV)
             original_cv_data: Données du CV original (pour conserver certains attributs)
+            save_to_firestore: Si True, sauvegarde immédiatement dans Firestore
             
         Returns:
             dict: Informations sur le CV créé
@@ -341,7 +338,6 @@ class UserModel(FirestoreModel):
         new_cv = {
             'cv_name': f"{original_cv_name}_optimisé_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}",
             'job_raw': getattr(result_state, 'job_raw', ''),
-            'creation_date': datetime.datetime.now().isoformat(),
             'cv_data': {
                 'name': result_state.head.name,
                 'title': result_state.head.title_refined,
@@ -421,15 +417,139 @@ class UserModel(FirestoreModel):
             self.cvs = []
         
         self.cvs.append(new_cv)
-        self.save()
         
-        # Retourner les informations sur le CV créé
+        # Sauvegarder si demandé
+        if save_to_firestore:
+            self.save()
+        
+        # Retourner les informations sur le CV créé sans inclure les champs hors schéma
         return {
             "name": new_cv['cv_name'],
-            "creation_date": new_cv['creation_date'],
             "experiences_count": len(new_cv['cv_data']['experiences']),
             "education_count": len(new_cv['cv_data']['educations']),
             "skills_count": len(new_cv['cv_data']['skills'])
+        }
+
+    def update_cv_from_global_state(self, cv_name, result_state, save_to_firestore=False):
+        """
+        Met à jour un CV existant à partir d'un objet GlobalState
+        
+        Args:
+            cv_name: Nom du CV à mettre à jour
+            result_state: Objet GlobalState contenant les données traitées
+            save_to_firestore: Si True, sauvegarde immédiatement dans Firestore
+            
+        Returns:
+            dict: Informations sur le CV mis à jour, ou None si le CV n'est pas trouvé
+        """
+        # Trouver l'index du CV à mettre à jour
+        cv_index = None
+        for i, cv in enumerate(self.cvs):
+            if cv.get('cv_name') == cv_name:
+                cv_index = i
+                break
+        
+        if cv_index is None:
+            return None
+        
+        # Récupérer le CV existant
+        existing_cv = self.cvs[cv_index]
+        original_cv_data = existing_cv.get('cv_data', {})
+        
+        # Mettre à jour les données du CV en suivant strictement le schéma
+        updated_cv = {
+            'cv_name': cv_name,
+            'job_raw': getattr(result_state, 'job_raw', existing_cv.get('job_raw', '')),
+            # Supprimer les champs non présents dans le schéma
+            # 'last_update': datetime.datetime.now().isoformat(),
+            # 'creation_date': existing_cv.get('creation_date', datetime.datetime.now().isoformat()),
+            'cv_data': {
+                'name': result_state.head.name,
+                'title': result_state.head.title_refined,
+                'mail': result_state.head.mail,
+                'phone': result_state.head.tel_refined,
+                'lang_of_cv': original_cv_data.get('lang_of_cv', 'fr'),
+                'sections_name': original_cv_data.get('sections_name', {
+                    'experience_section_name': 'Expérience Professionnelle',
+                    'education_section_name': 'Formation',
+                    'skills_section_name': 'Compétences',
+                    'languages_section_name': 'Langues',
+                    'hobbies_section_name': 'Centres d\'intérêt'
+                }),
+                'experiences': [],
+                'educations': [],
+                'skills': [],
+                'languages': [],
+                'hobbies': ''
+            }
+        }
+        
+        # Ajouter les expériences
+        if hasattr(result_state, 'experiences'):
+            for exp in result_state.experiences:
+                experience = {
+                    'title': exp.title_refined,
+                    'company': exp.company_refined,
+                    'dates': exp.dates_refined,
+                    'location': exp.location_refined,
+                    'bullets': exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
+                }
+                updated_cv['cv_data']['experiences'].append(experience)
+        
+        # Ajouter les formations
+        if hasattr(result_state, 'education'):
+            for edu in result_state.education:
+                education = {
+                    'title': edu.degree_refined,
+                    'university': edu.institution_refined,
+                    'dates': edu.dates_refined,
+                    'location': edu.location_refined,
+                    'description': edu.description_refined
+                }
+                updated_cv['cv_data']['educations'].append(education)
+        
+        # Ajouter les compétences
+        if hasattr(result_state, 'competences') and result_state.competences:
+            for category, skills in result_state.competences.items():
+                skill_category = {
+                    'category_name': category,
+                    'skills': ', '.join(skills) if isinstance(skills, list) else skills
+                }
+                updated_cv['cv_data']['skills'].append(skill_category)
+        
+        # Ajouter les langues
+        if hasattr(result_state, 'langues'):
+            for langue in result_state.langues:
+                if hasattr(langue, 'language') and hasattr(langue, 'level'):
+                    language = {
+                        'language': getattr(langue, 'language', ''),
+                        'level': getattr(langue, 'level', '')
+                    }
+                    updated_cv['cv_data']['languages'].append(language)
+                elif isinstance(langue, dict):
+                    language = {
+                        'language': langue.get('language', ''),
+                        'level': langue.get('level', '')
+                    }
+                    updated_cv['cv_data']['languages'].append(language)
+        
+        # Ajouter les hobbies
+        if hasattr(result_state, 'hobbies_refined'):
+            updated_cv['cv_data']['hobbies'] = result_state.hobbies_refined
+        
+        # Mettre à jour le CV dans la liste
+        self.cvs[cv_index] = updated_cv
+        
+        # Sauvegarder si demandé
+        if save_to_firestore:
+            self.save()
+        
+        # Retourner les informations sur le CV mis à jour sans inclure les champs hors schéma
+        return {
+            "name": updated_cv['cv_name'],
+            "experiences_count": len(updated_cv['cv_data']['experiences']),
+            "education_count": len(updated_cv['cv_data']['educations']),
+            "skills_count": len(updated_cv['cv_data']['skills'])
         }
 
 

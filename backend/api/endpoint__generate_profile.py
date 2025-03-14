@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from firebase_admin import firestore
-from backend.utils import increment_token_usage
+from backend.utils_secu import increment_token_usage
 
 load_dotenv()
 logger = logging.getLogger(__name__)
