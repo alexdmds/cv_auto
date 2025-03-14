@@ -1,18 +1,35 @@
 """
 Utilitaires pour adapter les structures de données entre différents formats
 """
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+from ai_module.new_models.lg_models import GlobalState
+from backend.models import UserModel
 
-def cv_data_to_global_state_format(cv_data: Dict[str, Any]) -> Dict[str, Any]:
+def cv_data_to_global_state_format(user: UserModel, cv_name: str) -> Optional[GlobalState]:
     """
-    Convertit les données CV du format Firestore au format attendu par GlobalState
+    Convertit les données d'un CV d'un utilisateur directement en objet GlobalState
     
     Args:
-        cv_data: Données CV au format Firestore (selon firestore_schema.json)
+        user: Instance de UserModel contenant les CVs
+        cv_name: Nom du CV à convertir
         
     Returns:
-        Données formatées pour être compatibles avec GlobalState.from_json()
+        Objet GlobalState prêt à être utilisé par l'inférence ou None si le CV n'est pas trouvé
     """
+    # Trouver le CV spécifié dans la liste des CVs de l'utilisateur
+    target_cv = None
+    if hasattr(user, "cvs") and user.cvs:
+        for cv in user.cvs:
+            if cv.get("cv_name") == cv_name:
+                target_cv = cv
+                break
+    
+    if not target_cv or 'cv_data' not in target_cv:
+        return None
+    
+    # Extraire les données du CV
+    cv_data = target_cv['cv_data']
+    
     # Structure de base pour GlobalState
     global_state_data = {
         "head": {
@@ -127,8 +144,9 @@ def cv_data_to_global_state_format(cv_data: Dict[str, Any]) -> Dict[str, Any]:
     global_state_data["hobbies_raw"] = cv_data.get("hobbies", "")
     global_state_data["hobbies_refined"] = cv_data.get("hobbies", "")
     
-    # Poste
-    global_state_data["job_raw"] = cv_data.get("job_raw", "")
-    global_state_data["job_refined"] = cv_data.get("job_raw", "")
+    # Poste (chercher d'abord dans cv_data, puis dans le CV parent)
+    global_state_data["job_raw"] = cv_data.get("job_raw", "") or target_cv.get("job_raw", "")
+    global_state_data["job_refined"] = cv_data.get("job_raw", "") or target_cv.get("job_raw", "")
     
-    return global_state_data 
+    # Créer et retourner directement un objet GlobalState
+    return GlobalState.from_json(global_state_data) 

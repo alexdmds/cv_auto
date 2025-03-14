@@ -319,6 +319,119 @@ class UserModel(FirestoreModel):
         self.save()
         return True
 
+    def create_cv_from_global_state(self, result_state, original_cv_name=None, original_cv_data=None):
+        """
+        Crée un nouveau CV à partir d'un objet GlobalState et l'ajoute à l'utilisateur
+        
+        Args:
+            result_state: Objet GlobalState contenant les données traitées
+            original_cv_name: Nom du CV original (pour le nommage du nouveau CV)
+            original_cv_data: Données du CV original (pour conserver certains attributs)
+            
+        Returns:
+            dict: Informations sur le CV créé
+        """
+        if original_cv_data is None:
+            original_cv_data = {}
+        
+        if not original_cv_name:
+            original_cv_name = "CV"
+        
+        # Créer un nouveau CV avec les résultats
+        new_cv = {
+            'cv_name': f"{original_cv_name}_optimisé_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}",
+            'job_raw': getattr(result_state, 'job_raw', ''),
+            'creation_date': datetime.datetime.now().isoformat(),
+            'cv_data': {
+                'name': result_state.head.name,
+                'title': result_state.head.title_refined,
+                'mail': result_state.head.mail,
+                'phone': result_state.head.tel_refined,
+                'lang_of_cv': original_cv_data.get('lang_of_cv', 'fr'),
+                'sections_name': original_cv_data.get('sections_name', {
+                    'experience_section_name': 'Expérience Professionnelle',
+                    'education_section_name': 'Formation',
+                    'skills_section_name': 'Compétences',
+                    'languages_section_name': 'Langues',
+                    'hobbies_section_name': 'Centres d\'intérêt'
+                }),
+                'experiences': [],
+                'educations': [],
+                'skills': [],
+                'languages': [],
+                'hobbies': ''
+            }
+        }
+        
+        # Ajouter les expériences
+        if hasattr(result_state, 'experiences'):
+            for exp in result_state.experiences:
+                experience = {
+                    'title': exp.title_refined,
+                    'company': exp.company_refined,
+                    'dates': exp.dates_refined,
+                    'location': exp.location_refined,
+                    'bullets': exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
+                }
+                new_cv['cv_data']['experiences'].append(experience)
+        
+        # Ajouter les formations
+        if hasattr(result_state, 'education'):
+            for edu in result_state.education:
+                education = {
+                    'title': edu.degree_refined,
+                    'university': edu.institution_refined,
+                    'dates': edu.dates_refined,
+                    'location': edu.location_refined,
+                    'description': edu.description_refined
+                }
+                new_cv['cv_data']['educations'].append(education)
+        
+        # Ajouter les compétences
+        if hasattr(result_state, 'competences') and result_state.competences:
+            for category, skills in result_state.competences.items():
+                skill_category = {
+                    'category_name': category,
+                    'skills': ', '.join(skills) if isinstance(skills, list) else skills
+                }
+                new_cv['cv_data']['skills'].append(skill_category)
+        
+        # Ajouter les langues
+        if hasattr(result_state, 'langues'):
+            for langue in result_state.langues:
+                if hasattr(langue, 'language') and hasattr(langue, 'level'):
+                    language = {
+                        'language': getattr(langue, 'language', ''),
+                        'level': getattr(langue, 'level', '')
+                    }
+                    new_cv['cv_data']['languages'].append(language)
+                elif isinstance(langue, dict):
+                    language = {
+                        'language': langue.get('language', ''),
+                        'level': langue.get('level', '')
+                    }
+                    new_cv['cv_data']['languages'].append(language)
+        
+        # Ajouter les hobbies
+        if hasattr(result_state, 'hobbies_refined'):
+            new_cv['cv_data']['hobbies'] = result_state.hobbies_refined
+        
+        # Ajouter le CV à l'utilisateur
+        if not hasattr(self, 'cvs'):
+            self.cvs = []
+        
+        self.cvs.append(new_cv)
+        self.save()
+        
+        # Retourner les informations sur le CV créé
+        return {
+            "name": new_cv['cv_name'],
+            "creation_date": new_cv['creation_date'],
+            "experiences_count": len(new_cv['cv_data']['experiences']),
+            "education_count": len(new_cv['cv_data']['educations']),
+            "skills_count": len(new_cv['cv_data']['skills'])
+        }
+
 
 class CallModel(FirestoreModel):
     """Modèle pour la collection 'calls'"""
