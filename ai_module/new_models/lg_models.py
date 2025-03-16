@@ -121,6 +121,173 @@ class GlobalState(BaseModel):
             job_raw=data.get("job_raw", ""),
             job_refined=data.get("job_refined", "")
         )
+        
+    @classmethod
+    def from_user_document(cls, user_document, cv_name: str) -> Optional["GlobalState"]:
+        """
+        Crée une instance de GlobalState à partir d'un UserDocument et d'un nom de CV.
+        
+        Args:
+            user_document: Instance de UserDocument contenant le profil et les CVs
+            cv_name: Nom du CV à utiliser
+            
+        Returns:
+            Instance de GlobalState ou None si le CV n'est pas trouvé
+        """
+        # Récupérer le CV spécifié
+        cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
+        if not cv:
+            return None
+            
+        # Construire le Head à partir du profil et du CV
+        profile = user_document.profile
+        head_data = {
+            "name": cv.cv_data.name or profile.head.name or "",
+            "title_raw": cv.cv_data.title or profile.head.title or "",
+            "title_generated": "",  # Champ à générer plus tard
+            "title_refined": cv.cv_data.title or profile.head.title or "",
+            "mail": cv.cv_data.mail or profile.head.mail or "",
+            "tel_raw": cv.cv_data.phone or profile.head.phone or "",
+            "tel_refined": cv.cv_data.phone or profile.head.phone or ""
+        }
+        head = Head(**head_data)
+        
+        # Construire les sections
+        sections = {
+            "experience": cv.cv_data.sections_name.experience_section_name,
+            "education": cv.cv_data.sections_name.education_section_name,
+            "skills": cv.cv_data.sections_name.skills_section_name,
+            "languages": cv.cv_data.sections_name.languages_section_name,
+            "hobbies": cv.cv_data.sections_name.hobbies_section_name
+        }
+        
+        # Convertir les expériences
+        experiences = []
+        for idx, exp in enumerate(cv.cv_data.experiences or profile.experiences or []):
+            # Choisir la source des données (CV ou profil)
+            if hasattr(exp, 'company'):  # Expérience du CV
+                bullets = exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
+                exp_data = {
+                    "title_raw": exp.title or "",
+                    "title_refined": exp.title or "",
+                    "company_raw": exp.company or "",
+                    "company_refined": exp.company or "",
+                    "location_raw": exp.location or "",
+                    "location_refined": exp.location or "",
+                    "dates_raw": exp.dates or "",
+                    "dates_refined": exp.dates or "",
+                    "description_raw": " ".join(bullets) if bullets else "",
+                    "description_refined": " ".join(bullets) if bullets else "",
+                    "summary": "",
+                    "bullets": bullets,
+                    "weight": 1.0,
+                    "order": idx,
+                    "nb_bullets": len(bullets)
+                }
+            else:  # Expérience du profil
+                descriptions = exp.full_descriptions if hasattr(exp, 'full_descriptions') and exp.full_descriptions else []
+                bullets = exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
+                exp_data = {
+                    "title_raw": exp.title or "",
+                    "title_refined": exp.title or "",
+                    "company_raw": exp.company or "",
+                    "company_refined": exp.company or "",
+                    "location_raw": exp.location or "",
+                    "location_refined": exp.location or "",
+                    "dates_raw": exp.dates or "",
+                    "dates_refined": exp.dates or "",
+                    "description_raw": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
+                    "description_refined": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
+                    "summary": "",
+                    "bullets": bullets,
+                    "weight": 1.0,
+                    "order": idx,
+                    "nb_bullets": len(bullets)
+                }
+            experiences.append(Experience(**exp_data))
+        
+        # Convertir les formations
+        education_list = []
+        for idx, edu in enumerate(cv.cv_data.educations or profile.educations or []):
+            # Choisir la source des données (CV ou profil)
+            if hasattr(edu, 'university'):  # Formation du CV
+                edu_data = {
+                    "degree_raw": edu.title or "",
+                    "degree_refined": edu.title or "",
+                    "institution_raw": edu.university or "",
+                    "institution_refined": edu.university or "",
+                    "location_raw": edu.location or "",
+                    "location_refined": edu.location or "",
+                    "dates_raw": edu.dates or "",
+                    "dates_refined": edu.dates or "",
+                    "description_raw": edu.description or "",
+                    "description_generated": "",
+                    "description_refined": edu.description or "",
+                    "summary": "",
+                    "weight": 1.0,
+                    "order": idx,
+                    "nb_mots": len(edu.description.split()) if edu.description else 0
+                }
+            else:  # Formation du profil
+                description = edu.full_description or edu.description or ""
+                edu_data = {
+                    "degree_raw": edu.title or "",
+                    "degree_refined": edu.title or "",
+                    "institution_raw": edu.university or "",
+                    "institution_refined": edu.university or "",
+                    "location_raw": edu.location or "",
+                    "location_refined": edu.location or "",
+                    "dates_raw": edu.dates or "",
+                    "dates_refined": edu.dates or "",
+                    "description_raw": description,
+                    "description_generated": "",
+                    "description_refined": description,
+                    "summary": "",
+                    "weight": 1.0,
+                    "order": idx,
+                    "nb_mots": len(description.split()) if description else 0
+                }
+            education_list.append(Education(**edu_data))
+        
+        # Convertir les compétences
+        competences = {}
+        skills_raw = ""
+        if cv.cv_data.skills:
+            for skill in cv.cv_data.skills:
+                category = skill.category_name or "Général"
+                skill_items = skill.skills.split(',') if skill.skills else []
+                competences[category] = [item.strip() for item in skill_items]
+                skills_raw += skill.skills + ", " if skill.skills else ""
+        elif profile.skills:
+            competences = profile.skills or {}
+            skills_raw = ", ".join([", ".join(skills) for skills in profile.skills.values()]) if profile.skills else ""
+            
+        # Convertir les langues
+        langues = []
+        if cv.cv_data.languages:
+            for lang in cv.cv_data.languages:
+                langues.append(Language(language=lang.language or "", level=lang.level or ""))
+        elif profile.languages:
+            for lang in profile.languages:
+                langues.append(Language(language=lang.get("language", ""), level=lang.get("level", "")))
+        
+        # Hobbies
+        hobbies_raw = cv.cv_data.hobbies or profile.hobbies or ""
+        
+        # Construire l'instance GlobalState
+        return cls(
+            head=head,
+            sections=sections,
+            experiences=experiences,
+            education=education_list,
+            competences=competences,
+            skills_raw=skills_raw.rstrip(", "),
+            langues=langues,
+            hobbies_raw=hobbies_raw,
+            hobbies_refined=hobbies_raw,
+            job_raw=cv.job_raw or "",
+            job_refined=""
+        )
 
     def to_json(self, filepath: str) -> None:
         """

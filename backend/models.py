@@ -3,410 +3,297 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import json
 import os
-import datetime
+from datetime import datetime
 from google.cloud.firestore_v1._helpers import DatetimeWithNanoseconds
 from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
+from pydantic import BaseModel, Field
+from .base_firestore import FirestoreModel
 
 # Définir des types génériques pour les classes de modèle
 T = TypeVar('T', bound='FirestoreModel')
 
-class FirestoreModel:
-    """Classe de base pour tous les modèles Firestore"""
+# ====== Classes pour les CV ======
+
+class SectionsName(BaseModel):
+    """Noms des sections du CV"""
+    experience_section_name: str = "Expérience Professionnelle"
+    education_section_name: str = "Formation"
+    skills_section_name: str = "Compétences"
+    languages_section_name: str = "Langues"
+    hobbies_section_name: str = "Centres d'intérêt"
     
-    collection_name: ClassVar[str] = ""  # Doit être défini dans les sous-classes
-    
-    @classmethod
-    def initialize_firebase(cls):
-        """Initialise la connexion Firebase si ce n'est pas déjà fait"""
-        if not firebase_admin._apps:
-            try:
-                cred = credentials.ApplicationDefault()
-            except:
-                if os.path.exists('serviceAccountKey.json'):
-                    cred = credentials.Certificate('serviceAccountKey.json')
-                else:
-                    raise Exception("Aucune méthode d'authentification Firebase n'a été trouvée.")
-            
-            firebase_admin.initialize_app(cred)
-    
-    @classmethod
-    def get_db(cls):
-        """Récupère l'instance de la base de données Firestore"""
-        cls.initialize_firebase()
-        return firestore.client()
-    
-    @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any], doc_id: str = None) -> T:
-        """Crée une instance de l'objet à partir d'un dictionnaire"""
-        instance = cls()
-        for key, value in data.items():
-            setattr(instance, key, value)
-        
-        if doc_id:
-            instance.id = doc_id
-            
-        return instance
-    
-    @classmethod
-    def from_doc_snapshot(cls: Type[T], doc) -> T:
-        """Crée une instance à partir d'un DocumentSnapshot Firestore"""
-        data = doc.to_dict()
-        return cls.from_dict(data, doc.id)
-    
-    @classmethod
-    def get_by_id(cls: Type[T], doc_id: str) -> Optional[T]:
-        """Récupère un document par son ID"""
-        db = cls.get_db()
-        doc_ref = db.collection(cls.collection_name).document(doc_id)
-        doc = doc_ref.get()
-        
-        if doc.exists:
-            return cls.from_doc_snapshot(doc)
-        return None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convertit l'objet en dictionnaire pour stockage Firestore"""
-        result = {}
-        for key, value in self.__dict__.items():
-            if not key.startswith('_') and key != 'id':
-                result[key] = value
-        return result
-    
-    def save(self, doc_id: Optional[str] = None) -> str:
-        """Sauvegarde l'objet dans Firestore"""
-        db = self.get_db()
-        data = self.to_dict()
-        
-        if doc_id:
-            # Sauvegarde avec un ID spécifique
-            db.collection(self.collection_name).document(doc_id).set(data)
-            self.id = doc_id
-            return doc_id
-        elif hasattr(self, 'id') and self.id:
-            # Mise à jour d'un document existant
-            db.collection(self.collection_name).document(self.id).set(data)
-            return self.id
-        else:
-            # Création d'un nouveau document avec ID auto-généré
-            doc_ref = db.collection(self.collection_name).add(data)[1]
-            self.id = doc_ref.id
-            return doc_ref.id
+class EducationCV(BaseModel):
+    """Structure pour les données d'éducation dans un CV"""
+    title: Optional[str] = None
+    university: Optional[str] = None
+    dates: Optional[str] = None  
+    location: Optional[str] = None
+    description: Optional[str] = None
 
-# Classes pour la structure des données utilisateur
-class EducationData:
-    """Structure pour les données d'éducation"""
-    def __init__(self, title=None, description=None, full_description=None, dates=None, 
-                 university=None, location=None, **kwargs):
-        self.title = title  # titre de la formation
-        self.description = description  # description courte (pour cv)
-        self.full_description = full_description  # description complète (pour profile)
-        self.dates = dates  # dates de la formation
-        self.university = university  # université ou école
-        self.location = location  # lieu de la formation
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+class ExperienceCV(BaseModel):
+    """Structure pour les données d'expérience dans un CV"""
+    title: Optional[str] = None
+    company: Optional[str] = None
+    dates: Optional[str] = None
+    location: Optional[str] = None
+    bullets: List[str] = Field(default_factory=list)
 
+class SkillCV(BaseModel):
+    """Structure pour les données de compétence dans un CV"""
+    category_name: Optional[str] = None
+    skills: Optional[str] = None  # String avec compétences séparées par des virgules
 
-class ExperienceData:
-    """Structure pour les données d'expérience"""
-    def __init__(self, title=None, company=None, dates=None, location=None, 
-                 full_descriptions=None, bullets=None, **kwargs):
-        self.title = title  # titre du poste
-        self.company = company  # nom de l'entreprise
-        self.dates = dates  # dates de l'emploi
-        self.location = location  # lieu de l'emploi
-        self.full_descriptions = full_descriptions  # description complète (pour profile)
-        self.bullets = bullets  # points clés (pour cv)
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+class LanguageCV(BaseModel):
+    """Structure pour les données de langue dans un CV"""
+    language: Optional[str] = None
+    level: Optional[str] = None
 
-
-class HeadData:
-    """Structure pour les données d'en-tête"""
-    def __init__(self, name=None, title=None, mail=None, phone=None, linkedin_url=None, **kwargs):
-        self.name = name  # nom complet
-        self.title = title  # titre professionnel
-        self.mail = mail  # email
-        self.phone = phone  # téléphone
-        self.linkedin_url = linkedin_url  # URL LinkedIn
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-class LanguageData:
-    """Structure pour les données de langue"""
-    def __init__(self, language=None, level=None, **kwargs):
-        self.language = language  # nom de la langue
-        self.level = level  # niveau et certifications
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-class SkillData:
-    """Structure pour les données de compétence"""
-    def __init__(self, skills=None, category_name=None, **kwargs):
-        self.skills = skills  # compétences
-        self.category_name = category_name  # nom de la catégorie
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-class CvData:
+class CVData(BaseModel):
     """Structure pour les données de CV"""
-    def __init__(self, cv_name=None, job_raw=None, educations=None, experiences=None, 
-                 skills=None, languages=None, hobbies=None, name=None, phone=None, 
-                 mail=None, title=None, lang_of_cv=None, sections_name=None, **kwargs):
-        self.cv_name = cv_name  # nom du CV
-        self.job_raw = job_raw  # description brute du poste
-        self.educations = educations or []  # formations
-        self.experiences = experiences or []  # expériences
-        self.skills = skills or []  # compétences
-        self.languages = languages or []  # langues
-        self.hobbies = hobbies  # loisirs
-        self.name = name  # nom sur le CV
-        self.phone = phone  # téléphone
-        self.mail = mail  # email
-        self.title = title  # titre du CV
-        self.lang_of_cv = lang_of_cv  # langue du CV
-        self.sections_name = sections_name or {}  # noms des sections
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    name: Optional[str] = None
+    title: Optional[str] = None  
+    mail: Optional[str] = None
+    phone: Optional[str] = None
+    lang_of_cv: str = "fr"
+    sections_name: SectionsName = Field(default_factory=SectionsName)
+    experiences: List[ExperienceCV] = Field(default_factory=list)
+    educations: List[EducationCV] = Field(default_factory=list)
+    skills: List[SkillCV] = Field(default_factory=list)
+    languages: List[LanguageCV] = Field(default_factory=list)
+    hobbies: str = ""
 
+class CV(BaseModel):
+    """Structure complète d'un CV"""
+    cv_name: str
+    job_raw: Optional[str] = None
+    cv_data: CVData = Field(default_factory=CVData)
 
-class ProfileData:
-    """Structure pour les données de profil"""
-    def __init__(self, head=None, educations=None, experiences=None, 
-                 skills=None, languages=None, hobbies=None, **kwargs):
-        self.head = head or {}  # données d'en-tête
-        self.educations = educations or []  # formations
-        self.experiences = experiences or []  # expériences
-        self.skills = skills  # compétences
-        self.languages = languages  # langues
-        self.hobbies = hobbies  # loisirs
-        
-        # Champs supplémentaires pour compatibilité
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+# ====== Classes pour le profil ======
 
+class EducationProfile(BaseModel):
+    """Structure pour les données d'éducation dans un profil"""
+    title: Optional[str] = None
+    description: Optional[str] = None  
+    full_description: Optional[str] = None
+    dates: Optional[str] = None
+    university: Optional[str] = None
+    location: Optional[str] = None
 
-class UserModel(FirestoreModel):
+class ExperienceProfile(BaseModel):
+    """Structure pour les données d'expérience dans un profil"""
+    title: Optional[str] = None
+    company: Optional[str] = None
+    dates: Optional[str] = None
+    location: Optional[str] = None
+    full_descriptions: Optional[List[str]] = None
+    bullets: Optional[List[str]] = None
+
+class HeadProfile(BaseModel):
+    """Structure pour les données d'en-tête dans un profil"""
+    name: Optional[str] = None
+    title: Optional[str] = None
+    mail: Optional[str] = None
+    phone: Optional[str] = None
+    linkedin_url: Optional[str] = None
+
+class Profile(BaseModel):
+    """Structure complète d'un profil"""
+    head: HeadProfile = Field(default_factory=HeadProfile)
+    educations: List[EducationProfile] = Field(default_factory=list)
+    experiences: List[ExperienceProfile] = Field(default_factory=list)
+    skills: Optional[Dict[str, List[str]]] = None
+    languages: Optional[List[Dict[str, str]]] = None
+    hobbies: Optional[str] = None
+
+# ====== Documents Firestore ======
+
+class UserDocument(FirestoreModel):
     """Modèle pour la collection 'users'"""
     collection_name = "users"
     
-    def __init__(self, cvs=None, profile=None, **kwargs):
-        self.id = None
-        # Suivre strictement la structure du schéma
-        self.cvs = cvs or []  # Liste des CV
-        self.profile = profile or {}  # Données de profil
-        
-        # Ne pas inclure d'autres champs qui ne sont pas dans le schéma
-        # Les attributs comme 'email', 'name', 'created_at' ne doivent pas être dans le modèle
-        # si nous voulons suivre strictement le schéma
+    cvs: List[CV] = Field(default_factory=list)
+    profile: Profile = Field(default_factory=Profile)
     
-    def update_cv_from_global_state(self, cv_name, result_state, save_to_firestore=False):
+    @classmethod
+    def from_firestore_id(cls, user_id: str) -> Optional["UserDocument"]:
         """
-        Met à jour un CV existant à partir d'un objet GlobalState
+        Construit un objet UserDocument directement à partir d'un ID Firestore.
+        Cette méthode gère directement la récupération, le prétraitement et la construction
+        de l'objet sans passer par les méthodes génériques de FirestoreModel.
         
         Args:
-            cv_name: Nom du CV à mettre à jour
-            result_state: Objet GlobalState contenant les données traitées
-            save_to_firestore: Si True, sauvegarde immédiatement dans Firestore
+            user_id (str): L'identifiant du document dans Firestore
             
         Returns:
-            dict: Informations sur le CV mis à jour, ou None si le CV n'est pas trouvé
+            Optional[UserDocument]: L'objet UserDocument construit ou None si le document n'existe pas
         """
-        # Trouver l'index du CV à mettre à jour
-        cv_index = None
-        for i, cv in enumerate(self.cvs):
-            if cv.get('cv_name') == cv_name:
-                cv_index = i
-                break
+        # Initialiser la connexion Firestore
+        db = cls.get_db()
+        doc_ref = db.collection(cls.collection_name).document(user_id)
+        doc = doc_ref.get()
         
+        if not doc.exists:
+            return None
+            
+        # Récupérer et prétraiter les données brutes de Firestore
+        raw_data = doc.to_dict()
+        if not raw_data:
+            return None
+            
+        # Créer une copie des données pour ne pas modifier l'original
+        processed_data = dict(raw_data)
+        
+        # Traiter les données du profil si elles existent
+        if "profile" in processed_data:
+            profile = processed_data["profile"]
+            
+            # Traiter les expériences
+            if "experiences" in profile and profile["experiences"]:
+                for exp in profile["experiences"]:
+                    # Conversion de full_descriptions de string à liste si nécessaire
+                    if "full_descriptions" in exp and isinstance(exp["full_descriptions"], str):
+                        exp["full_descriptions"] = [exp["full_descriptions"]]
+            
+            # Traiter les compétences
+            if "skills" in profile and isinstance(profile["skills"], str):
+                # Si skills est une chaîne, créer un dictionnaire par défaut
+                profile["skills"] = {"General": [profile["skills"]]}
+            
+            # Traiter les langues
+            if "languages" in profile and isinstance(profile["languages"], str):
+                # Si languages est une chaîne, créer une liste avec un dictionnaire par défaut
+                profile["languages"] = [{"language": profile["languages"], "level": ""}]
+        
+        # Construire directement l'instance UserDocument
+        try:
+            # Ajouter l'ID du document
+            processed_data['id'] = user_id
+            
+            # Créer l'instance en une seule étape
+            return cls(**processed_data)
+        except Exception as e:
+            print(f"Erreur lors de la construction de l'objet UserDocument: {e}")
+            return None
+    
+    def update_cv_from_global_state(self, cv_name: str, result_state, save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
+        """
+        Met à jour un CV existant avec les données provenant d'un GlobalState
+        
+        Args:
+            cv_name (str): Nom du CV à mettre à jour
+            result_state: Instance de GlobalState contenant les résultats du traitement
+            save_to_firestore (bool): Si True, sauvegarde immédiatement les modifications dans Firestore
+            
+        Returns:
+            Optional[Dict[str, Any]]: Informations sur la mise à jour ou None si le CV n'a pas été trouvé
+        """
+        # Trouver le CV correspondant au nom fourni
+        cv_index = next((i for i, cv in enumerate(self.cvs) if cv.cv_name == cv_name), None)
         if cv_index is None:
             return None
         
         # Récupérer le CV existant
-        existing_cv = self.cvs[cv_index]
-        original_cv_data = existing_cv.get('cv_data', {})
+        cv = self.cvs[cv_index]
         
-        # Mettre à jour les données du CV en suivant strictement le schéma
-        updated_cv = {
-            'cv_name': cv_name,
-            'job_raw': getattr(result_state, 'job_raw', existing_cv.get('job_raw', '')),
-            # Supprimer les champs non présents dans le schéma
-            # 'last_update': datetime.datetime.now().isoformat(),
-            # 'creation_date': existing_cv.get('creation_date', datetime.datetime.now().isoformat()),
-            'cv_data': {
-                'name': result_state.head.name,
-                'title': result_state.head.title_refined,
-                'mail': result_state.head.mail,
-                'phone': result_state.head.tel_refined,
-                'lang_of_cv': original_cv_data.get('lang_of_cv', 'fr'),
-                'sections_name': original_cv_data.get('sections_name', {
-                    'experience_section_name': 'Expérience Professionnelle',
-                    'education_section_name': 'Formation',
-                    'skills_section_name': 'Compétences',
-                    'languages_section_name': 'Langues',
-                    'hobbies_section_name': 'Centres d\'intérêt'
-                }),
-                'experiences': [],
-                'educations': [],
-                'skills': [],
-                'languages': [],
-                'hobbies': ''
-            }
-        }
+        # Mise à jour des informations de base du CV
+        cv.cv_data.name = result_state.head.name
+        cv.cv_data.title = result_state.head.title_refined
+        cv.cv_data.mail = result_state.head.mail
+        cv.cv_data.phone = result_state.head.tel_refined
         
-        # Ajouter les expériences
-        if hasattr(result_state, 'experiences'):
+        # Mise à jour des noms de sections
+        if result_state.sections:
+            cv.cv_data.sections_name.experience_section_name = result_state.sections.get("experience", "Expérience Professionnelle")
+            cv.cv_data.sections_name.education_section_name = result_state.sections.get("education", "Formation")
+            cv.cv_data.sections_name.skills_section_name = result_state.sections.get("skills", "Compétences")
+            cv.cv_data.sections_name.languages_section_name = result_state.sections.get("languages", "Langues")
+            cv.cv_data.sections_name.hobbies_section_name = result_state.sections.get("hobbies", "Centres d'intérêt")
+        
+        # Mise à jour des expériences
+        if result_state.experiences:
+            cv.cv_data.experiences = []
             for exp in result_state.experiences:
-                experience = {
-                    'title': exp.title_refined,
-                    'company': exp.company_refined,
-                    'dates': exp.dates_refined,
-                    'location': exp.location_refined,
-                    'bullets': exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
-                }
-                updated_cv['cv_data']['experiences'].append(experience)
+                cv.cv_data.experiences.append(ExperienceCV(
+                    title=exp.title_refined,
+                    company=exp.company_refined,
+                    dates=exp.dates_refined,
+                    location=exp.location_refined,
+                    bullets=exp.bullets or []
+                ))
         
-        # Ajouter les formations
-        if hasattr(result_state, 'education'):
+        # Mise à jour des formations
+        if result_state.education:
+            cv.cv_data.educations = []
             for edu in result_state.education:
-                education = {
-                    'title': edu.degree_refined,
-                    'university': edu.institution_refined,
-                    'dates': edu.dates_refined,
-                    'location': edu.location_refined,
-                    'description': edu.description_refined
-                }
-                updated_cv['cv_data']['educations'].append(education)
+                cv.cv_data.educations.append(EducationCV(
+                    title=edu.degree_refined,
+                    university=edu.institution_refined,
+                    dates=edu.dates_refined,
+                    location=edu.location_refined,
+                    description=edu.description_refined
+                ))
         
-        # Ajouter les compétences
-        if hasattr(result_state, 'competences') and result_state.competences:
-            for category, skills in result_state.competences.items():
-                skill_category = {
-                    'category_name': category,
-                    'skills': ', '.join(skills) if isinstance(skills, list) else skills
-                }
-                updated_cv['cv_data']['skills'].append(skill_category)
+        # Mise à jour des compétences
+        if result_state.competences:
+            cv.cv_data.skills = []
+            for category_name, skills_list in result_state.competences.items():
+                skills_str = ", ".join(skills_list)
+                cv.cv_data.skills.append(SkillCV(
+                    category_name=category_name,
+                    skills=skills_str
+                ))
         
-        # Ajouter les langues
-        if hasattr(result_state, 'langues'):
-            for langue in result_state.langues:
-                if hasattr(langue, 'language') and hasattr(langue, 'level'):
-                    language = {
-                        'language': getattr(langue, 'language', ''),
-                        'level': getattr(langue, 'level', '')
-                    }
-                    updated_cv['cv_data']['languages'].append(language)
-                elif isinstance(langue, dict):
-                    language = {
-                        'language': langue.get('language', ''),
-                        'level': langue.get('level', '')
-                    }
-                    updated_cv['cv_data']['languages'].append(language)
+        # Mise à jour des langues
+        if result_state.langues:
+            cv.cv_data.languages = []
+            for lang in result_state.langues:
+                cv.cv_data.languages.append(LanguageCV(
+                    language=lang.language,
+                    level=lang.level
+                ))
         
-        # Ajouter les hobbies
-        if hasattr(result_state, 'hobbies_refined'):
-            updated_cv['cv_data']['hobbies'] = result_state.hobbies_refined
+        # Mise à jour des hobbies
+        if result_state.hobbies_refined:
+            cv.cv_data.hobbies = result_state.hobbies_refined
         
-        # Mettre à jour le CV dans la liste
-        self.cvs[cv_index] = updated_cv
+        # Mise à jour de la description du poste
+        if result_state.job_refined:
+            cv.job_raw = result_state.job_refined
         
-        # Sauvegarder si demandé
+        # Sauvegarder dans Firestore si demandé
         if save_to_firestore:
             self.save()
         
-        # Retourner les informations sur le CV mis à jour sans inclure les champs hors schéma
+        # Retourner des informations sur la mise à jour
         return {
-            "name": updated_cv['cv_name'],
-            "experiences_count": len(updated_cv['cv_data']['experiences']),
-            "education_count": len(updated_cv['cv_data']['educations']),
-            "skills_count": len(updated_cv['cv_data']['skills'])
+            "cv_name": cv_name,
+            "updated": True,
+            "name": cv.cv_data.name,
+            "title": cv.cv_data.title,
+            "experiences": len(cv.cv_data.experiences),
+            "educations": len(cv.cv_data.educations),
+            "skills": len(cv.cv_data.skills),
+            "languages": len(cv.cv_data.languages),
+            "hobbies_updated": bool(cv.cv_data.hobbies),
+            "job_updated": bool(cv.job_raw)
         }
-
-
-class CallModel(FirestoreModel):
+    
+class CallDocument(FirestoreModel):
     """Modèle pour la collection 'calls'"""
     collection_name = "calls"
     
-    def __init__(self, user_id=None, endpoint=None, call_time=None, usage_count=None, **kwargs):
-        self.id = None
-        self.user_id = user_id
-        self.endpoint = endpoint
-        self.call_time = call_time or datetime.datetime.now()
-        self.usage_count = usage_count or 1
-        
-        # Pour compatibilité avec l'ancien format
-        if 'timestamp' in kwargs:
-            self.call_time = kwargs.pop('timestamp')
-        if 'duration' in kwargs:
-            self.duration = kwargs.pop('duration')
-        if 'status' in kwargs:
-            self.status = kwargs.pop('status')
-            
-        # Ajouter tous les autres attributs
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    user_id: str
+    endpoint: Optional[str] = None
+    call_time: datetime = Field(default_factory=datetime.now)
+    usage_count: int = 1
+    duration: Optional[float] = None
+    status: Optional[str] = None
     
-    @classmethod
-    def get_by_user_id(cls, user_id: str) -> List['CallModel']:
-        """Récupère tous les appels d'un utilisateur"""
-        db = cls.get_db()
-        query = db.collection(cls.collection_name).where('user_id', '==', user_id)
-        docs = query.stream()
-        
-        return [cls.from_doc_snapshot(doc) for doc in docs]
-
-
-class UsageModel(FirestoreModel):
+class UsageDocument(FirestoreModel):
     """Modèle pour la collection 'usage'"""
     collection_name = "usage"
     
-    def __init__(self, user_id=None, last_request_time=None, total_usage=None, **kwargs):
-        self.id = None
-        self.user_id = user_id
-        self.last_request_time = last_request_time or datetime.datetime.now()
-        self.total_usage = total_usage or 0
-        
-        # Pour compatibilité avec l'ancien format
-        if 'quota' in kwargs:
-            self.quota = kwargs.pop('quota')
-        if 'used' in kwargs:
-            self.total_usage = kwargs.pop('used')
-        if 'last_update' in kwargs:
-            self.last_request_time = kwargs.pop('last_update')
-            
-        # Ajouter tous les autres attributs
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-    
-    @classmethod
-    def get_by_user_id(cls, user_id: str) -> Optional['UsageModel']:
-        """Récupère l'usage d'un utilisateur"""
-        db = cls.get_db()
-        query = db.collection(cls.collection_name).where('user_id', '==', user_id).limit(1)
-        docs = query.stream()
-        
-        for doc in docs:
-            return cls.from_doc_snapshot(doc)
-        return None
-    
-    def increment_usage(self, amount: int = 1) -> 'UsageModel':
-        """Incrémente le compteur d'utilisation"""
-        self.total_usage = (self.total_usage or 0) + amount
-        self.last_request_time = datetime.datetime.now()
-        self.save()
-        return self 
+    user_id: str
+    last_request_time: datetime = Field(default_factory=datetime.now)
+    total_usage: int = 0
+    quota: Optional[int] = None

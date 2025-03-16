@@ -1,9 +1,9 @@
 from flask import jsonify, request
 import logging
-from backend.models import UserModel
-from backend.utils.adapters import cv_data_to_global_state_format
+from backend.models import UserDocument
+from ai_module.new_models.lg_models import GlobalState
 import os
-import datetime
+from datetime import datetime
 from backend.config import load_config
 config = load_config()
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
     
     try:
         # Récupérer l'utilisateur
-        user = UserModel.get_by_id(user_id)
+        user = UserDocument.from_firestore_id(user_id)
         if not user:
             logger.warning(f"Utilisateur '{user_id}' non trouvé")
             return jsonify({"error": f"Utilisateur '{user_id}' introuvable"}), 404
@@ -43,11 +43,11 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
         response_data = {
             "user_id": user.id,
             "cv_name": cv_name,
-            "timestamp": datetime.datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat()
         }
         
         # Créer le GlobalState directement à partir de l'utilisateur et du nom du CV
-        global_state = cv_data_to_global_state_format(user, cv_name)
+        global_state = GlobalState.from_user_document(user, cv_name)
         
         if not global_state:
             logger.warning(f"CV '{cv_name}' non trouvé ou sans données pour l'utilisateur '{user_id}'")
