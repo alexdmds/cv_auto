@@ -73,13 +73,13 @@ async def generate_head(text: str) -> Dict[str, Any]:
     
     return {
         "name": "Jean Dupont",
-        "title_raw": "Développeur",
-        "title_generated": "Développeur Full Stack Expérimenté",
-        "title_refined": "Développeur Full Stack Senior",
-        "mail": "jean.dupont@email.com",
-        "tel_raw": "0612345678",
-        "tel_refined": "06 12 34 56 78"
+        "phone": "06 12 34 56 78",
+        "email": "jean.dupont@email.com",
+        "general_title": "Développeur Full Stack Senior avec 5 ans d'expérience",
+        "skills": "Expert en Python, JavaScript, React et Node.js. Maîtrise des architectures microservices et du DevOps.",
+        "hobbies": "Passionné de photographie et de randonnée. Contributeur open source actif."
     }
+
 
 def generate_cv(state: GlobalState) -> GlobalState:
     """

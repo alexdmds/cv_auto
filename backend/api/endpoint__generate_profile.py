@@ -79,6 +79,9 @@ def generate_profile_endpoint(user_id: str):
             },
             'hobbies': {
                 'description': head.get('hobbies', '')
+            },
+            'languages': {
+                'description': head.get('langues', '')
             }
         }
 
@@ -105,18 +108,33 @@ if __name__ == "__main__":
     
     # Exemple de texte pour tester
     texte_test = """
-    Jean Dupont
-    Développeur Full Stack avec 5 ans d'expérience
-    
-    EXPÉRIENCE
-    Senior Developer chez TechCorp (2020-2023) - Paris
-    - Développement d'applications web avec React et Node.js
-    - Lead technique sur 3 projets majeurs
-    
-    FORMATION
-    Master en Informatique - Université de Paris (2018) - Paris
-    - Spécialisation en développement web
-    - Major de promotion
+    Jean-Michel Dupont
+    Architecte Solutions & Lead Developer
+    Email: jm.dupont@email.com | Tel: 06 12 34 56 78
+    LinkedIn: linkedin.com/in/jmdupont
+
+    Expert en architecture logicielle et développement full-stack avec 12 ans d'expérience 
+    dans la conception et le déploiement de solutions cloud à grande échelle. 
+    Passionné par l'innovation technologique et le leadership technique.
+
+    Compétences: 
+    - Backend: Python, Java, Node.js, GraphQL, REST APIs
+    - Frontend: React, Vue.js, TypeScript, HTML5/CSS3
+    - Cloud & DevOps: AWS, Docker, Kubernetes, CI/CD, Terraform
+    - Base de données: PostgreSQL, MongoDB, Redis
+    - Management: Gestion d'équipe, Méthodologies Agiles, Formation technique
+
+    Langues:
+    - Français (Langue maternelle)
+    - Anglais (Bilingue, TOEIC 985/990)
+    - Allemand (Niveau C1, séjour de 2 ans à Berlin)
+    - Espagnol (Niveau B2)
+
+    Centres d'intérêt: 
+    - Photographie (exposition amateur 2022)
+    - Musique (guitariste dans un groupe de jazz)
+    - Course à pied (semi-marathon de Paris 2023)
+    - Contribution open source (maintainer sur 3 projets Python)
     """
     
     async def test_generation():
