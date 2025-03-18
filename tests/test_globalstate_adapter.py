@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import des modèles
 from backend.models import UserDocument, CV, CVData, Profile, HeadProfile, ExperienceCV, ExperienceProfile, EducationCV, EducationProfile, LanguageCV, SkillCV, SectionsName
-from ai_module.new_models.lg_models import GlobalState
+from ai_module.lg_models import GlobalState
 
 def create_test_user_document():
     """

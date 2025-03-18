@@ -1,95 +1,99 @@
 import logging
 from typing import Dict, Any
-from ai_module.new_models.lg_models import GlobalState
+from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExperience, GlobalEducation
 
 logger = logging.getLogger(__name__)
 
-async def generate_profile(text: str) -> Dict[str, Any]:
+
+async def generate_profile(profile_state: ProfileState) -> ProfileState:
     """
-    Mock de la fonction generate_profile qui retourne un profil structuré statique.
+    Mock de la fonction generate_profile qui extrait des informations structurées à partir d'un texte brut.
     
     Args:
-        text (str): Le texte brut (non utilisé dans le mock)
+        profile_state (ProfileState): L'état contenant le texte brut à analyser
         
     Returns:
-        Dict[str, Any]: Un profil structuré statique pour les tests
+        ProfileState: L'état mis à jour avec des informations extraites fictives
     """
     logger.info("Utilisation du mock generate_profile")
     
-    return {
-        "head": {
-            "name": "Jean Dupont",
-            "title": "Développeur Full Stack Senior",
-            "mail": "jean.dupont@email.com",
-            "phone": "06 12 34 56 78",
-            "linkedin_url": "https://linkedin.com/in/jeandupont"
-        },
-        "experiences": [
-            {
-                "title": "Développeur Senior",
-                "company": "Tech Company",
-                "dates": "2020-2023",
-                "location": "Paris",
-                "full_descriptions": "Développement d'applications web avec React et Node.js. Lead technique sur 3 projets majeurs."
-            },
-            {
-                "title": "Développeur Full Stack",
-                "company": "StartupCo",
-                "dates": "2018-2020",
-                "location": "Lyon",
-                "full_descriptions": "Développement full stack avec Python et Vue.js. Mise en place de l'architecture microservices."
-            }
-        ],
-        "educations": [
-            {
-                "title": "Master Informatique",
-                "university": "Université de Paris",
-                "dates": "2016-2018",
-                "full_description": "Spécialisation en développement web. Major de promotion."
-            },
-            {
-                "title": "Licence Informatique",
-                "university": "Université de Lyon",
-                "dates": "2013-2016",
-                "full_description": "Formation généraliste en informatique. Projet de fin d'études sur le machine learning."
-            }
-        ],
-        "skills": "Python, JavaScript, React, Node.js, Vue.js, Docker, AWS",
-        "languages": "Français (natif), Anglais (courant), Espagnol (intermédiaire)",
-        "hobbies": "Photographie, randonnée, programmation open source"
-    }
+    # Création des informations d'en-tête fictives
+    head = GeneralInfo(
+        name="Jean Dupont",
+        phone="06 12 34 56 78",
+        email="jean.dupont@email.com",
+        general_title="Développeur Full Stack Senior avec 8 ans d'expérience",
+        skills="Python, JavaScript, React, Node.js, Docker, AWS, Git, SQL, MongoDB, REST API, Django, FastAPI",
+        langues="Français (natif), Anglais (courant), Espagnol (intermédiaire)",
+        hobbies="Randonnée, photographie, contribution open source, échecs"
+    )
+    
+    # Création d'expériences professionnelles fictives
+    experiences = [
+        GlobalExperience(
+            intitule="Développeur Full Stack Senior",
+            dates="2020 - Présent",
+            etablissement="TechSolutions SA",
+            lieu="Paris",
+            description="Développement d'applications web en utilisant React, Node.js et Python. "
+                        "Mise en place d'une architecture microservices avec Docker et Kubernetes. "
+                        "Optimisation des performances et de la scalabilité des applications existantes."
+        ),
+        GlobalExperience(
+            intitule="Développeur Backend",
+            dates="2017 - 2020",
+            etablissement="DataCorp",
+            lieu="Lyon",
+            description="Conception et développement d'API RESTful avec Django et FastAPI. "
+                        "Gestion de bases de données SQL et NoSQL. "
+                        "Intégration continue et déploiement automatisé (CI/CD)."
+        )
+    ]
+    
+    # Création de formations académiques fictives
+    education = [
+        GlobalEducation(
+            intitule="Master en Informatique",
+            dates="2015 - 2017",
+            etablissement="Université de Paris",
+            lieu="Paris",
+            description="Spécialisation en développement web et systèmes distribués. "
+                        "Projet de fin d'études : Développement d'une plateforme de gestion de données. "
+                        "Mention Très Bien."
+        ),
+        GlobalEducation(
+            intitule="Licence en Informatique",
+            dates="2012 - 2015",
+            etablissement="Université de Lyon",
+            lieu="Lyon",
+            description="Formation générale en informatique avec spécialisation en programmation. "
+                        "Projets en Java, Python et bases de données."
+        )
+    ]
+    
+    # Mise à jour de l'état
+    profile_state.head = head
+    profile_state.experiences = experiences
+    profile_state.education = education
+    
+    # On conserve le texte d'entrée s'il existe
+    if profile_state.input_text:
+        logger.info(f"Texte d'entrée conservé (longueur: {len(profile_state.input_text)} caractères)")
+    
+    logger.info(f"Mock profile généré avec {len(experiences)} expériences et {len(education)} formations")
+    
+    return profile_state
 
-async def generate_head(text: str) -> Dict[str, Any]:
+
+def generate_cv(state: CVGenState) -> CVGenState:
     """
-    Mock de la fonction generate_head qui retourne un en-tête structuré statique.
+    Mock de la fonction generate_cv qui retourne un CVGenState modifié avec des valeurs statiques.
     
     Args:
-        text (str): Le texte brut (non utilisé dans le mock)
+        state (CVGenState): L'état global initial
         
     Returns:
-        Dict[str, Any]: Un en-tête structuré statique pour les tests
-    """
-    logger.info("Utilisation du mock generate_head")
-    
-    return {
-        "name": "Jean Dupont",
-        "phone": "06 12 34 56 78",
-        "email": "jean.dupont@email.com",
-        "general_title": "Développeur Full Stack Senior avec 5 ans d'expérience",
-        "skills": "Expert en Python, JavaScript, React et Node.js. Maîtrise des architectures microservices et du DevOps.",
-        "hobbies": "Passionné de photographie et de randonnée. Contributeur open source actif."
-    }
-
-
-def generate_cv(state: GlobalState) -> GlobalState:
-    """
-    Mock de la fonction generate_cv qui retourne un GlobalState modifié avec des valeurs statiques.
-    
-    Args:
-        state (GlobalState): L'état global initial
-        
-    Returns:
-        GlobalState: L'état global modifié avec des valeurs mock
+        CVGenState: L'état global modifié avec des valeurs mock
     """
     logger.info("Utilisation du mock generate_cv")
     

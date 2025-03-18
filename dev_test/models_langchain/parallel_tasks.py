@@ -6,7 +6,7 @@ et agrégation des résultats.
 from typing import TypedDict, List, Annotated
 import operator
 from langgraph.graph import StateGraph, START, END
-from dev_test.models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 
 class State(TypedDict):
     topic: str

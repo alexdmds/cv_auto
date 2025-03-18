@@ -6,7 +6,7 @@ from typing_extensions import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 
-from dev_test.models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 from data_structures import Experience
 
 ##############################################################################

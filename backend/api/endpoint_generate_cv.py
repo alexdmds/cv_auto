@@ -1,7 +1,7 @@
 from flask import jsonify, request
 import logging
 from backend.models import UserDocument
-from ai_module.new_models.lg_models import GlobalState
+from ai_module.lg_models import GlobalState
 import os
 from datetime import datetime
 from backend.config import load_config

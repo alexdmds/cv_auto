@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, START, END
-from dev_test.models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 import json
 from pathlib import Path
 import sys

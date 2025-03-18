@@ -10,7 +10,7 @@ import os
 
 from summarize_exp import summarize_exps
 from summarize_edu import summarize_edus
-from lg_models import GlobalState
+from ai_module.lg_models import GlobalState
 from prioritize_edu import prioritize_edu
 from prioritize_exp import prioritize_exp
 from langchain_core.messages import SystemMessage, HumanMessage

@@ -6,7 +6,7 @@ l'évalue et fournit du feedback pour l'améliorer itérativement.
 from typing import TypedDict, Literal
 from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
-from models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 
 class Evaluation(BaseModel):
     """Structure pour l'évaluation du contenu"""

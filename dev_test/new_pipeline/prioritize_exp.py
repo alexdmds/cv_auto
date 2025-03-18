@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
-from dev_test.models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 from langchain_core.messages import SystemMessage, HumanMessage
 from data_structures import Experience
 

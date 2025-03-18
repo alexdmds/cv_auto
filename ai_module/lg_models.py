@@ -1,7 +1,43 @@
-from typing import List, Dict, Optional, ClassVar
-from pydantic import BaseModel
+from typing import List, Dict, Optional
+from pydantic import BaseModel, Field
 import json
-class Head(BaseModel):
+
+
+#Classes pour la génération globale du profile
+class GeneralInfo(BaseModel):
+    name: str = Field(default="", description="Nom complet du candidat")
+    phone: str = Field(default="", description="Numéro de téléphone du candidat")
+    email: str = Field(default="", description="Adresse email du candidat")
+    general_title: str = Field(default="", description="Titre et description générale du profil")
+    skills: str = Field(default="", description="Description détaillée des compétences techniques et professionnelles")
+    langues: str = Field(default="", description="Description détaillée des langues parlées et niveaux")
+    hobbies: str = Field(default="", description="Description détaillée des centres d'intérêt")
+
+class GlobalExperience(BaseModel):
+    intitule: str = Field(default="", description="Intitulé du poste")
+    dates: str = Field(default="", description="Période d'emploi")
+    etablissement: str = Field(default="", description="Nom de l'entreprise")
+    lieu: str = Field(default="", description="Localisation")
+    description: str = Field(default="", description="Description détaillée de l'expérience")
+
+class GlobalEducation(BaseModel):
+    intitule: str = Field(default="", description="Nom du diplôme")
+    dates: str = Field(default="", description="Période de formation")
+    etablissement: str = Field(default="", description="Nom de l'institution")
+    lieu: str = Field(default="", description="Localisation")
+    description: str = Field(default="", description="Description détaillée de la formation")
+
+# Classes pour les listes (à utiliser avec JsonOutputParser)
+class GlobalExperienceList(BaseModel):
+    """Classe pour représenter une liste d'expériences pour le parsing JSON."""
+    experiences: List[GlobalExperience] = Field(default_factory=list)
+
+class GlobalEducationList(BaseModel):
+    """Classe pour représenter une liste de formations pour le parsing JSON."""
+    education: List[GlobalEducation] = Field(default_factory=list)
+
+#Classes pour la génération du CV
+class CVHead(BaseModel):
     name: str
     title_raw: str
     title_generated: str
@@ -10,7 +46,7 @@ class Head(BaseModel):
     tel_raw: str
     tel_refined: str
 
-class Experience(BaseModel):
+class CVExperience(BaseModel):
     title_raw: str
     title_refined: str
     company_raw: str
@@ -41,7 +77,7 @@ class Experience(BaseModel):
         data.setdefault('nb_bullets', 0)
         super().__init__(**data)
 
-class Education(BaseModel):
+class CVEducation(BaseModel):
     degree_raw: str
     degree_refined: str
     institution_raw: str
@@ -72,40 +108,47 @@ class Education(BaseModel):
         data.setdefault('nb_mots', 0)  # Valeur par défaut pour nb_mots
         super().__init__(**data)
 
-class Language(BaseModel):
+class CVLanguage(BaseModel):
     language: str
     level: str
 
-class GlobalState(BaseModel):
+#Classes d'état pour le workflow
+class ProfileState(BaseModel):
+    experiences: List[GlobalExperience] = Field(default_factory=list, description="Liste des expériences professionnelles")
+    education: List[GlobalEducation] = Field(default_factory=list, description="Liste des formations académiques")
+    head: GeneralInfo = Field(default_factory=GeneralInfo, description="En-tête du profil")
+    input_text: str = Field(default="", description="Texte brut d'entrée")
+
+class CVGenState(BaseModel):
     """État global du workflow."""
-    head: Head
+    head: CVHead
     sections: Dict[str, str]
-    experiences: List[Experience]
-    education: List[Education]
+    experiences: List[CVExperience]
+    education: List[CVEducation]
     competences: Dict[str, List[str]]
     skills_raw: str
-    langues: List[Language]
+    langues: List[CVLanguage]
     hobbies_raw: str
     hobbies_refined: str
     job_raw: str
     job_refined: str
 
     @classmethod
-    def from_json(cls, data: dict) -> "GlobalState":
+    def from_json(cls, data: dict) -> "CVGenState":
         """
-        Crée une instance de GlobalState à partir d'un dictionnaire JSON.
+        Crée une instance de CVGenState à partir d'un dictionnaire JSON.
         
         Args:
             data: Dictionnaire contenant les données du CV
             
         Returns:
-            Instance de GlobalState
+            Instance de CVGenState
         """
         # Conversion des sous-éléments
-        head = Head(**data.get("head", {}))
-        experiences = [Experience(**exp) for exp in data.get("experiences", [])]
-        education = [Education(**edu) for edu in data.get("education", [])]
-        langues = [Language(**lang) for lang in data.get("langues", [])]
+        head = CVHead(**data.get("head", {}))
+        experiences = [CVExperience(**exp) for exp in data.get("experiences", [])]
+        education = [CVEducation(**edu) for edu in data.get("education", [])]
+        langues = [CVLanguage(**lang) for lang in data.get("langues", [])]
         
         # Construction de l'instance
         return cls(
@@ -123,16 +166,16 @@ class GlobalState(BaseModel):
         )
         
     @classmethod
-    def from_user_document(cls, user_document, cv_name: str) -> Optional["GlobalState"]:
+    def from_user_document(cls, user_document, cv_name: str) -> Optional["CVGenState"]:
         """
-        Crée une instance de GlobalState à partir d'un UserDocument et d'un nom de CV.
+        Crée une instance de CVGenState à partir d'un UserDocument et d'un nom de CV.
         
         Args:
             user_document: Instance de UserDocument contenant le profil et les CVs
             cv_name: Nom du CV à utiliser
             
         Returns:
-            Instance de GlobalState ou None si le CV n'est pas trouvé
+            Instance de CVGenState ou None si le CV n'est pas trouvé
         """
         # Récupérer le CV spécifié
         cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
@@ -150,7 +193,7 @@ class GlobalState(BaseModel):
             "tel_raw": cv.cv_data.phone or profile.head.phone or "",
             "tel_refined": cv.cv_data.phone or profile.head.phone or ""
         }
-        head = Head(**head_data)
+        head = CVHead(**head_data)
         
         # Construire les sections
         sections = {
@@ -204,7 +247,7 @@ class GlobalState(BaseModel):
                     "order": idx,
                     "nb_bullets": len(bullets)
                 }
-            experiences.append(Experience(**exp_data))
+            experiences.append(CVExperience(**exp_data))
         
         # Convertir les formations
         education_list = []
@@ -247,7 +290,7 @@ class GlobalState(BaseModel):
                     "order": idx,
                     "nb_mots": len(description.split()) if description else 0
                 }
-            education_list.append(Education(**edu_data))
+            education_list.append(CVEducation(**edu_data))
         
         # Convertir les compétences
         competences = {}
@@ -266,10 +309,10 @@ class GlobalState(BaseModel):
         langues = []
         if cv.cv_data.languages:
             for lang in cv.cv_data.languages:
-                langues.append(Language(language=lang.language or "", level=lang.level or ""))
+                langues.append(CVLanguage(language=lang.language or "", level=lang.level or ""))
         elif profile.languages:
             for lang in profile.languages:
-                langues.append(Language(language=lang.get("language", ""), level=lang.get("level", "")))
+                langues.append(CVLanguage(language=lang.get("language", ""), level=lang.get("level", "")))
         
         # Hobbies
         hobbies_raw = cv.cv_data.hobbies or profile.hobbies or ""
@@ -314,11 +357,11 @@ class GlobalState(BaseModel):
             json.dump(output_data, f, ensure_ascii=False, indent=2)
 
 class SelectExpState(BaseModel):
-    exp: Experience
+    exp: CVExperience
     job_summary: str
     choix_exp: str
 
 class SelectEduState(BaseModel):
-    edu: Education
+    edu: CVEducation
     job_summary: str
     choix_edu: str

@@ -5,7 +5,7 @@ Chaque appel LLM traite la sortie du précédent.
 
 from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
-from models_langchain.llm_config import get_llm
+from dev_test.models_langchain.llm_config_dev import get_llm
 
 class State(TypedDict):
     topic: str
