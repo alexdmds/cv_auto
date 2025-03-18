@@ -73,11 +73,9 @@ class CV(BaseModel):
 class EducationProfile(BaseModel):
     """Structure pour les données d'éducation dans un profil"""
     title: Optional[str] = None
-    description: Optional[str] = None  
     full_description: Optional[str] = None
     dates: Optional[str] = None
     university: Optional[str] = None
-    location: Optional[str] = None
 
 class ExperienceProfile(BaseModel):
     """Structure pour les données d'expérience dans un profil"""
@@ -86,23 +84,22 @@ class ExperienceProfile(BaseModel):
     dates: Optional[str] = None
     location: Optional[str] = None
     full_descriptions: Optional[str] = None
-    bullets: Optional[List[str]] = None
 
 class HeadProfile(BaseModel):
     """Structure pour les données d'en-tête dans un profil"""
-    name: Optional[str] = None
     title: Optional[str] = None
     mail: Optional[str] = None
-    phone: Optional[str] = None
     linkedin_url: Optional[str] = None
+    phone: Optional[str] = None
+    name: Optional[str] = None
 
 class Profile(BaseModel):
     """Structure complète d'un profil"""
     head: HeadProfile = Field(default_factory=HeadProfile)
     educations: List[EducationProfile] = Field(default_factory=list)
     experiences: List[ExperienceProfile] = Field(default_factory=list)
-    skills: Optional[Dict[str, List[str]]] = None
-    languages: Optional[List[Dict[str, str]]] = None
+    languages: Optional[str] = None
+    skills: Optional[str] = None
     hobbies: Optional[str] = None
 
 # ====== Documents Firestore ======
@@ -191,7 +188,8 @@ class UserDocument(FirestoreModel):
                 name=profile_state.head.name,
                 title=profile_state.head.general_title,
                 mail=profile_state.head.email,
-                phone=profile_state.head.phone
+                phone=profile_state.head.phone,
+                linkedin_url=""  # Champ obligatoire selon le schéma
             )
         )
         
@@ -213,27 +211,17 @@ class UserDocument(FirestoreModel):
                 title=edu.intitule,
                 university=edu.etablissement,
                 dates=edu.dates,
-                location=edu.lieu,
                 full_description=edu.description
             ))
         
-        # Traiter les compétences
+        # Traiter les compétences - maintenant en tant que chaîne de caractères
         if profile_state.head.skills:
-            profile.skills = {"Général": profile_state.head.skills.split(", ")}
+            profile.skills = profile_state.head.skills  # Garder en tant que chaîne
         
-        # Traiter les langues
+        # Traiter les langues - maintenant en tant que chaîne de caractères
         if profile_state.head.langues:
-            langues_list = []
-            for langue in profile_state.head.langues.split(", "):
-                # Supposons que la chaîne soit au format "Langue (Niveau)"
-                parts = langue.split(" (")
-                if len(parts) == 2:
-                    language = parts[0]
-                    level = parts[1].rstrip(")")
-                    langues_list.append({"language": language, "level": level})
-                else:
-                    langues_list.append({"language": langue, "level": ""})
-            profile.languages = langues_list
+            # Conserver la chaîne brute au lieu de la convertir en liste
+            profile.languages = profile_state.head.langues
         
         # Traiter les hobbies
         if profile_state.head.hobbies:
