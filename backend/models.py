@@ -203,7 +203,7 @@ class UserDocument(FirestoreModel):
                 company=exp.etablissement,
                 dates=exp.dates,
                 location=exp.lieu,
-                full_descriptions=exp.description  # Pas besoin de mettre dans une liste
+                full_descriptions=exp.description
             ))
         
         # Convertir les formations
