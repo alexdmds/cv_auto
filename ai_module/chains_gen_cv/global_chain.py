@@ -211,4 +211,4 @@ main_graph.add_edge("generate_skills", END)
 main_graph.add_edge("generate_title", END)
 
 # Compilation du workflow
-compiled_main_graph = main_graph.compile()
+compiled_gencv_graph = main_graph.compile()

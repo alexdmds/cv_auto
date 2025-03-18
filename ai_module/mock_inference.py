@@ -5,7 +5,7 @@ from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExp
 logger = logging.getLogger(__name__)
 
 
-async def generate_profile(profile_state: ProfileState) -> ProfileState:
+def generate_profile(profile_state: ProfileState) -> ProfileState:
     """
     Mock de la fonction generate_profile qui extrait des informations structurées à partir d'un texte brut.
     
@@ -17,6 +17,13 @@ async def generate_profile(profile_state: ProfileState) -> ProfileState:
     """
     logger.info("Utilisation du mock generate_profile")
     
+    # Vérifier que l'entrée est du bon type
+    if isinstance(profile_state, str):
+        logger.info("Conversion du texte en ProfileState")
+        text_content = profile_state
+        profile_state = ProfileState()
+        profile_state.input_text = text_content
+
     # Création des informations d'en-tête fictives
     head = GeneralInfo(
         name="Jean Dupont",

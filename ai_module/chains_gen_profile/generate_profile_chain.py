@@ -294,9 +294,8 @@ def create_profile_graph() -> StateGraph:
 
 if __name__ == "__main__":
     # Exemple d'utilisation
-    import asyncio
-    
-    async def test_profile_chain():
+
+    def test_profile_chain():
         # Texte de test
         texte_test = """
         Jean-Michel Dupont
@@ -362,7 +361,7 @@ if __name__ == "__main__":
         initial_state = ProfileState(input_text=texte_test)
         
         # Exécuter le graphe
-        result = await graph.ainvoke(initial_state)
+        result = graph.invoke(initial_state)
         
         # Debug: afficher le type et le contenu du résultat
         print(f"\nType du résultat: {type(result)}")
@@ -405,4 +404,4 @@ if __name__ == "__main__":
             print("Aucune formation trouvée")
     
     # Exécution du test
-    asyncio.run(test_profile_chain())
+    test_profile_chain()
