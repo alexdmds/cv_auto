@@ -8,7 +8,7 @@ from google.cloud.firestore_v1._helpers import DatetimeWithNanoseconds
 from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
 from pydantic import BaseModel, Field
 from .base_firestore import FirestoreModel
-
+from ai_module.lg_models import ProfileState
 # Définir des types génériques pour les classes de modèle
 T = TypeVar('T', bound='FirestoreModel')
 
@@ -85,7 +85,7 @@ class ExperienceProfile(BaseModel):
     company: Optional[str] = None
     dates: Optional[str] = None
     location: Optional[str] = None
-    full_descriptions: Optional[List[str]] = None
+    full_descriptions: Optional[str] = None
     bullets: Optional[List[str]] = None
 
 class HeadProfile(BaseModel):
@@ -110,7 +110,7 @@ class Profile(BaseModel):
 class UserDocument(FirestoreModel):
     """Modèle pour la collection 'users'"""
     collection_name = "users"
-    
+    id: str = Field(default="", description="ID de l'utilisateur")
     cvs: List[CV] = Field(default_factory=list)
     profile: Profile = Field(default_factory=Profile)
     
@@ -118,8 +118,6 @@ class UserDocument(FirestoreModel):
     def from_firestore_id(cls, user_id: str) -> Optional["UserDocument"]:
         """
         Construit un objet UserDocument directement à partir d'un ID Firestore.
-        Cette méthode gère directement la récupération, le prétraitement et la construction
-        de l'objet sans passer par les méthodes génériques de FirestoreModel.
         
         Args:
             user_id (str): L'identifiant du document dans Firestore
@@ -134,12 +132,12 @@ class UserDocument(FirestoreModel):
         
         if not doc.exists:
             return None
-            
+        
         # Récupérer et prétraiter les données brutes de Firestore
         raw_data = doc.to_dict()
         if not raw_data:
             return None
-            
+        
         # Créer une copie des données pour ne pas modifier l'original
         processed_data = dict(raw_data)
         
@@ -150,9 +148,10 @@ class UserDocument(FirestoreModel):
             # Traiter les expériences
             if "experiences" in profile and profile["experiences"]:
                 for exp in profile["experiences"]:
-                    # Conversion de full_descriptions de string à liste si nécessaire
-                    if "full_descriptions" in exp and isinstance(exp["full_descriptions"], str):
-                        exp["full_descriptions"] = [exp["full_descriptions"]]
+                    # Ne plus convertir full_descriptions en liste
+                    if "full_descriptions" in exp and isinstance(exp["full_descriptions"], list):
+                        # Si c'est une liste, prendre le premier élément ou une chaîne vide
+                        exp["full_descriptions"] = exp["full_descriptions"][0] if exp["full_descriptions"] else ""
             
             # Traiter les compétences
             if "skills" in profile and isinstance(profile["skills"], str):
@@ -164,16 +163,88 @@ class UserDocument(FirestoreModel):
                 # Si languages est une chaîne, créer une liste avec un dictionnaire par défaut
                 profile["languages"] = [{"language": profile["languages"], "level": ""}]
         
-        # Construire directement l'instance UserDocument
         try:
-            # Ajouter l'ID du document
-            processed_data['id'] = user_id
-            
-            # Créer l'instance en une seule étape
-            return cls(**processed_data)
+            # Créer l'instance sans ajouter l'ID comme champ
+            instance = cls(**processed_data)
+            # Définir l'ID directement sur l'instance
+            instance.id = user_id
+            return instance
         except Exception as e:
             print(f"Erreur lors de la construction de l'objet UserDocument: {e}")
             return None
+
+    @classmethod
+    def from_profile_state(cls, profile_state: "ProfileState", user_id: str) -> "UserDocument":
+        """
+        Crée une instance de UserDocument à partir d'un ProfileState.
+        
+        Args:
+            profile_state (ProfileState): L'état du profil à convertir
+            user_id (str): L'identifiant de l'utilisateur
+            
+        Returns:
+            UserDocument: Une nouvelle instance de UserDocument
+        """
+        # Créer le profil de base
+        profile = Profile(
+            head=HeadProfile(
+                name=profile_state.head.name,
+                title=profile_state.head.general_title,
+                mail=profile_state.head.email,
+                phone=profile_state.head.phone
+            )
+        )
+        
+        # Convertir les expériences
+        profile.experiences = []
+        for exp in profile_state.experiences:
+            profile.experiences.append(ExperienceProfile(
+                title=exp.intitule,
+                company=exp.etablissement,
+                dates=exp.dates,
+                location=exp.lieu,
+                full_descriptions=exp.description  # Pas besoin de mettre dans une liste
+            ))
+        
+        # Convertir les formations
+        profile.educations = []
+        for edu in profile_state.education:
+            profile.educations.append(EducationProfile(
+                title=edu.intitule,
+                university=edu.etablissement,
+                dates=edu.dates,
+                location=edu.lieu,
+                full_description=edu.description
+            ))
+        
+        # Traiter les compétences
+        if profile_state.head.skills:
+            profile.skills = {"Général": profile_state.head.skills.split(", ")}
+        
+        # Traiter les langues
+        if profile_state.head.langues:
+            langues_list = []
+            for langue in profile_state.head.langues.split(", "):
+                # Supposons que la chaîne soit au format "Langue (Niveau)"
+                parts = langue.split(" (")
+                if len(parts) == 2:
+                    language = parts[0]
+                    level = parts[1].rstrip(")")
+                    langues_list.append({"language": language, "level": level})
+                else:
+                    langues_list.append({"language": langue, "level": ""})
+            profile.languages = langues_list
+        
+        # Traiter les hobbies
+        if profile_state.head.hobbies:
+            profile.hobbies = profile_state.head.hobbies
+        
+        # Créer et retourner le UserDocument
+        return cls(
+            id=user_id,
+            profile=profile,
+            cvs=[]  # Liste vide de CVs par défaut
+        )
     
     def update_cv_from_global_state(self, cv_name: str, result_state, save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
         """

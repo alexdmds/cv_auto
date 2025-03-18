@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from firebase_admin import firestore
-from backend.utils_secu import increment_token_usage
+from ai_module.lg_models import ProfileState
+from backend.utils.utils_gcs import get_concatenated_text_files
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -14,9 +15,9 @@ config = load_config()
 
 # Import conditionnel basé sur la configuration
 if config.MOCK_OPENAI:
-    from ai_module.mock_inference import generate_profile, generate_head
+    from ai_module.mock_inference import generate_profile
 else:
-    from ai_module.inference import generate_profile, generate_head
+    from ai_module.inference import generate_profile
 
 def generate_profile_endpoint(user_id: str):
     """
@@ -31,67 +32,12 @@ def generate_profile_endpoint(user_id: str):
     try:
         logger.info(f"Génération du profil pour l'utilisateur {user_id}")
         
-        # Récupérer les fichiers depuis le bucket
-        bucket = storage.Client().bucket(config.BUCKET_NAME)
-        text_files = []
+        text_to_analyze = get_concatenated_text_files(user_id)
         
-        for blob in bucket.list_blobs(prefix=f"{user_id}/sources/"):
-            if blob.name.endswith(".txt"):
-                content = blob.download_as_string().decode("utf-8")
-                text_files.append(content)
-        
-        if not text_files:
-            logger.warning(f"Aucun fichier texte trouvé pour l'utilisateur {user_id}")
-            return jsonify({"error": "No text files found"}), 404
+        profile_state = ProfileState(input_text=text_to_analyze)
 
-        # Concaténer tous les textes
-        text_to_analyze = "\n\n".join(text_files)
-        
-        # Générer le profil et l'en-tête
-        profile = asyncio.run(generate_profile(text_to_analyze))
-        head = asyncio.run(generate_head(text_to_analyze))
+        result_state = generate_profile(profile_state)
 
-        # Calculer le nombre total de tokens
-        input_text = text_to_analyze
-        output_text = str(profile) + str(head)
-        total_tokens = len(input_text.split()) + len(output_text.split())
-        
-        # Incrémenter l'utilisation des tokens
-        increment_token_usage(user_id, total_tokens)
-        logger.info(f"Tokens utilisés pour {user_id}: {total_tokens}")
-
-        # Structurer les données selon le format demandé
-        cv_data = {
-            'head': {
-                'name': head.get('name', ''),
-                'phone': head.get('phone', ''),
-                'email': head.get('email', ''),
-                'general_title': head.get('general_title', '')
-            },
-            'experiences': {
-                'experiences': profile.get('experiences', [])
-            },
-            'education': {
-                'educations': profile.get('education', [])
-            },
-            'skills': {
-                'description': head.get('skills', '')
-            },
-            'hobbies': {
-                'description': head.get('hobbies', '')
-            },
-            'languages': {
-                'description': head.get('langues', '')
-            }
-        }
-
-        # Sauvegarder dans Firestore
-        db = firestore.Client()
-        doc_ref = db.collection('users').document(user_id)
-        doc_ref.set({
-            'cv_data': cv_data
-        }, merge=True)
-        
         logger.info(f"Profil et en-tête générés et sauvegardés pour l'utilisateur {user_id}")
         return jsonify({
             "success": True, 
