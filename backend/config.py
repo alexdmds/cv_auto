@@ -32,7 +32,7 @@ class BaseConfig:
 
 class LocalConfig(BaseConfig):
     ENV = "local"
-    MOCK_OPENAI = False
+    MOCK_OPENAI = True
     CHECK_AUTH = False  # Désactive l'authentification en dev
 
 class DevConfig(BaseConfig):

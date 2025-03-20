@@ -132,6 +132,44 @@ class ProfileState(BaseModel):
         """
         return cls(input_text=input_text)
 
+    @classmethod
+    def from_dict(cls, data: dict) -> "ProfileState":
+        """
+        Crée une instance de ProfileState à partir d'un dictionnaire.
+        
+        Args:
+            data (dict): Dictionnaire contenant les données du profil
+            
+        Returns:
+            ProfileState: Une nouvelle instance de ProfileState
+        """
+        # Initialiser les valeurs par défaut
+        experiences = []
+        education = []
+        head = GeneralInfo()
+        input_text = ""
+
+        # Extraire les données du dictionnaire
+        if "experiences" in data:
+            experiences = [GlobalExperience(**exp) if isinstance(exp, dict) else exp for exp in data["experiences"]]
+        
+        if "education" in data:
+            education = [GlobalEducation(**edu) if isinstance(edu, dict) else edu for edu in data["education"]]
+        
+        if "head" in data:
+            head = GeneralInfo(**data["head"]) if isinstance(data["head"], dict) else data["head"]
+        
+        if "input_text" in data:
+            input_text = data["input_text"]
+
+        # Créer et retourner l'instance
+        return cls(
+            experiences=experiences,
+            education=education,
+            head=head,
+            input_text=input_text
+        )
+
 class CVGenState(BaseModel):
     """État global du workflow."""
     head: CVHead

@@ -44,8 +44,11 @@ def generate_profile_endpoint(user_id: str):
         # Appel synchrone à generate_profile
         result_state = generate_profile(profile_state)
         
+        # Convertir le résultat en ProfileState
+        profile_state = ProfileState.from_dict(result_state)
+        
         # Création du document utilisateur
-        user_document = UserDocument.from_profile_state(result_state, user_id)
+        user_document = UserDocument.from_profile_state(profile_state, user_id)
         
         # Sauvegarde synchrone
         user_document.save()
