@@ -1,0 +1,98 @@
+{
+    "users": {
+        "cvs": [
+            {
+                "job_raw": "Fiche de poste complète du job",
+                "cv_name": "nom de ce CV pour le poste",
+                "cv_data": {
+                    "educations": [
+                        {
+                            "title": "title of the formation",
+                            "description": "description of the formation",
+                            "dates": "dates of the formation",
+                            "university": "university or school name",
+                            "location": "location of the formation"
+                        }
+                    ],
+                    "lang_of_cv": "language in which the cv has to be written",
+                    "hobbies": "description of hobbies and interest of the candidate",
+                    "languages": [
+                        {
+                            "language": "Name of the language",
+                            "level": "level and certifications"
+                        }
+                    ],
+                    "phone": "phone number of the candidate",
+                    "mail": "email of the candidate",
+                    "title": "Title on the CV",
+                    "sections_name": {
+                        "experience_section_name": "Name to give to the \"professional experience section\"",
+                        "Hobbies_section": "Name to give to \"hobbies section\"",
+                        "languages_section_name": "Name to give to \"Language\" section",
+                        "skills_section_name": "Name to give to the skills' section",
+                        "education_section_name": "Name to give to the \"education section\""
+                    },
+                    "skills": [
+                        {
+                            "skills": "skills of the candidate in the category",
+                            "category_name": "Name of a category of skills"
+                        }
+                    ],
+                    "experiences": [
+                        {
+                            "company": "company name",
+                            "title": "title of the position in the job",
+                            "bullets": [
+                                "bullet1 describing the job",
+                                "bullet2 describing the job"
+                            ],
+                            "dates": "dates of the job",
+                            "location": "location of the job"
+                        }
+                    ],
+                    "name": "Name on the top of the CV"
+                }
+            }
+        ],
+        "profile": {
+            "educations": [
+                {
+                    "title": "Title of the formation",
+                    "full_description": "Full description of the formation, relevants courses, projects...",
+                    "dates": "dates of the formation",
+                    "university": "Name of the school or university"
+                }
+            ],
+            "head": {
+                "title": "short sumup of the candidate",
+                "mail": "email of the candidate",
+                "linkedin_url": "linkedIn url of the candidate",
+                "phone": "Phone number of the candidate",
+                "name": "Full name of the candidate"
+            },
+            "languages": "All languages known by the candidate with level and certifications",
+            "skills": "All professional skills, except languages",
+            "hobbies": "All personnal informations on hobbies, passions... all relevant non directly professionals infos",
+            "experiences": [
+                {
+                    "full_descriptions": "full description of the experience in this job, including achievements",
+                    "title": "title of the position",
+                    "company": "company name",
+                    "dates": "dates of the job",
+                    "location": "location of the job"
+                }
+            ]
+        }
+    },
+    "calls": {
+        "endpoint": "generate_profile",
+        "call_time": "2025-03-14T13:27:47.642000+00:00",
+        "user_id": "test_user",
+        "usage_count": 5
+    },
+    "usage": {
+        "user_id": "test_user",
+        "last_request_time": "2025-03-14T13:29:14.851000+00:00",
+        "total_usage": 10
+    }
+}

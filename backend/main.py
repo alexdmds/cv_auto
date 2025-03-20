@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 from backend.api.endpoint__generate_profile import generate_profile_endpoint
+from backend.api.endpoint_generate_cv import generate_cv_endpoint
 from backend.config import configure_logging, load_config
 from backend.auth import auth_required
 from backend.decorators import check_rate_limit
@@ -48,6 +49,15 @@ def generate_profile():
     """Génère un profil pour l'utilisateur authentifié"""
     user_id = request.user_id  # Injecté par le décorateur auth_required
     return generate_profile_endpoint(user_id)
+
+@app.route('/api/generate-cv', methods=['POST'])
+@auth_required
+@check_rate_limit
+def generate_cv():
+    """Génère un CV pour l'utilisateur authentifié"""
+    user_id = request.user_id  # Injecté par le décorateur auth_required
+    cv_name = request.json.get('cv_name')
+    return generate_cv_endpoint(user_id, cv_name)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

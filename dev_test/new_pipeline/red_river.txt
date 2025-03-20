@@ -1,0 +1,59 @@
+Data Tech Lead
+Red River West est une société de Venture Capital transfrontalière qui aide les startups technologiques
+européennes à croître grâce à un soutien financier et à un accompagnement pratique. Ils investissent entre 5 et
+15 millions d'euros dans des startups en Série A ou B pour les aider dans leur expansion internationale, en
+particulier sur le marché américain.
+Pour se concentrer sur les opportunités les plus prometteuses, ils utilisent une plateforme interne qui collecte
+et analyse des données sur chaque startup européenne, les transformant en informations exploitables.
+Entreprise classée parmi les 20 meilleurs fonds axés sur les données pendant deux années consécutives aux
+côtés de leaders du secteur comme Sequoia et a16z.
+Leurs investissements récents incluent DeepOpinion (Agentic AI), Robovision (Computer Vision), The
+Exploration Company (Space Tech), etc.
+Ils lancent actuellement un nouveau fonds d'investissement où la plupart des décisions seront prises grâce à
+cette plateforme de données et ils recherchent une personne qui leur permettra de faire passer cette
+plateforme au niveau supérieur afin de changer radicalement la façon dont l'investissement en VC se fait dans
+le monde.
+Missions
+Votre objectif sera de diriger une petite équipe technique et d'être responsable de la partie tech & data de
+RAMP, une plateforme de données interne qui aide l'équipe à prioriser et à accéder aux meilleures opportunités
+d'investissement.
+Vous serez en charge des décisions techniques, avec une majorité de développement hands-on et vous serez
+un élément clé dans l'élaboration de la roadmap du produit (en collaboration avec le product lead) en
+suggérant des fonctionnalités et des idées.
+Voici quelques exemples de projets qu’ils ont réalisés jusqu'à présent afin que vous ayez une meilleure idée du
+rôle :
+• Analyse de startups open-source : ils ont construit un module pour collecter et analyser des données
+provenant de sources de données telles que Github, Huggingface, Hackernews, … afin de trouver les
+prochains succès de l'open-source.
+• Cartographie concurrentielle : ils ont conçu un moyen de trouver les relations de concurrence, les
+marchés et les industries des entreprises en utilisant les embeddings de LLM et le clustering par
+proximité sémantique.
+• Signalement et sourcing prioritaires : ils ont construit un système pour signaler les startups les plus
+intéressantes et à la croissance la plus rapide à notre équipe d'investissement grâce à des ensembles
+de données sur les startups européennes qu’ils collectent depuis 4 ans.
+Stack Technique
+• Base de données : PostgreSQL (Supabase)
+• API : GraphQL via postgREST
+• Pipeline de données : Python & Typescript (scrapers)
+• Cloud : OVH (k8s + VPS)
+• Front-end : Nuxt3 / vue3 & shadcn-vue
+• Autres : GitHub, Docker, Kubernetes
+Votre profil
+Must have
+• Expérience dans un poste de Tech/Data Lead, si possible dans une startup.
+• Excellentes compétences de raisonnement.
+• Python (pandas, numpy, matplotlib, …)
+• Compétences avancées en data engineering (gestion du pipeline de données, SQL, etc.).
+• Compétences avancées en Python (pandas, numpy, matplotlib, …) et Typescript / Javascript.
+• Compétences DevOps (Cloud, Docker, gestion CI/CD, gestion de base du serveur Unix, etc.).
+• Capacité à prendre des responsabilités, des initiatives et à utiliser d'excellentes compétences de
+compréhension pour développer des algorithmes d'IA et de machine learning ainsi que des approches
+statistiques.
+• Au moins une connaissance de base des LLM (embeddings, …).
+• Maîtrise de l'anglais.
+Nice to have
+• Expérience de travail sur un projet solo/création de produit.
+• Compétences de développement Full-stack Javascript (React, etc.).
+• Connaissance de l'écosystème open-source.
+• Connaissance ou intérêt pour l'écosystème tech & startups / VC.
+• Lecture et rédaction d'une documentation efficace.

@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import jsonify, request
-from backend.utils import check_token_usage
+from backend.utils_secu import check_token_usage
 import logging
 
 logger = logging.getLogger(__name__)
