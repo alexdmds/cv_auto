@@ -5,20 +5,19 @@ from typing_extensions import TypedDict, Annotated
 # LangGraph
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
-
-from dev_test.models_langchain.llm_config import get_llm
-from data_structures import Experience
+from ai_module.llm_config import get_llm
+from ai_module.lg_models import CVExperience
 
 ##############################################################################
 # 1. Définition des structures de données (state principal, worker state)
 ##############################################################################
 
 class ExpState(TypedDict):
-    experiences_raw: List[Experience]
-    experiences_refined: Annotated[List[Experience], operator.add]
+    experiences_raw: List[CVExperience]
+    experiences_refined: Annotated[List[CVExperience], operator.add]
 
 class WorkerState(TypedDict):
-    experience: Experience
+    experience: CVExperience
 
 ##############################################################################
 # 2. Définition des noeuds (fonctions) du graphe
@@ -46,7 +45,7 @@ def summarize_exp(state: WorkerState) -> dict:
     response = llm.invoke(prompt)
 
     # Création d'une nouvelle expérience en copiant l'originale et en mettant à jour les champs
-    experience_refined = Experience(**exp.model_dump())  # Copie tous les champs
+    experience_refined = CVExperience(**exp.model_dump())  # Copie tous les champs
     experience_refined.summary = response.content  # Met le résumé comme summary
     
     return {"experiences_refined": [experience_refined]}
@@ -69,7 +68,7 @@ exp_graph.add_edge("summarize_exp", END)
 # Compilation du workflow
 compiled_exp_graph = exp_graph.compile()
 
-def summarize_exps(experiences: List[Experience]) -> List[Experience]:
+def summarize_exps(experiences: List[CVExperience]) -> List[CVExperience]:
     """
     Résume une liste d'expériences en utilisant le graphe de traitement.
     

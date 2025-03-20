@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, START, END
-from dev_test.models_langchain.llm_config import get_llm
+from ai_module.llm_config import get_llm
 import json
 from pathlib import Path
 import sys
@@ -8,11 +8,11 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 import os
 
-from summarize_exp import summarize_exps
-from summarize_edu import summarize_edus
-from ai_module.lg_models import GlobalState
-from prioritize_edu import prioritize_edu
-from prioritize_exp import prioritize_exp
+from .summarize_exp import summarize_exps
+from .summarize_edu import summarize_edus
+from ai_module.lg_models import CVGenState
+from .prioritize_edu import prioritize_edu
+from .prioritize_exp import prioritize_exp
 from langchain_core.messages import SystemMessage, HumanMessage
 # Ajout du répertoire parent au PYTHONPATH
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -22,7 +22,7 @@ sys.path.append(root_dir)
 # 1. Définition des noeuds du graphe
 ##############################################################################
 
-def summarize_job(state: GlobalState) -> dict:
+def summarize_job(state: CVGenState) -> dict:
     """
     Résume la description du poste.
     """
@@ -35,21 +35,21 @@ def summarize_job(state: GlobalState) -> dict:
     response = llm.invoke(prompt)
     return {"job_refined": response.content}
 
-def process_experiences(state: GlobalState) -> dict:
+def process_experiences(state: CVGenState) -> dict:
     """
     Traite les expériences.
     """
     result = summarize_exps(state.experiences)
     return {"experiences": result}
 
-def process_education(state: GlobalState) -> dict:
+def process_education(state: CVGenState) -> dict:
     """
     Traite les formations.
     """
     result = summarize_edus(state.education)
     return {"education": result}
 
-def aggregate_results(state: GlobalState) -> dict:
+def aggregate_results(state: CVGenState) -> dict:
     """
     Agrège tous les résultats en une sortie finale cohérente.
     """
@@ -74,21 +74,21 @@ EXPÉRIENCES
 
     return {"final_output": final_output}
 
-def prioritize_experiences(state: GlobalState) -> dict:
+def prioritize_experiences(state: CVGenState) -> dict:
     """
     Priorise les expériences.
     """
     result = prioritize_exp(state.job_refined, state.experiences)
     return {"experiences": result}
 
-def prioritize_education(state: GlobalState) -> dict:
+def prioritize_education(state: CVGenState) -> dict:
     """
     Priorise les formations.
     """
     result = prioritize_edu(state.job_refined, state.education)
     return {"education": result}
 
-def generate_title(state: GlobalState) -> dict:
+def generate_title(state: CVGenState) -> dict:
     """
     Génère un titre professionnel adapté en fonction de la fiche de poste.
     """
@@ -129,7 +129,7 @@ class SkillsOutput(BaseModel):
         default_factory=dict  # Valeur par défaut pour éviter l'erreur de validation
     )
 
-def generate_skills(state: GlobalState) -> dict:
+def generate_skills(state: CVGenState) -> dict:
     """
     Génère une liste structurée de compétences à partir des compétences brutes et de la fiche de poste.
     """
@@ -182,7 +182,7 @@ Exemple de réponse correcte:
 ##############################################################################
 
 # Création du graphe
-main_graph = StateGraph(GlobalState)
+main_graph = StateGraph(CVGenState)
 
 # Ajout des noeuds
 main_graph.add_node("summarize_job", summarize_job)

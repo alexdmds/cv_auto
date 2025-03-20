@@ -1,14 +1,10 @@
 from flask import jsonify, request
-from google.cloud import storage
 import logging
 from backend.config import load_config
 from dotenv import load_dotenv
-import os
-import asyncio
-from firebase_admin import firestore
-from ai_module.lg_models import ProfileState
 from backend.utils.utils_gcs import get_concatenated_text_files
 from backend.models import UserDocument
+from ai_module.lg_models import ProfileState
 load_dotenv()
 logger = logging.getLogger(__name__)
 config = load_config()
@@ -32,12 +28,21 @@ def generate_profile_endpoint(user_id: str):
     """
     try:
         logger.info(f"Génération du profil pour l'utilisateur {user_id}")
+
+        # Définir l'UserDocument à partir de user_id
+        user_document = UserDocument.from_firestore_id(user_id)
+        if not user_document:
+            logger.warning(f"Utilisateur avec l'ID {user_id} non trouvé dans Firestore, génération d'un document vierge")
+            user_document = UserDocument(id=user_id)
         
         # Récupérer le texte de manière synchrone
-        text_content = get_concatenated_text_files(user_id)
+        text_content = get_concatenated_text_files(user_document)
+        
+        # Créer un objet ProfileState avec le texte brut
+        profile_state = ProfileState.from_input_text(text_content)
         
         # Appel synchrone à generate_profile
-        result_state = generate_profile(text_content)
+        result_state = generate_profile(profile_state)
         
         # Création du document utilisateur
         user_document = UserDocument.from_profile_state(result_state, user_id)

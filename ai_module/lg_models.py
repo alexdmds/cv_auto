@@ -119,6 +119,19 @@ class ProfileState(BaseModel):
     head: GeneralInfo = Field(default_factory=GeneralInfo, description="En-tête du profil")
     input_text: str = Field(default="", description="Texte brut d'entrée")
 
+    @classmethod
+    def from_input_text(cls, input_text: str) -> "ProfileState":
+        """
+        Crée une instance de ProfileState à partir d'un texte d'entrée.
+        
+        Args:
+            input_text (str): Le texte brut d'entrée
+            
+        Returns:
+            ProfileState: Une nouvelle instance de ProfileState
+        """
+        return cls(input_text=input_text)
+
 class CVGenState(BaseModel):
     """État global du workflow."""
     head: CVHead

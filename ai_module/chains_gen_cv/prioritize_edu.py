@@ -5,24 +5,24 @@ from pydantic import BaseModel, Field
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
-from dev_test.models_langchain.llm_config import get_llm
+from ai_module.llm_config import get_llm
 from langchain_core.messages import SystemMessage, HumanMessage
-from data_structures import Education
+from ai_module.lg_models import CVEducation
 
 class State(TypedDict):
     job_summary: str
     markdown_choice: str
-    educations_raw: List[Education]
-    educations_weighted: Annotated[List[Education], operator.add]
-    educations_nb_mots: List[Education]
-    educations_description: Annotated[List[Education], operator.add]
+    educations_raw: List[CVEducation]
+    educations_weighted: Annotated[List[CVEducation], operator.add]
+    educations_nb_mots: List[CVEducation]
+    educations_description: Annotated[List[CVEducation], operator.add]
 
 class WorkerWeightState(TypedDict):
-    education: Education
+    education: CVEducation
     markdown_choice: str
 
 class WorkerBulletsState(TypedDict):
-    education: Education
+    education: CVEducation
     job_summary: str
 
 class PlanWeight(BaseModel):
@@ -204,7 +204,7 @@ graph.add_edge("generate_bullets", END)
 # Compilation
 chain = graph.compile()
 
-def prioritize_edu(job_summary: str, educations: List[Education]) -> List[Education]:
+def prioritize_edu(job_summary: str, educations: List[CVEducation]) -> List[CVEducation]:
     """
     Priorise et enrichit une liste d'éducations en fonction d'un résumé de poste.
     
@@ -231,40 +231,3 @@ def prioritize_edu(job_summary: str, educations: List[Education]) -> List[Educat
     )
     
     return sorted_educations
-
-if __name__ == "__main__":
-    import json
-    import os
-    from data_structures import GlobalState
-
-    # Obtenir le chemin absolu du répertoire du script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    state_path = os.path.join(script_dir, "result_state.json")
-    
-    with open(state_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    # Création d'une instance de GlobalState à partir du JSON
-    global_state = GlobalState.from_json(data)  # job_summary est optionnel
-
-    #job summary
-    print(global_state.job_refined)
-
-    # Création du State pour prioritize_exp
-    state = {
-        "job_summary": global_state.job_refined,
-        "markdown_choice": "",
-        "educations_raw": global_state.education,
-        "educations_weighted": [],
-        "educations_description": []
-    }
-
-    # Test de la fonction
-    educations_priorisees = prioritize_edu(state["job_summary"], state["educations_raw"])
-    
-    print("\nFormations priorisées:")
-    for edu in educations_priorisees:
-        print(f"\n{edu.degree_raw} à {edu.institution_raw}")
-        print(f"Ordre: {edu.order}")
-        print("Description:")
-        print(edu.description_generated)

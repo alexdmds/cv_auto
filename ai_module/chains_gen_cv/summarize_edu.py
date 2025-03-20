@@ -6,19 +6,19 @@ from typing_extensions import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 
-from dev_test.models_langchain.llm_config import get_llm
-from data_structures import Education
+from ai_module.llm_config import get_llm
+from ai_module.lg_models import CVEducation
 
 ##############################################################################
 # 1. Définition des structures de données (state principal, worker state)
 ##############################################################################
 
 class EduState(TypedDict):
-    education_raw: List[Education]
-    education_refined: Annotated[List[Education], operator.add]
+    education_raw: List[CVEducation]
+    education_refined: Annotated[List[CVEducation], operator.add]
 
 class WorkerState(TypedDict):
-    education: Education
+    education: CVEducation
 
 ##############################################################################
 # 2. Définition des noeuds (fonctions) du graphe
@@ -45,7 +45,7 @@ def summarize_edu(state: WorkerState) -> dict:
     response = llm.invoke(prompt)
 
     # Création d'une nouvelle formation en copiant l'originale et en mettant à jour les champs
-    education_refined = Education(**edu.model_dump())  # Copie tous les champs
+    education_refined = CVEducation(**edu.model_dump())  # Copie tous les champs
     education_refined.summary = response.content  # Met le résumé comme summary
     
     return {"education_refined": [education_refined]}
@@ -68,7 +68,7 @@ edu_graph.add_edge("summarize_edu", END)
 # Compilation du workflow
 compiled_edu_graph = edu_graph.compile()
 
-def summarize_edus(education: List[Education]) -> List[Education]:
+def summarize_edus(education: List[CVEducation]) -> List[CVEducation]:
     """
     Résume une liste de formations en utilisant le graphe de traitement.
     

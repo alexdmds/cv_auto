@@ -6,7 +6,7 @@ import logging
 
 def configure_logging():
     logging.basicConfig(
-        level=logging.DEBUG,  # Capture tous les niveaux de log
+        level=logging.INFO,  # Capture uniquement les logs INFO et supérieurs
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[
             logging.StreamHandler()  # Affiche tout dans la console
@@ -15,11 +15,11 @@ def configure_logging():
 
     # S'assurer que le logger racine capture tout
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)
 
     # Configurer les modules tiers et enfants
-    logging.getLogger("werkzeug").setLevel(logging.INFO)  # Ajustez si nécessaire
-    logging.getLogger("cv_automation").setLevel(logging.DEBUG)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Réduit les logs de Werkzeug
+    logging.getLogger("cv_automation").setLevel(logging.INFO)
 
 
 class BaseConfig:
@@ -32,7 +32,7 @@ class BaseConfig:
 
 class LocalConfig(BaseConfig):
     ENV = "local"
-    MOCK_OPENAI = True
+    MOCK_OPENAI = False
     CHECK_AUTH = False  # Désactive l'authentification en dev
 
 class DevConfig(BaseConfig):

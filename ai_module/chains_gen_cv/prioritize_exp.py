@@ -5,24 +5,24 @@ from pydantic import BaseModel, Field
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
-from dev_test.models_langchain.llm_config import get_llm
+from ai_module.llm_config import get_llm
 from langchain_core.messages import SystemMessage, HumanMessage
-from data_structures import Experience
+from ai_module.lg_models import CVExperience
 
 class State(TypedDict):
     job_summary: str
     markdown_choice: str
-    experiences_raw: List[Experience]
-    experiences_weighted: Annotated[List[Experience], operator.add]
-    experience_with_nb_bullets: List[Experience]
-    experiences_bullets: Annotated[List[Experience], operator.add]
+    experiences_raw: List[CVExperience]
+    experiences_weighted: Annotated[List[CVExperience], operator.add]
+    experience_with_nb_bullets: List[CVExperience]
+    experiences_bullets: Annotated[List[CVExperience], operator.add]
 
 class WorkerWeightState(TypedDict):
-    experience: Experience
+    experience: CVExperience
     markdown_choice: str
 
 class WorkerBulletsState(TypedDict):
-    experience: Experience
+    experience: CVExperience
     job_summary: str
 
 class PlanWeight(BaseModel):
@@ -242,7 +242,7 @@ graph.add_edge("generate_bullets", END)
 # Compilation
 chain = graph.compile()
 
-def prioritize_exp(job_summary: str, experiences: List[Experience]) -> List[Experience]:
+def prioritize_exp(job_summary: str, experiences: List[CVExperience]) -> List[CVExperience]:
     """
     Priorise et enrichit une liste d'expériences en fonction d'un résumé de poste.
     
@@ -269,42 +269,3 @@ def prioritize_exp(job_summary: str, experiences: List[Experience]) -> List[Expe
     )
     
     return sorted_experiences
-
-if __name__ == "__main__":
-    import json
-    import os
-    from data_structures import GlobalState
-
-    # Obtenir le chemin absolu du répertoire du script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    state_path = os.path.join(script_dir, "result_state.json")
-    
-    with open(state_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    # Création d'une instance de GlobalState à partir du JSON
-    global_state = GlobalState.from_json(data)  # job_summary est optionnel
-
-    #job summary
-    print(global_state.job_refined)
-
-    # Création du State pour prioritize_exp
-    state = {
-        "job_summary": global_state.job_refined,
-        "markdown_choice": "",
-        "experiences_raw": global_state.experiences,
-        "experiences_weighted": [],
-        "experience_with_nb_bullets": [],
-        "experiences_bullets": []
-    }
-
-    # Test de la fonction
-    experiences_priorisees = prioritize_exp(state["job_summary"], state["experiences_raw"])
-    
-    print("\nExpériences priorisées:")
-    for exp in experiences_priorisees:
-        print(f"\n{exp.title_raw} chez {exp.company_raw}")
-        print(f"Ordre: {exp.order}")
-        print("Points clés:")
-        for bullet in exp.bullets:
-            print(f"- {bullet}")
