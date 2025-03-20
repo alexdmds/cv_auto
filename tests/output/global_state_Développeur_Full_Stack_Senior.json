@@ -1,0 +1,118 @@
+{
+  "head": {
+    "name": "Jean Dupont",
+    "title_raw": "Développeur Full Stack",
+    "title_generated": "",
+    "title_refined": "Développeur Full Stack",
+    "mail": "jean.dupont@example.com",
+    "tel_raw": "+33612345678",
+    "tel_refined": "+33612345678"
+  },
+  "sections": {
+    "experience": "Expérience Professionnelle",
+    "education": "Formation",
+    "skills": "Compétences Techniques",
+    "languages": "Langues",
+    "hobbies": "Centres d'intérêt"
+  },
+  "experiences": [
+    {
+      "title_raw": "Lead Developer",
+      "title_refined": "Lead Developer",
+      "company_raw": "Tech Innovation",
+      "company_refined": "Tech Innovation",
+      "location_raw": "Paris, France",
+      "location_refined": "Paris, France",
+      "dates_raw": "2018-2022",
+      "dates_refined": "2018-2022",
+      "description_raw": "Direction technique d'une équipe de 5 développeurs Conception d'architecture microservices pour des applications à forte charge Migration de systèmes legacy vers des solutions cloud natives",
+      "description_refined": "Direction technique d'une équipe de 5 développeurs Conception d'architecture microservices pour des applications à forte charge Migration de systèmes legacy vers des solutions cloud natives",
+      "summary": "",
+      "bullets": [
+        "Direction technique d'une équipe de 5 développeurs",
+        "Conception d'architecture microservices pour des applications à forte charge",
+        "Migration de systèmes legacy vers des solutions cloud natives"
+      ],
+      "weight": 1.0,
+      "order": 0,
+      "nb_bullets": 3
+    },
+    {
+      "title_raw": "Développeur Frontend",
+      "title_refined": "Développeur Frontend",
+      "company_raw": "StartupXYZ",
+      "company_refined": "StartupXYZ",
+      "location_raw": "Lyon, France",
+      "location_refined": "Lyon, France",
+      "dates_raw": "2015-2018",
+      "dates_refined": "2015-2018",
+      "description_raw": "Développement d'interfaces utilisateur avec React et TypeScript Optimisation des performances frontend (bundle size, rendering) Mise en place de tests automatisés (Jest, Cypress)",
+      "description_refined": "Développement d'interfaces utilisateur avec React et TypeScript Optimisation des performances frontend (bundle size, rendering) Mise en place de tests automatisés (Jest, Cypress)",
+      "summary": "",
+      "bullets": [
+        "Développement d'interfaces utilisateur avec React et TypeScript",
+        "Optimisation des performances frontend (bundle size, rendering)",
+        "Mise en place de tests automatisés (Jest, Cypress)"
+      ],
+      "weight": 1.0,
+      "order": 1,
+      "nb_bullets": 3
+    }
+  ],
+  "education": [
+    {
+      "degree_raw": "Master en Informatique",
+      "degree_refined": "Master en Informatique",
+      "institution_raw": "Université de Paris",
+      "institution_refined": "Université de Paris",
+      "location_raw": "Paris, France",
+      "location_refined": "Paris, France",
+      "dates_raw": "2013-2015",
+      "dates_refined": "2013-2015",
+      "description_raw": "Spécialisation en développement web et applications cloud",
+      "description_generated": "",
+      "description_refined": "Spécialisation en développement web et applications cloud",
+      "summary": "",
+      "weight": 1.0,
+      "order": 0,
+      "nb_mots": 7
+    }
+  ],
+  "competences": {
+    "Langages de programmation": [
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "Java"
+    ],
+    "Frameworks & Bibliothèques": [
+      "React",
+      "Node.js",
+      "Express",
+      "Django",
+      "Spring Boot"
+    ],
+    "DevOps & Cloud": [
+      "Docker",
+      "Kubernetes",
+      "AWS",
+      "CI/CD",
+      "Git"
+    ]
+  },
+  "skills_raw": "Python, JavaScript, TypeScript, Java, React, Node.js, Express, Django, Spring Boot, Docker, Kubernetes, AWS, CI/CD, Git",
+  "langues": [
+    {
+      "language": "Français",
+      "level": "Langue maternelle"
+    },
+    {
+      "language": "Anglais",
+      "level": "Courant (TOEIC 950)"
+    }
+  ],
+  "hobbies_raw": "Randonnée en montagne, photographie de paysage, lecture de science-fiction",
+  "hobbies_refined": "Randonnée en montagne, photographie de paysage, lecture de science-fiction",
+  "job_raw": "Nous recherchons un développeur full stack senior avec au moins 5 ans d'expérience en JavaScript/TypeScript et Python. Vous serez responsable de la conception, de l'implémentation et de la maintenance d'applications web à forte charge. Une expérience avec les technologies cloud est requise.",
+  "job_refined": ""
+}
