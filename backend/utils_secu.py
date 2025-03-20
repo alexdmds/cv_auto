@@ -1,7 +1,7 @@
 import logging
 from firebase_admin import auth, firestore
 from backend.config import load_config
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 logger = logging.getLogger(__name__)
 config = load_config()
@@ -20,7 +20,7 @@ def check_token_usage(user_id: str) -> bool:
     """
     try:
         db = firestore.Client()
-        stats_ref = db.collection('token_stats').document(user_id)
+        stats_ref = db.collection('usage').document(user_id)
         stats = stats_ref.get()
 
         # Si pas de stats, c'est la première requête, donc on autorise
@@ -28,8 +28,9 @@ def check_token_usage(user_id: str) -> bool:
             logger.info(f"Première requête pour l'utilisateur {user_id}")
             return True
 
-        total_tokens = stats.to_dict().get('total_tokens', 0)
-        last_request = stats.to_dict().get('last_request')
+        stats_dict = stats.to_dict()
+        total_tokens = stats_dict.get('total_usage', 0)
+        last_request = stats_dict.get('last_request_time')
 
         if total_tokens >= 1_000_000:
             logger.warning(f"L'utilisateur {user_id} a dépassé 1 million de tokens.")
@@ -37,15 +38,20 @@ def check_token_usage(user_id: str) -> bool:
 
         if last_request:
             # Convertir last_request en UTC si ce n'est pas déjà le cas
-            if last_request.tzinfo is None:
-                last_request = last_request.replace(tzinfo=timezone.utc)
+            if isinstance(last_request, datetime):
+                if last_request.tzinfo is None:
+                    last_request = last_request.replace(tzinfo=timezone.utc)
+                elif last_request.tzinfo != timezone.utc:
+                    last_request = last_request.astimezone(timezone.utc)
+            else:
+                logger.error(f"Format de date invalide pour last_request: {type(last_request)}")
+                return False
             
-            # S'assurer que current_time est en UTC
-            current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
-            
+            current_time = datetime.now(UTC)
             time_since_last_request = (current_time - last_request).total_seconds()
+            
             if time_since_last_request < 20:
-                logger.warning(f"L'utilisateur {user_id} a fait une requête récemment (il y a {time_since_last_request} secondes).")
+                logger.warning(f"L'utilisateur {user_id} a fait une requête récemment (il y a {time_since_last_request:.2f} secondes).")
                 return False
 
         return True

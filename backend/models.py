@@ -3,7 +3,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import json
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from google.cloud.firestore_v1._helpers import DatetimeWithNanoseconds
 from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
 from pydantic import BaseModel, Field
@@ -98,8 +98,8 @@ class Profile(BaseModel):
     head: HeadProfile = Field(default_factory=HeadProfile)
     educations: List[EducationProfile] = Field(default_factory=list)
     experiences: List[ExperienceProfile] = Field(default_factory=list)
-    languages: Optional[str] = None
-    skills: Optional[str] = None
+    languages: Optional[Union[str, List[Dict[str, str]]]] = None
+    skills: Optional[Union[str, Dict[str, List[str]]]] = None
     hobbies: Optional[str] = None
 
 # ====== Documents Firestore ======
@@ -345,8 +345,25 @@ class CallDocument(FirestoreModel):
     endpoint: Optional[str] = None
     call_time: datetime = Field(default_factory=datetime.now)
     usage_count: int = 1
-    duration: Optional[float] = None
-    status: Optional[str] = None
+
+    @classmethod
+    def create_call(cls, user_id: str, endpoint: str) -> "CallDocument":
+        """
+        Crée un nouveau document d'appel dans Firestore.
+        
+        Args:
+            user_id (str): ID de l'utilisateur
+            endpoint (str): Nom de l'endpoint appelé
+            
+        Returns:
+            CallDocument: Le document d'appel créé
+        """
+        call = cls(
+            user_id=user_id,
+            endpoint=endpoint
+        )
+        call.save()
+        return call
     
 class UsageDocument(FirestoreModel):
     """Modèle pour la collection 'usage'"""
@@ -355,4 +372,48 @@ class UsageDocument(FirestoreModel):
     user_id: str
     last_request_time: datetime = Field(default_factory=datetime.now)
     total_usage: int = 0
-    quota: Optional[int] = None
+
+    @classmethod
+    def get_or_create(cls, user_id: str) -> "UsageDocument":
+        """
+        Récupère ou crée un document d'utilisation pour un utilisateur.
+        Utilise user_id comme ID du document Firestore.
+        
+        Args:
+            user_id (str): ID de l'utilisateur
+            
+        Returns:
+            UsageDocument: Le document d'utilisation
+        """
+        db = cls.get_db()
+        doc_ref = db.collection(cls.collection_name).document(user_id)
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            # Si le document existe, on récupère directement les données
+            data = doc.to_dict()
+            data['user_id'] = user_id  # S'assurer que l'ID est présent
+            instance = cls(**data)
+            instance.id = user_id  # Définir l'ID du document
+            return instance
+        else:
+            # Si le document n'existe pas, on le crée avec les valeurs par défaut
+            usage = cls(
+                user_id=user_id,
+                total_usage=0,
+                last_request_time=datetime.now(UTC)
+            )
+            usage.id = user_id  # Définir l'ID du document
+            usage.save()
+            return usage
+    
+    def increment_usage(self, increment: int = 50000) -> None:
+        """
+        Incrémente le compteur d'utilisation et met à jour la date de dernière requête.
+        
+        Args:
+            increment (int): Le nombre d'incréments à ajouter au compteur d'utilisation.
+        """
+        self.total_usage += increment
+        self.last_request_time = datetime.now(UTC)
+        self.save()

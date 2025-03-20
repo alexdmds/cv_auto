@@ -1,9 +1,10 @@
 from flask import jsonify, request
 import logging
+import time
 from backend.config import load_config
 from dotenv import load_dotenv
 from backend.utils.utils_gcs import get_concatenated_text_files
-from backend.models import UserDocument
+from backend.models import UserDocument, CallDocument, UsageDocument
 from ai_module.lg_models import ProfileState
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ def generate_profile_endpoint(user_id: str):
     Returns:
         Response: Réponse JSON avec le profil généré
     """
+    start_time = time.time()
     try:
         logger.info(f"Génération du profil pour l'utilisateur {user_id}")
 
@@ -50,12 +52,19 @@ def generate_profile_endpoint(user_id: str):
         # Création du document utilisateur
         user_document = UserDocument.from_profile_state(profile_state, user_id)
         
+        # Enregistrer l'appel et mettre à jour l'utilisation en parallèle
+        CallDocument.create_call(user_id, "generate_profile")
+        usage_doc = UsageDocument.get_or_create(user_id)
+        usage_doc.increment_usage()
+        
         # Sauvegarde synchrone
         user_document.save()
         
-        logger.info(f"Profil généré et sauvegardé pour l'utilisateur {user_id}")
-        return jsonify({"success": True}), 200
+        execution_time = time.time() - start_time
+        logger.info(f"Profil généré et sauvegardé pour l'utilisateur {user_id} en {execution_time:.2f} secondes")
+        return jsonify({"success": True, "execution_time": execution_time}), 200
         
     except Exception as e:
-        logger.error(f"Erreur lors de la génération du profil: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        execution_time = time.time() - start_time
+        logger.error(f"Erreur lors de la génération du profil après {execution_time:.2f} secondes: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e), "execution_time": execution_time}), 500

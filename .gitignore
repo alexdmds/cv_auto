@@ -29,6 +29,8 @@ venv/
 ENV/
 env/
 .env
+.venv/
+.venv
 
 # Logs
 logs/
@@ -40,6 +42,7 @@ logs/
 *.swp
 *.swo
 .DS_Store
+.vscode
 
 # Firebase/Google Cloud
 serviceAccountKey.json
