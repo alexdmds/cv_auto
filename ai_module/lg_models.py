@@ -185,6 +185,65 @@ class CVGenState(BaseModel):
     job_refined: str
 
     @classmethod
+    def from_dict(cls, data: dict) -> "CVGenState":
+        """
+        Crée une instance de CVGenState à partir d'un dictionnaire.
+        Utile pour convertir le résultat de invoke() en instance CVGenState.
+        
+        Args:
+            data (dict): Dictionnaire contenant les données du CV
+            
+        Returns:
+            CVGenState: Une nouvelle instance de CVGenState
+        """
+        # Initialiser les valeurs par défaut
+        head = CVHead(**data.get("head", {})) if isinstance(data.get("head"), dict) else data.get("head", CVHead(
+            name="",
+            title_raw="",
+            title_generated="",
+            title_refined="",
+            mail="",
+            tel_raw="",
+            tel_refined=""
+        ))
+        
+        experiences = []
+        if "experiences" in data:
+            experiences = [
+                CVExperience(**exp) if isinstance(exp, dict) else exp 
+                for exp in data["experiences"]
+            ]
+        
+        education = []
+        if "education" in data:
+            education = [
+                CVEducation(**edu) if isinstance(edu, dict) else edu 
+                for edu in data["education"]
+            ]
+        
+        langues = []
+        if "langues" in data:
+            langues = [
+                CVLanguage(**lang) if isinstance(lang, dict) else lang 
+                for lang in data["langues"]
+            ]
+
+        # Créer et retourner l'instance
+        return cls(
+            head=head,
+            sections=data.get("sections", {}),
+            experiences=experiences,
+            education=education,
+            competences=data.get("competences", {}),
+            skills_raw=data.get("skills_raw", ""),
+            langues=langues,
+            hobbies_raw=data.get("hobbies_raw", ""),
+            hobbies_refined=data.get("hobbies_refined", ""),
+            job_raw=data.get("job_raw", ""),
+            job_refined=data.get("job_refined", "")
+        )
+
+    @classmethod
     def from_json(cls, data: dict) -> "CVGenState":
         """
         Crée une instance de CVGenState à partir d'un dictionnaire JSON.

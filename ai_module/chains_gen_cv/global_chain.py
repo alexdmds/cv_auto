@@ -205,10 +205,20 @@ main_graph.add_edge("aggregate_results", "generate_title")
 main_graph.add_edge("aggregate_results", "generate_skills")
 main_graph.add_edge("aggregate_results", "prioritize_experiences")
 main_graph.add_edge("aggregate_results", "prioritize_education")
-main_graph.add_edge("prioritize_education", END)
-main_graph.add_edge("prioritize_experiences", END)
-main_graph.add_edge("generate_skills", END)
-main_graph.add_edge("generate_title", END)
+
+# Modification de la structure pour fusionner tous les résultats
+def merge_results(state: CVGenState) -> dict:
+    """
+    Fusionne tous les résultats des différentes branches.
+    """
+    return {}
+
+main_graph.add_node("merge_results", merge_results)
+main_graph.add_edge("prioritize_education", "merge_results")
+main_graph.add_edge("prioritize_experiences", "merge_results")
+main_graph.add_edge("generate_skills", "merge_results")
+main_graph.add_edge("generate_title", "merge_results")
+main_graph.add_edge("merge_results", END)
 
 # Compilation du workflow
 compiled_gencv_graph = main_graph.compile()

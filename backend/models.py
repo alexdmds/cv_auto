@@ -98,8 +98,8 @@ class Profile(BaseModel):
     head: HeadProfile = Field(default_factory=HeadProfile)
     educations: List[EducationProfile] = Field(default_factory=list)
     experiences: List[ExperienceProfile] = Field(default_factory=list)
-    languages: Optional[Union[str, List[Dict[str, str]]]] = None
-    skills: Optional[Union[str, Dict[str, List[str]]]] = None
+    languages: Optional[str] = None
+    skills: Optional[str] = None  # Modifié pour être une chaîne simple
     hobbies: Optional[str] = None
 
 # ====== Documents Firestore ======
@@ -151,14 +151,37 @@ class UserDocument(FirestoreModel):
                         exp["full_descriptions"] = exp["full_descriptions"][0] if exp["full_descriptions"] else ""
             
             # Traiter les compétences
-            if "skills" in profile and isinstance(profile["skills"], str):
-                # Si skills est une chaîne, créer un dictionnaire par défaut
-                profile["skills"] = {"General": [profile["skills"]]}
+            if "skills" in profile:
+                if isinstance(profile["skills"], dict):
+                    # Si c'est un dictionnaire, convertir en chaîne
+                    skills_str = []
+                    for category, skills_list in profile["skills"].items():
+                        if isinstance(skills_list, list):
+                            skills_str.extend(skills_list)
+                    profile["skills"] = ", ".join(skills_str)
+                elif isinstance(profile["skills"], list):
+                    # Si c'est une liste, la joindre en chaîne
+                    profile["skills"] = ", ".join(profile["skills"])
+                elif not isinstance(profile["skills"], str):
+                    # Si ce n'est ni un dict, ni une liste, ni une chaîne, mettre une chaîne vide
+                    profile["skills"] = ""
             
             # Traiter les langues
-            if "languages" in profile and isinstance(profile["languages"], str):
-                # Si languages est une chaîne, créer une liste avec un dictionnaire par défaut
-                profile["languages"] = [{"language": profile["languages"], "level": ""}]
+            if "languages" in profile:
+                if isinstance(profile["languages"], list):
+                    # Si c'est une liste de dictionnaires, convertir en chaîne
+                    languages_str = []
+                    for lang in profile["languages"]:
+                        if isinstance(lang, dict):
+                            lang_str = lang.get("language", "")
+                            level = lang.get("level", "")
+                            if level:
+                                lang_str += f" ({level})"
+                            languages_str.append(lang_str)
+                    profile["languages"] = ", ".join(languages_str)
+                elif not isinstance(profile["languages"], str):
+                    # Si ce n'est ni une liste ni une chaîne, convertir en chaîne vide
+                    profile["languages"] = ""
         
         try:
             # Créer l'instance sans ajouter l'ID comme champ
