@@ -6,11 +6,14 @@ import sys
 from os.path import dirname, abspath
 from pydantic import BaseModel, Field
 from typing import Dict, List
-import os
+import langdetect
 
 from .summarize_exp import summarize_exps
 from .summarize_edu import summarize_edus
-from ai_module.lg_models import CVGenState
+from ai_module.lg_models import (
+    CVGenState, CVExperience, CVEducation,
+    CVLanguage, CVHead, DateTranslationInput
+)
 from .prioritize_edu import prioritize_edu
 from .prioritize_exp import prioritize_exp
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -21,6 +24,14 @@ sys.path.append(root_dir)
 ##############################################################################
 # 1. Définition des noeuds du graphe
 ##############################################################################
+
+def detect_language(state: CVGenState) -> dict:
+    """
+    Détecte la langue du CV.
+    """
+
+    detected_language = langdetect.detect(state.job_raw)
+    return {"language_cv": detected_language}
 
 def summarize_job(state: CVGenState) -> dict:
     """
@@ -177,6 +188,112 @@ Exemple de réponse correcte:
     
     return {"competences": response.competences}
 
+def translate_and_uniformize_dates(state: CVGenState) -> dict:
+    """
+    Traduit et uniformise les dates des expériences et formations en fonction de la langue du CV.
+    """
+    llm = get_llm()
+    
+    system_message = """Tu es un expert en traduction de dates pour CV.
+- Pour les expériences: utilise le format "mois année - mois année" ou "mois année - présent"
+- Pour les formations: utilise le format "année - année"
+- Ne jamais inclure de durée ni de parenthèses
+- Traduis dans la langue spécifiée"""
+
+    # Préparation des données d'entrée
+    experiences_input = []
+    for exp in state.experiences:
+        experiences_input.append({
+            "dates_raw": exp.dates_raw,
+            "dates_refined": ""  # Le LLM remplira ce champ
+        })
+
+    education_input = []
+    for edu in state.education:
+        education_input.append({
+            "dates_raw": edu.dates_raw,
+            "dates_refined": ""  # Le LLM remplira ce champ
+        })
+
+    prompt = f"""Traduis ces dates dans la langue {state.language_cv}.
+
+Voici les dates à traduire:
+
+Expériences:
+{json.dumps(experiences_input, indent=2)}
+
+Formations:
+{json.dumps(education_input, indent=2)}
+
+Ta réponse doit être un objet JSON avec exactement cette structure:
+{{
+  "experiences_dates": [
+    {{"dates_raw": "fevrier 2023 - Present (2 ans 1 mois)", "dates_refined": "February 2023 - Present"}},
+    {{"dates_raw": "decembre 2022 - Present (2 ans 3 mois)", "dates_refined": "December 2022 - Present"}},
+    {{"dates_raw": "fevrier 2022 - septembre 2022 (8 mois)", "dates_refined": "February 2022 - September 2022"}}
+  ],
+  "education_dates": [
+    {{"dates_raw": "2017 - 2021", "dates_refined": "2017 - 2021"}},
+    {{"dates_raw": "2020 - 2021", "dates_refined": "2020 - 2021"}}
+  ]
+}}
+
+Règles de traduction:
+1. Pour les expériences:
+   - Traduis les mois en anglais (janvier -> January, février -> February, etc.)
+   - Garde les années telles quelles
+   - Traduis "Present" en anglais
+   - Supprime les durées entre parenthèses
+
+2. Pour les formations:
+   - Garde le format "année - année"
+   - Ne change rien aux années
+
+IMPORTANT: Ta réponse doit être un JSON valide avec exactement les champs "experiences_dates" et "education_dates" comme montré dans l'exemple."""
+
+    response = llm.invoke([
+        SystemMessage(content=system_message),
+        HumanMessage(content=prompt)
+    ])
+    
+    # Parser la réponse JSON
+    try:
+        response_data = json.loads(response.content)
+        # Valider la structure
+        if not isinstance(response_data, dict) or "experiences_dates" not in response_data or "education_dates" not in response_data:
+            raise ValueError("La réponse du LLM n'a pas la structure attendue")
+            
+        # Créer une instance de DateTranslationInput
+        validated_response = DateTranslationInput(
+            experiences_dates=response_data["experiences_dates"],
+            education_dates=response_data["education_dates"]
+        )
+        
+        # Mise à jour des dates
+        updated_experiences = []
+        for exp, dates in zip(state.experiences, validated_response.experiences_dates):
+            exp_copy = exp.model_copy()
+            exp_copy.dates_refined = dates["dates_refined"]
+            updated_experiences.append(exp_copy)
+            
+        updated_education = []
+        for edu, dates in zip(state.education, validated_response.education_dates):
+            edu_copy = edu.model_copy()
+            edu_copy.dates_refined = dates["dates_refined"]
+            updated_education.append(edu_copy)
+        
+        return {
+            "experiences": updated_experiences,
+            "education": updated_education
+        }
+        
+    except (json.JSONDecodeError, ValueError) as e:
+        # En cas d'erreur, retourner les dates non modifiées
+        return {
+            "experiences": state.experiences,
+            "education": state.education
+        }
+
 ##############################################################################
 # 2. Construction du graphe principal
 ##############################################################################
@@ -193,11 +310,16 @@ main_graph.add_node("generate_title", generate_title)
 main_graph.add_node("generate_skills", generate_skills)
 main_graph.add_node("prioritize_experiences", prioritize_experiences)
 main_graph.add_node("prioritize_education", prioritize_education)
+main_graph.add_node("detect_language", detect_language)
+main_graph.add_node("translate_dates", translate_and_uniformize_dates)
 
 # Configuration des transitions pour le parallélisme
 main_graph.add_edge(START, "summarize_job")
 main_graph.add_edge(START, "process_experiences")
 main_graph.add_edge(START, "process_education")
+main_graph.add_edge(START, "detect_language")
+main_graph.add_edge("detect_language", "translate_dates")
+main_graph.add_edge("translate_dates", "aggregate_results")
 main_graph.add_edge("summarize_job", "aggregate_results")
 main_graph.add_edge("process_experiences", "aggregate_results")
 main_graph.add_edge("process_education", "aggregate_results")
