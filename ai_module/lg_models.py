@@ -452,3 +452,28 @@ class DateTranslationInput(BaseModel):
                 }
             ]
         }
+
+class DateTranslationOutput(BaseModel):
+    """Structure pour la sortie de la traduction et uniformisation des dates"""
+    experiences_dates: List[Dict[str, str]] = Field(
+        ...,
+        description="Liste des dates d'expériences traduites"
+    )
+    education_dates: List[Dict[str, str]] = Field(
+        ...,
+        description="Liste des dates de formation traduites"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "examples": [
+                {
+                    "experiences_dates": [
+                        {"dates_raw": "fevrier 2023 - Present (2 ans 1 mois)", "dates_refined": "February 2023 - Present"}
+                    ],
+                    "education_dates": [
+                        {"dates_raw": "2017 - 2021", "dates_refined": "2017 - 2021"}
+                    ]
+                }
+            ]
+        }
