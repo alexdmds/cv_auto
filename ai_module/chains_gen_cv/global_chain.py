@@ -10,13 +10,11 @@ import langdetect
 
 from .summarize_exp import summarize_exps
 from .summarize_edu import summarize_edus
-from ai_module.lg_models import (
-    CVGenState, CVExperience, CVEducation,
-    CVLanguage, CVHead, DateTranslationInput
-)
+from ai_module.lg_models import CVGenState
 from .prioritize_edu import prioritize_edu
 from .prioritize_exp import prioritize_exp
 from langchain_core.messages import SystemMessage, HumanMessage
+from .translate_cv import translate_cv
 # Ajout du répertoire parent au PYTHONPATH
 root_dir = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(root_dir)
@@ -188,80 +186,22 @@ Exemple de réponse correcte:
     
     return {"competences": response.competences}
 
-class DateTranslationOutput(BaseModel):
-    """Structure pour la sortie de la traduction et uniformisation des dates"""
-    experiences: List[CVExperience] = Field(
-        ...,
-        description="Liste des expériences avec dates traduites"
-    )
-    education: List[CVEducation] = Field(
-        ...,
-        description="Liste des formations avec dates traduites"
-    )
-
-def translate_and_uniformize_dates(state: CVGenState) -> dict:
+def translate_cv_node(state: CVGenState) -> dict:
     """
-    Traduit et harmonise les dates des expériences et formations en fonction de la langue du CV.
-    """
-    llm = get_llm().with_structured_output(DateTranslationOutput)
+    Traduit le CV en fonction de la langue cible.
+    Met à jour directement l'état du CV avec les traductions.
     
-    # Préparation des données d'entrée
-    experiences_input = []
-    for exp in state.experiences:
-        experiences_input.append({
-            "dates_raw": exp.dates_raw,
-            "dates_refined": ""
-        })
-
-    education_input = []
-    for edu in state.education:
-        education_input.append({
-            "dates_raw": edu.dates_raw,
-            "dates_refined": ""
-        })
-
-    prompt = f"""Harmonise et traduis ces dates dans la langue {state.language_cv}.
-
-Voici les dates à harmoniser et traduire:
-
-Expériences:
-{json.dumps(experiences_input, indent=2)}
-
-Formations:
-{json.dumps(education_input, indent=2)}
-
-Règles d'harmonisation et de traduction:
-1. Pour les expériences:
-   - Traduis les mois dans la langue spécifiée (ex: janvier -> January en anglais)
-   - Garde les années telles quelles
-   - Traduis "Present" dans la langue spécifiée
-   - Supprime les durées entre parenthèses
-
-2. Pour les formations:
-   - Garde le format "année - année"
-   - Ne change rien aux années"""
-
-    # Utilisation directe de with_structured_output
-    response = llm.invoke(prompt)
-    
-    # Mise à jour des dates
-    updated_experiences = []
-    for exp, dates in zip(state.experiences, response.experiences_dates):
-        exp_copy = exp.model_copy()
-        exp_copy.dates_refined = dates["dates_refined"]
-        updated_experiences.append(exp_copy)
+    Args:
+        state: État actuel du CV
         
-    updated_education = []
-    for edu, dates in zip(state.education, response.education_dates):
-        edu_copy = edu.model_copy()
-        edu_copy.dates_refined = dates["dates_refined"]
-        updated_education.append(edu_copy)
+    Returns:
+        dict: État mis à jour avec les traductions
+    """
+    # Appliquer la traduction et récupérer l'état mis à jour
+    updated_state = translate_cv(state)
     
-    return {
-        "experiences": updated_experiences,
-        "education": updated_education
-    }
-    
+    # Retourner l'état complet pour mise à jour
+    return updated_state.model_dump()
 
 ##############################################################################
 # 2. Construction du graphe principal
@@ -280,15 +220,14 @@ main_graph.add_node("generate_skills", generate_skills)
 main_graph.add_node("prioritize_experiences", prioritize_experiences)
 main_graph.add_node("prioritize_education", prioritize_education)
 main_graph.add_node("detect_language", detect_language)
-main_graph.add_node("translate_dates", translate_and_uniformize_dates)
+main_graph.add_node("translate_cv_node", translate_cv_node)
 
 # Configuration des transitions pour le parallélisme
 main_graph.add_edge(START, "summarize_job")
 main_graph.add_edge(START, "process_experiences")
 main_graph.add_edge(START, "process_education")
 main_graph.add_edge(START, "detect_language")
-main_graph.add_edge("detect_language", "translate_dates")
-main_graph.add_edge("translate_dates", "aggregate_results")
+
 main_graph.add_edge("summarize_job", "aggregate_results")
 main_graph.add_edge("process_experiences", "aggregate_results")
 main_graph.add_edge("process_education", "aggregate_results")
@@ -302,14 +241,64 @@ def merge_results(state: CVGenState) -> dict:
     """
     Fusionne tous les résultats des différentes branches.
     """
-    return {}
+    return state.model_dump()
 
 main_graph.add_node("merge_results", merge_results)
 main_graph.add_edge("prioritize_education", "merge_results")
 main_graph.add_edge("prioritize_experiences", "merge_results")
 main_graph.add_edge("generate_skills", "merge_results")
 main_graph.add_edge("generate_title", "merge_results")
-main_graph.add_edge("merge_results", END)
+
+# Ajout des connexions pour la traduction
+main_graph.add_edge("merge_results", "translate_cv_node")
+main_graph.add_edge("detect_language", "translate_cv_node")
+main_graph.add_edge("translate_cv_node", END)
 
 # Compilation du workflow
 compiled_gencv_graph = main_graph.compile()
+
+# Création du graphe sans le noeud de traduction
+main_graph_no_translate = StateGraph(CVGenState)
+
+# Ajout des noeuds
+main_graph_no_translate.add_node("summarize_job", summarize_job)
+main_graph_no_translate.add_node("process_experiences", process_experiences)
+main_graph_no_translate.add_node("process_education", process_education)
+main_graph_no_translate.add_node("aggregate_results", aggregate_results)
+main_graph_no_translate.add_node("generate_title", generate_title)
+main_graph_no_translate.add_node("generate_skills", generate_skills)
+main_graph_no_translate.add_node("prioritize_experiences", prioritize_experiences)
+main_graph_no_translate.add_node("prioritize_education", prioritize_education)
+main_graph_no_translate.add_node("detect_language", detect_language)
+
+# Configuration des transitions pour le parallélisme
+main_graph_no_translate.add_edge(START, "summarize_job")
+main_graph_no_translate.add_edge(START, "process_experiences")
+main_graph_no_translate.add_edge(START, "process_education")
+main_graph_no_translate.add_edge(START, "detect_language")
+
+main_graph_no_translate.add_edge("summarize_job", "aggregate_results")
+main_graph_no_translate.add_edge("process_experiences", "aggregate_results")
+main_graph_no_translate.add_edge("process_education", "aggregate_results")
+main_graph_no_translate.add_edge("aggregate_results", "generate_title")
+main_graph_no_translate.add_edge("aggregate_results", "generate_skills")
+main_graph_no_translate.add_edge("aggregate_results", "prioritize_experiences")
+main_graph_no_translate.add_edge("aggregate_results", "prioritize_education")
+
+# Modification de la structure pour fusionner tous les résultats
+def merge_results_no_translate(state: CVGenState) -> dict:
+    """
+    Fusionne tous les résultats des différentes branches.
+    """
+    return state.model_dump()
+
+main_graph_no_translate.add_node("merge_results_no_translate", merge_results_no_translate)
+main_graph_no_translate.add_edge("prioritize_education", "merge_results_no_translate")
+main_graph_no_translate.add_edge("prioritize_experiences", "merge_results_no_translate")
+main_graph_no_translate.add_edge("generate_skills", "merge_results_no_translate")
+main_graph_no_translate.add_edge("generate_title", "merge_results_no_translate")
+
+main_graph_no_translate.add_edge("merge_results_no_translate", END)
+
+# Compilation du workflow sans traduction
+compiled_gencv_graph_no_translate = main_graph_no_translate.compile()

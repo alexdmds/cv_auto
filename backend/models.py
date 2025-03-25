@@ -83,7 +83,7 @@ class ExperienceProfile(BaseModel):
     company: Optional[str] = None
     dates: Optional[str] = None
     location: Optional[str] = None
-    full_descriptions: Optional[str] = None
+    full_description: Optional[str] = None
 
 class HeadProfile(BaseModel):
     """Structure pour les données d'en-tête dans un profil"""

@@ -171,20 +171,73 @@ class ProfileState(BaseModel):
         )
 
 class CVGenState(BaseModel):
-    """État global du workflow."""
-    head: CVHead
-    sections: Dict[str, str]
-    experiences: List[CVExperience]
-    education: List[CVEducation]
-    competences: Dict[str, List[str]]
-    skills_raw: str
-    langues: List[CVLanguage]
-    langues_raw: str
-    hobbies_raw: str
-    hobbies_refined: str
-    job_raw: str
-    job_refined: str
-    language_cv: str
+    """État global du workflow de génération de CV."""
+    head: CVHead = Field(
+        default_factory=lambda: CVHead(
+            name="",
+            title_raw="",
+            title_generated="",
+            title_refined="",
+            mail="",
+            tel_raw="",
+            tel_refined=""
+        ),
+        description="En-tête du CV contenant les informations personnelles"
+    )
+    sections: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "experience": "Expérience Professionnelle",
+            "education": "Formation",
+            "skills": "Compétences",
+            "languages": "Langues",
+            "hobbies": "Centres d'Intérêt"
+        },
+        description="Titres des sections du CV"
+    )
+    experiences: List[CVExperience] = Field(
+        default_factory=list,
+        description="Liste des expériences professionnelles"
+    )
+    education: List[CVEducation] = Field(
+        default_factory=list,
+        description="Liste des formations"
+    )
+    competences: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Compétences organisées par catégorie"
+    )
+    skills_raw: str = Field(
+        default="",
+        description="Compétences brutes non structurées"
+    )
+    langues: List[CVLanguage] = Field(
+        default_factory=list,
+        description="Liste des langues maîtrisées"
+    )
+    langues_raw: str = Field(
+        default="",
+        description="Langues brutes non structurées"
+    )
+    hobbies_raw: str = Field(
+        default="",
+        description="Centres d'intérêt bruts"
+    )
+    hobbies_refined: str = Field(
+        default="",
+        description="Centres d'intérêt raffinés et traduits"
+    )
+    job_raw: str = Field(
+        default="",
+        description="Description brute du poste visé"
+    )
+    job_refined: str = Field(
+        default="",
+        description="Description raffinée du poste visé"
+    )
+    language_cv: str = Field(
+        default="",
+        description="Langue cible du CV (fr, en, etc.)"
+    )
 
     @classmethod
     def from_dict(cls, data: dict) -> "CVGenState":
@@ -303,10 +356,10 @@ class CVGenState(BaseModel):
             "name": profile.head.name or "",
             "title_raw": profile.head.title or "",
             "title_generated": "",  # Champ à générer plus tard
-            "title_refined": profile.head.title or "",
+            "title_refined":  "",
             "mail": profile.head.mail or "",
             "tel_raw": profile.head.phone or "",
-            "tel_refined": profile.head.phone or ""
+            "tel_refined":  ""
         }
         head = CVHead(**head_data)
         
@@ -322,24 +375,22 @@ class CVGenState(BaseModel):
         # Convertir les expériences
         experiences = []
         for idx, exp in enumerate(profile.experiences or []):
-            descriptions = exp.full_descriptions if hasattr(exp, 'full_descriptions') and exp.full_descriptions else []
-            bullets = exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
             exp_data = {
                 "title_raw": exp.title or "",
-                "title_refined": exp.title or "",
+                "title_refined": "",
                 "company_raw": exp.company or "",
-                "company_refined": exp.company or "",
+                "company_refined":  "",
                 "location_raw": exp.location or "",
-                "location_refined": exp.location or "",
+                "location_refined": "",
                 "dates_raw": exp.dates or "",
-                "dates_refined": exp.dates or "",
-                "description_raw": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
-                "description_refined": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
+                "dates_refined": "",
+                "description_raw": exp.full_description or "",
+                "description_refined":  "",
                 "summary": "",
-                "bullets": bullets,
-                "weight": 1.0,
-                "order": idx,
-                "nb_bullets": len(bullets)
+                "bullets": [],
+                "weight": 0.0,
+                "order": 0,
+                "nb_bullets": 0
             }
             experiences.append(CVExperience(**exp_data))
         
@@ -349,20 +400,20 @@ class CVGenState(BaseModel):
             description = edu.full_description or edu.description or ""
             edu_data = {
                 "degree_raw": edu.title or "",
-                "degree_refined": edu.title or "",
+                "degree_refined": "",
                 "institution_raw": edu.university or "",
-                "institution_refined": edu.university or "",
+                "institution_refined": "",
                 "location_raw": "",
                 "location_refined":"",
                 "dates_raw": edu.dates or "",
-                "dates_refined": edu.dates or "",
+                "dates_refined":  "",
                 "description_raw": description,
                 "description_generated": "",
-                "description_refined": description,
+                "description_refined": "",
                 "summary": "",
-                "weight": 1.0,
-                "order": idx,
-                "nb_mots": len(description.split()) if description else 0
+                "weight": 0.0,
+                "order": 0,
+                "nb_mots": 0
             }
             education_list.append(CVEducation(**edu_data))
         
@@ -427,53 +478,3 @@ class SelectEduState(BaseModel):
     edu: CVEducation
     job_summary: str
     choix_edu: str
-
-class DateTranslationInput(BaseModel):
-    """Structure pour l'entrée de la traduction et uniformisation des dates"""
-    experiences_dates: List[Dict[str, str]] = Field(
-        ...,  # Rend le champ obligatoire
-        description="Liste des dates d'expériences à traduire, chaque élément contient dates_raw et dates_refined"
-    )
-    education_dates: List[Dict[str, str]] = Field(
-        ...,  # Rend le champ obligatoire
-        description="Liste des dates de formation à traduire, chaque élément contient dates_raw et dates_refined"
-    )
-
-    class Config:
-        json_schema_extra = {
-            "examples": [
-                {
-                    "experiences_dates": [
-                        {"dates_raw": "fevrier 2023 - Present (2 ans 1 mois)", "dates_refined": "February 2023 - Present"}
-                    ],
-                    "education_dates": [
-                        {"dates_raw": "2017 - 2021", "dates_refined": "2017 - 2021"}
-                    ]
-                }
-            ]
-        }
-
-class DateTranslationOutput(BaseModel):
-    """Structure pour la sortie de la traduction et uniformisation des dates"""
-    experiences_dates: List[Dict[str, str]] = Field(
-        ...,
-        description="Liste des dates d'expériences traduites"
-    )
-    education_dates: List[Dict[str, str]] = Field(
-        ...,
-        description="Liste des dates de formation traduites"
-    )
-
-    class Config:
-        json_schema_extra = {
-            "examples": [
-                {
-                    "experiences_dates": [
-                        {"dates_raw": "fevrier 2023 - Present (2 ans 1 mois)", "dates_refined": "February 2023 - Present"}
-                    ],
-                    "education_dates": [
-                        {"dates_raw": "2017 - 2021", "dates_refined": "2017 - 2021"}
-                    ]
-                }
-            ]
-        }
