@@ -43,9 +43,17 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             logger.warning(f"Utilisateur '{user_id}' non trouvé")
             return jsonify({"error": f"Utilisateur '{user_id}' introuvable"}), 404
         
-        # Vérifier si le CV existe et s'il a une fiche de poste
+        # Vérifier si le CV existe
         existing_cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
-        if existing_cv and not existing_cv.job_raw.strip():
+        if not existing_cv:
+            logger.warning(f"CV '{cv_name}' non trouvé pour l'utilisateur '{user_id}'")
+            return jsonify({
+                "error": "CV introuvable",
+                "message": f"Le CV '{cv_name}' n'existe pas pour cet utilisateur"
+            }), 404
+            
+        # Vérifier si le CV a une fiche de poste
+        if not existing_cv.job_raw.strip():
             logger.warning(f"CV '{cv_name}' trouvé mais sans fiche de poste")
             return jsonify({
                 "error": "Impossible de générer le CV sans fiche de poste",
@@ -58,14 +66,6 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             "cv_name": cv_name,
             "timestamp": datetime.now().isoformat()
         }
-
-        # Vérifier si le CV existe déjà
-        cv_exists = any(cv.cv_name == cv_name for cv in user_document.cvs)
-        if not cv_exists:
-            # Créer un nouveau CV avec le nom spécifié
-            new_cv = CV(cv_name=cv_name)
-            user_document.cvs.append(new_cv)
-            logger.info(f"Nouveau CV '{cv_name}' créé pour l'utilisateur '{user_id}'")
 
         # Générer le CV
         cv_state = CVGenState.from_user_document(user_document, cv_name)
