@@ -4,9 +4,7 @@ from backend.models import UserDocument, CV
 from ai_module.lg_models import CVGenState
 from datetime import datetime
 from backend.config import load_config
-from pathlib import Path
-import firebase_admin
-from firebase_admin import storage
+from backend.utils.utils_gcs import upload_to_firebase_storage
 config = load_config()
 logger = logging.getLogger(__name__)
 
@@ -18,27 +16,6 @@ else:
     from ai_module.inference import generate_cv
     logger.info("Utilisation de l'implémentation RÉELLE de generate_cv")
 
-
-def upload_to_firebase_storage(file_path: str, user_id: str, cv_name: str) -> str:
-    """
-    Upload un fichier vers Firebase Storage.
-    
-    Args:
-        file_path (str): Chemin local du fichier à uploader
-        user_id (str): ID de l'utilisateur
-        cv_name (str): Nom du CV
-        
-    Returns:
-        str: URL publique du fichier uploadé
-    """
-    bucket = storage.bucket(config.BUCKET_NAME)
-    storage_path = f"{user_id}/cvs/{cv_name}.pdf"
-    blob = bucket.blob(storage_path)
-    
-    blob.upload_from_filename(file_path)
-    blob.make_public()  # Rendre le fichier accessible publiquement
-    
-    return blob.public_url
 
 
 def generate_cv_endpoint(user_id: str, cv_name: str):
@@ -56,19 +33,17 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
     
     try:
         # Récupérer l'utilisateur
-        user = UserDocument.from_firestore_id(user_id)
-        if not user:
+        user_document = UserDocument.from_firestore_id(user_id)
+        if not user_document:
             logger.warning(f"Utilisateur '{user_id}' non trouvé")
             return jsonify({"error": f"Utilisateur '{user_id}' introuvable"}), 404
         
         # Préparer la réponse de base
         response_data = {
-            "user_id": user.id,
+            "user_id": user_document.id,
             "cv_name": cv_name,
             "timestamp": datetime.now().isoformat()
         }
-        
-        user_document = UserDocument.from_firestore_id(user_id)
 
         # Vérifier si le CV existe déjà
         cv_exists = any(cv.cv_name == cv_name for cv in user_document.cvs)
@@ -78,16 +53,15 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             user_document.cvs.append(new_cv)
             logger.info(f"Nouveau CV '{cv_name}' créé pour l'utilisateur '{user_id}'")
 
+        # Générer le CV
         cv_state = CVGenState.from_user_document(user_document, cv_name)
-        
         result_state = generate_cv(cv_state)
-        
         logger.info("Traitement terminé")
         
-        # Mettre à jour le CV existant à partir du GlobalState résultant
-        cv_info = user_document.update_cv_from_global_state(
+        # Mettre à jour le CV existant à partir du CVGenState résultant
+        cv_info = user_document.update_cv_from_cv_state(
             cv_name=cv_name,
-            result_state=result_state,
+            cv_state=result_state,
             save_to_firestore=False  # Ne pas sauvegarder immédiatement
         )
         

@@ -39,6 +39,10 @@ curl -X POST \
   -H 'Authorization: Bearer test-token' \
   -d '{"cv_name": "cv_test"}'
 
+curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-cv" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer test-token" \
+-d '{"cv_name": "cv_test"}'
 
 ## MCP
 

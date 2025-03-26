@@ -100,3 +100,25 @@ def get_concatenated_text_files(user_document: UserDocument) -> str:
     except Exception as e:
         logger.error(f"Erreur lors de la récupération des fichiers texte, PDF et LinkedIn: {str(e)}", exc_info=True)
         return ""
+
+def upload_to_firebase_storage(file_path: str, user_id: str, cv_name: str) -> str:
+    """
+    Upload un fichier vers Firebase Storage.
+    
+    Args:
+        file_path (str): Chemin local du fichier à uploader
+        user_id (str): ID de l'utilisateur
+        cv_name (str): Nom du CV
+        
+    Returns:
+        str: URL publique du fichier uploadé
+    """
+    bucket = storage.bucket(config.BUCKET_NAME)
+    storage_path = f"{user_id}/cvs/{cv_name}.pdf"
+    blob = bucket.blob(storage_path)
+    
+    blob.upload_from_filename(file_path)
+    blob.make_public()  # Rendre le fichier accessible publiquement
+    
+    return blob.public_url
+

@@ -44,13 +44,10 @@ def generate_profile_endpoint(user_id: str):
         profile_state = ProfileState.from_input_text(text_content)
         
         # Appel synchrone à generate_profile
-        result_state = generate_profile(profile_state)
+        profile_state = generate_profile(profile_state)
         
-        # Convertir le résultat en ProfileState
-        profile_state = ProfileState.from_dict(result_state)
-        
-        # Création du document utilisateur
-        user_document = UserDocument.from_profile_state(profile_state, user_id)
+        # Mettre à jour le document utilisateur avec les nouvelles données
+        user_document.update_from_profile_state(profile_state)
         
         # Enregistrer l'appel et mettre à jour l'utilisation en parallèle
         CallDocument.create_call(user_id, "generate_profile")
