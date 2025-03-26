@@ -1,6 +1,6 @@
 from flask import jsonify, request
 import logging
-from backend.models import UserDocument
+from backend.models import UserDocument, CV
 from ai_module.lg_models import CVGenState
 from datetime import datetime
 from backend.config import load_config
@@ -18,17 +18,15 @@ else:
 
 def generate_cv_endpoint(user_id: str, cv_name: str):
     """
-    Endpoint pour générer un CV optimisé.
+    Génère un CV pour l'utilisateur authentifié
     
-    Paramètres de requête:
-        - user: ID de l'utilisateur (par défaut: 'test_user')
-        - cv_name: Nom du CV à générer (par défaut: 'cv_test')
-        - mock: Override l'utilisation du mock (optionnel)
-    
+    Args:
+        user_id (str): ID de l'utilisateur
+        cv_name (str): Nom du CV à générer
+        
     Returns:
-        Response: Réponse JSON avec les détails et le statut de la génération
+        Response: Réponse HTTP avec les informations sur le CV généré
     """
-    
     logger.info(f"Génération de CV pour user={user_id}, cv_name={cv_name}")
     
     try:
@@ -45,21 +43,24 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             "timestamp": datetime.now().isoformat()
         }
         
-        # Créer le GlobalState directement à partir de l'utilisateur et du nom du CV
-        global_state = GlobalState.from_user_document(user, cv_name)
+        user_document = UserDocument.from_firestore_id(user_id)
+
+        # Vérifier si le CV existe déjà
+        cv_exists = any(cv.cv_name == cv_name for cv in user_document.cvs)
+        if not cv_exists:
+            # Créer un nouveau CV avec le nom spécifié
+            new_cv = CV(cv_name=cv_name)
+            user_document.cvs.append(new_cv)
+            logger.info(f"Nouveau CV '{cv_name}' créé pour l'utilisateur '{user_id}'")
+
+        cv_state = CVGenState.from_user_document(user_document, cv_name)
         
-        if not global_state:
-            logger.warning(f"CV '{cv_name}' non trouvé ou sans données pour l'utilisateur '{user_id}'")
-            return jsonify({"error": f"CV '{cv_name}' introuvable ou sans données pour l'utilisateur '{user_id}'"}), 404
-        
-        logger.info("État global initial créé avec succès")
-        
-        result_state = generate_cv(global_state)
+        result_state = generate_cv(cv_state)
         
         logger.info("Traitement terminé")
         
         # Mettre à jour le CV existant à partir du GlobalState résultant
-        cv_info = user.update_cv_from_global_state(
+        cv_info = user_document.update_cv_from_global_state(
             cv_name=cv_name,
             result_state=result_state,
             save_to_firestore=False  # Ne pas sauvegarder immédiatement
@@ -71,7 +72,7 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
         
         # Sauvegarder explicitement l'utilisateur dans Firestore
         logger.info(f"Sauvegarde de l'utilisateur '{user_id}' avec le CV mis à jour dans Firestore")
-        user.save()
+        user_document.save()
         
         # Ajouter les informations du CV à la réponse
         response_data["updated_cv"] = cv_info

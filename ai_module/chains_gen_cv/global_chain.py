@@ -254,5 +254,17 @@ main_graph.add_edge("merge_results", "translate_cv_node")
 main_graph.add_edge("detect_language", "translate_cv_node")
 main_graph.add_edge("translate_cv_node", END)
 
-# Compilation du workflow
-compiled_gencv_graph = main_graph.compile()
+# Variable pour stocker le graphe compilé
+_compiled_gencv_graph = None
+
+def get_compiled_gencv_graph():
+    """
+    Retourne le graphe compilé, en le compilant si nécessaire (lazy loading).
+    
+    Returns:
+        Le graphe compilé
+    """
+    global _compiled_gencv_graph
+    if _compiled_gencv_graph is None:
+        _compiled_gencv_graph = main_graph.compile()
+    return _compiled_gencv_graph

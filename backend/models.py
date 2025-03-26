@@ -65,7 +65,7 @@ class CVData(BaseModel):
 class CV(BaseModel):
     """Structure complète d'un CV"""
     cv_name: str
-    job_raw: Optional[str] = None
+    job_raw: str = ""  # Ajout d'une valeur par défaut vide
     cv_data: CVData = Field(default_factory=CVData)
 
 # ====== Classes pour le profil ======
