@@ -76,7 +76,7 @@ def test_from_profile_state_new_user(mock_profile_state):
         assert exp.company == "TechSolutions SA"
         assert exp.dates == "2020 - Présent"
         assert exp.location == "Paris"
-        assert exp.full_description == "Développement d'applications web"
+        assert exp.full_descriptions == "Développement d'applications web"
         
         # Vérification des formations
         assert len(user_doc.profile.educations) == 1
@@ -84,7 +84,7 @@ def test_from_profile_state_new_user(mock_profile_state):
         assert edu.title == "Master en Informatique"
         assert edu.university == "Université de Paris"
         assert edu.dates == "2015 - 2017"
-        assert edu.full_description == "Spécialisation en développement web"
+        assert edu.full_descriptions == "Spécialisation en développement web"
         
         # Vérification des autres champs
         assert user_doc.profile.skills == "Python, JavaScript"

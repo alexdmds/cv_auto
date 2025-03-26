@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any
-from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExperience, GlobalEducation
+from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExperience, GlobalEducation, CVExperience, CVEducation
 
 logger = logging.getLogger(__name__)
 
@@ -120,24 +120,90 @@ def generate_cv(state: CVGenState) -> CVGenState:
             "DevOps": ["Docker", "CI/CD", "AWS", "Git"]
         }
     
-    # Modification des expériences - utiliser uniquement les champs qui existent déjà
+    # Création des expériences
     if hasattr(state, 'experiences'):
-        for exp in state.experiences:
-            # Modifier uniquement les champs existants
-            if hasattr(exp, 'weight'):
-                exp.weight = 2.0
-            if hasattr(exp, 'summary'):
-                exp.summary = "Développement d'applications Web avec technologies modernes"
+        state.experiences = [
+            CVExperience(
+                title_raw="Développeur Full Stack Senior",
+                title_refined="Développeur Full Stack Senior",
+                company_raw="TechSolutions SA",
+                company_refined="TechSolutions SA",
+                dates_raw="2020 - Présent",
+                dates_refined="2020 - Présent",
+                location_raw="Paris",
+                location_refined="Paris",
+                description_raw="Développement d'applications web en utilisant React, Node.js et Python.",
+                description_refined="Développement d'applications web en utilisant React, Node.js et Python.",
+                bullets=[
+                    "Développement d'applications web modernes avec React et Node.js",
+                    "Mise en place d'une architecture microservices avec Docker",
+                    "Optimisation des performances et de la scalabilité"
+                ],
+                weight=2.0,
+                summary="Développement d'applications Web avec technologies modernes",
+                order=1,
+                nb_bullets=3
+            ),
+            CVExperience(
+                title_raw="Développeur Backend",
+                title_refined="Développeur Backend",
+                company_raw="DataCorp",
+                company_refined="DataCorp",
+                dates_raw="2017 - 2020",
+                dates_refined="2017 - 2020",
+                location_raw="Lyon",
+                location_refined="Lyon",
+                description_raw="Conception et développement d'API RESTful avec Django et FastAPI.",
+                description_refined="Conception et développement d'API RESTful avec Django et FastAPI.",
+                bullets=[
+                    "Conception et développement d'API RESTful",
+                    "Gestion de bases de données SQL et NoSQL",
+                    "Intégration continue et déploiement automatisé"
+                ],
+                weight=2.0,
+                summary="Développement backend avec Django et FastAPI",
+                order=2,
+                nb_bullets=3
+            )
+        ]
     
-    # Modification des formations - utiliser uniquement les champs qui existent déjà
+    # Création des formations
     if hasattr(state, 'education'):
-        for edu in state.education:
-            if hasattr(edu, 'weight'):
-                edu.weight = 2.0
-            if hasattr(edu, 'summary'):
-                edu.summary = "Formation en informatique avec spécialisation développement"
-    
-    # Ne pas essayer d'ajouter de nouveaux attributs comme status ou final_output
-    # Ces attributs ne font pas partie du modèle GlobalState
+        state.education = [
+            CVEducation(
+                degree_raw="Master en Informatique",
+                degree_refined="Master en Informatique",
+                institution_raw="Université de Paris",
+                institution_refined="Université de Paris",
+                dates_raw="2015 - 2017",
+                dates_refined="2015 - 2017",
+                location_raw="Paris",
+                location_refined="Paris",
+                description_raw="Spécialisation en développement web et systèmes distribués.",
+                description_generated="Spécialisation en développement web et systèmes distribués.",
+                description_refined="Spécialisation en développement web et systèmes distribués.",
+                weight=2.0,
+                summary="Formation en informatique avec spécialisation développement",
+                order=1,
+                nb_mots=12
+            ),
+            CVEducation(
+                degree_raw="Licence en Informatique",
+                degree_refined="Licence en Informatique",
+                institution_raw="Université de Lyon",
+                institution_refined="Université de Lyon",
+                dates_raw="2012 - 2015",
+                dates_refined="2012 - 2015",
+                location_raw="Lyon",
+                location_refined="Lyon",
+                description_raw="Formation générale en informatique avec spécialisation en programmation.",
+                description_generated="Formation générale en informatique avec spécialisation en programmation.",
+                description_refined="Formation générale en informatique avec spécialisation en programmation.",
+                weight=2.0,
+                summary="Formation en informatique générale",
+                order=2,
+                nb_mots=10
+            )
+        ]
     
     return state

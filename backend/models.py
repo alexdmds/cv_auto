@@ -266,7 +266,7 @@ class CV(BaseModel):
 class EducationProfile(BaseModel):
     """Structure pour les données d'éducation dans un profil"""
     title: Optional[str] = None
-    full_description: Optional[str] = None
+    full_descriptions: Optional[str] = None
     dates: Optional[str] = None
     university: Optional[str] = None
 
@@ -276,7 +276,7 @@ class ExperienceProfile(BaseModel):
     company: Optional[str] = None
     dates: Optional[str] = None
     location: Optional[str] = None
-    full_description: Optional[str] = None
+    full_descriptions: Optional[str] = None
 
 class HeadProfile(BaseModel):
     """Structure pour les données d'en-tête dans un profil"""
@@ -353,7 +353,7 @@ class UserDocument(FirestoreModel):
                 company=exp.etablissement,
                 dates=exp.dates,
                 location=exp.lieu,
-                full_description=exp.description
+                full_descriptions=exp.description
             ) for exp in profile_state.experiences
         ]
         
@@ -363,7 +363,7 @@ class UserDocument(FirestoreModel):
                 title=edu.intitule,
                 university=edu.etablissement,
                 dates=edu.dates,
-                full_description=edu.description
+                full_descriptions=edu.description
             ) for edu in profile_state.education
         ]
         

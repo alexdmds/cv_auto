@@ -69,7 +69,7 @@ def test_generate_profile_integration(
         assert exp.company == "TechSolutions SA"
         assert exp.dates == "2020 - Présent"
         assert exp.location == "Paris"
-        assert "Développement d'applications web" in exp.full_description
+        assert "Développement d'applications web" in exp.full_descriptions
         
         # Vérification des formations
         assert len(saved_user.profile.educations) == 2
@@ -77,7 +77,7 @@ def test_generate_profile_integration(
         assert edu.title == "Master en Informatique"
         assert edu.university == "Université de Paris"
         assert edu.dates == "2015 - 2017"
-        assert "Spécialisation en développement web" in edu.full_description
+        assert "Spécialisation en développement web" in edu.full_descriptions
         
         # Vérification des compétences et langues
         assert "Python" in saved_user.profile.skills

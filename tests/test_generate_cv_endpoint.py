@@ -29,14 +29,14 @@ def mock_user_document():
     experience.company = "Tech Corp"
     experience.dates = "2020-2023"
     experience.location = "Paris"
-    experience.full_description = "Lead developer on multiple projects"
+    experience.full_descriptions = "Lead developer on multiple projects"
     
     # Création des formations
     education = Mock(spec=EducationProfile)
     education.title = "Master in Computer Science"
     education.university = "University of Tech"
     education.dates = "2018-2020"
-    education.full_description = "Specialized in AI"
+    education.full_descriptions = "Specialized in AI"
     
     profile = Mock(spec=Profile)
     profile.head = head

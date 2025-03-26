@@ -1,6 +1,6 @@
 from flask import jsonify, request
 import logging
-from backend.models import UserDocument, CV
+from backend.models import UserDocument, CV, CallDocument, UsageDocument
 from ai_module.lg_models import CVGenState
 from datetime import datetime
 from backend.config import load_config
@@ -32,6 +32,11 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
     logger.info(f"Génération de CV pour user={user_id}, cv_name={cv_name}")
     
     try:
+        # Créer un document d'appel et incrémenter l'usage
+        CallDocument.create_call(user_id, "generate_cv")
+        usage_doc = UsageDocument.get_or_create(user_id)
+        usage_doc.increment_usage()
+        
         # Récupérer l'utilisateur
         user_document = UserDocument.from_firestore_id(user_id)
         if not user_document:
@@ -74,9 +79,12 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             # Trouver le CV dans la liste des CVs
             cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
             if cv:
-                # Utiliser NamedTemporaryFile pour gérer automatiquement la suppression du fichier temporaire
+                # Utiliser NamedTemporaryFile avec delete=False pour garder le fichier jusqu'à l'upload
                 import tempfile
-                with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as tmp_file:
+                import os
+                
+                tmp_file = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
+                try:
                     # Générer le PDF directement dans le fichier temporaire
                     generated_path = cv.cv_data.generate_pdf(tmp_file.name)
                     logger.info(f"PDF généré temporairement")
@@ -89,6 +97,12 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
                     except Exception as storage_error:
                         logger.error(f"Erreur lors de l'upload vers Firebase Storage: {str(storage_error)}", exc_info=True)
                         response_data["storage_error"] = str(storage_error)
+                finally:
+                    # Supprimer le fichier temporaire après l'upload
+                    try:
+                        os.unlink(tmp_file.name)
+                    except Exception as e:
+                        logger.warning(f"Erreur lors de la suppression du fichier temporaire: {str(e)}")
             else:
                 logger.warning(f"CV '{cv_name}' non trouvé pour la génération du PDF")
         except Exception as e:
@@ -101,12 +115,16 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
         
         # Ajouter les informations du CV à la réponse
         response_data["updated_cv"] = cv_info
-        response_data["firestore_updated"] = True
         
-        logger.info(f"CV '{cv_name}' mis à jour avec succès pour l'utilisateur '{user_id}'")
+        # Retourner la réponse avec succès
+        return jsonify({
+            "success": True,
+            "data": response_data
+        }), 200
         
-        return jsonify({"success": True, "data": response_data}), 200
-    
     except Exception as e:
         logger.error(f"Erreur lors de la génération du CV: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

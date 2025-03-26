@@ -54,14 +54,14 @@ def create_test_user_document():
                 university="Université de Paris",
                 dates="2013-2015",
                 location="Paris, France",
-                full_description="Spécialisation en développement web et intelligence artificielle"
+                full_descriptions="Spécialisation en développement web et intelligence artificielle"
             ),
             EducationProfile(
                 title="Licence en Informatique",
                 university="Université de Lyon",
                 dates="2010-2013",
                 location="Lyon, France",
-                description="Formation générale en informatique"
+                full_descriptions="Formation générale en informatique"
             )
         ],
         skills={

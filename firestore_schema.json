@@ -58,7 +58,7 @@
             "educations": [
                 {
                     "title": "Title of the formation",
-                    "full_description": "Full description of the formation, relevants courses, projects...",
+                    "full_descriptions": "Full description of the formation, relevants courses, projects...",
                     "dates": "dates of the formation",
                     "university": "Name of the school or university"
                 }

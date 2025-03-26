@@ -67,13 +67,13 @@ def test_create_profile_from_state(mock_profile_state):
     assert exp1.company == "Tech Corp"
     assert exp1.dates == "2020-2023"
     assert exp1.location == "Paris"
-    assert exp1.full_description == "Lead technique sur projets web"
+    assert exp1.full_descriptions == "Lead technique sur projets web"
     
     assert exp2.title == "Développeur Full Stack"
     assert exp2.company == "Startup Inc"
     assert exp2.dates == "2018-2020"
     assert exp2.location == "Lyon"
-    assert exp2.full_description == "Développement d'applications web"
+    assert exp2.full_descriptions == "Développement d'applications web"
     
     # Vérifier les formations
     assert len(profile.educations) == 1
@@ -82,7 +82,7 @@ def test_create_profile_from_state(mock_profile_state):
     assert edu.title == "Master Informatique"
     assert edu.university == "Université de Paris"
     assert edu.dates == "2016-2018"
-    assert edu.full_description == "Spécialisation en développement web"
+    assert edu.full_descriptions == "Spécialisation en développement web"
     
     # Vérifier les autres champs
     assert profile.skills == "Python, JavaScript, React"
