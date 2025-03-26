@@ -6,7 +6,7 @@ import sys
 from os.path import dirname, abspath
 from pydantic import BaseModel, Field
 from typing import Dict, List
-import os
+import langdetect
 
 from .summarize_exp import summarize_exps
 from .summarize_edu import summarize_edus
@@ -14,6 +14,7 @@ from ai_module.lg_models import CVGenState
 from .prioritize_edu import prioritize_edu
 from .prioritize_exp import prioritize_exp
 from langchain_core.messages import SystemMessage, HumanMessage
+from .translate_cv import translate_cv
 # Ajout du répertoire parent au PYTHONPATH
 root_dir = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(root_dir)
@@ -21,6 +22,14 @@ sys.path.append(root_dir)
 ##############################################################################
 # 1. Définition des noeuds du graphe
 ##############################################################################
+
+def detect_language(state: CVGenState) -> dict:
+    """
+    Détecte la langue du CV.
+    """
+
+    detected_language = langdetect.detect(state.job_raw)
+    return {"language_cv": detected_language}
 
 def summarize_job(state: CVGenState) -> dict:
     """
@@ -177,6 +186,23 @@ Exemple de réponse correcte:
     
     return {"competences": response.competences}
 
+def translate_cv_node(state: CVGenState) -> dict:
+    """
+    Traduit le CV en fonction de la langue cible.
+    Met à jour directement l'état du CV avec les traductions.
+    
+    Args:
+        state: État actuel du CV
+        
+    Returns:
+        dict: État mis à jour avec les traductions
+    """
+    # Appliquer la traduction et récupérer l'état mis à jour
+    updated_state = translate_cv(state)
+    
+    # Retourner l'état complet pour mise à jour
+    return updated_state.model_dump()
+
 ##############################################################################
 # 2. Construction du graphe principal
 ##############################################################################
@@ -193,11 +219,15 @@ main_graph.add_node("generate_title", generate_title)
 main_graph.add_node("generate_skills", generate_skills)
 main_graph.add_node("prioritize_experiences", prioritize_experiences)
 main_graph.add_node("prioritize_education", prioritize_education)
+main_graph.add_node("detect_language", detect_language)
+main_graph.add_node("translate_cv_node", translate_cv_node)
 
 # Configuration des transitions pour le parallélisme
 main_graph.add_edge(START, "summarize_job")
 main_graph.add_edge(START, "process_experiences")
 main_graph.add_edge(START, "process_education")
+main_graph.add_edge(START, "detect_language")
+
 main_graph.add_edge("summarize_job", "aggregate_results")
 main_graph.add_edge("process_experiences", "aggregate_results")
 main_graph.add_edge("process_education", "aggregate_results")
@@ -205,10 +235,36 @@ main_graph.add_edge("aggregate_results", "generate_title")
 main_graph.add_edge("aggregate_results", "generate_skills")
 main_graph.add_edge("aggregate_results", "prioritize_experiences")
 main_graph.add_edge("aggregate_results", "prioritize_education")
-main_graph.add_edge("prioritize_education", END)
-main_graph.add_edge("prioritize_experiences", END)
-main_graph.add_edge("generate_skills", END)
-main_graph.add_edge("generate_title", END)
 
-# Compilation du workflow
-compiled_gencv_graph = main_graph.compile()
+# Modification de la structure pour fusionner tous les résultats
+def merge_results(state: CVGenState) -> dict:
+    """
+    Fusionne tous les résultats des différentes branches.
+    """
+    return state.model_dump()
+
+main_graph.add_node("merge_results", merge_results)
+main_graph.add_edge("prioritize_education", "merge_results")
+main_graph.add_edge("prioritize_experiences", "merge_results")
+main_graph.add_edge("generate_skills", "merge_results")
+main_graph.add_edge("generate_title", "merge_results")
+
+# Ajout des connexions pour la traduction
+main_graph.add_edge("merge_results", "translate_cv_node")
+main_graph.add_edge("detect_language", "translate_cv_node")
+main_graph.add_edge("translate_cv_node", END)
+
+# Variable pour stocker le graphe compilé
+_compiled_gencv_graph = None
+
+def get_compiled_gencv_graph():
+    """
+    Retourne le graphe compilé, en le compilant si nécessaire (lazy loading).
+    
+    Returns:
+        Le graphe compilé
+    """
+    global _compiled_gencv_graph
+    if _compiled_gencv_graph is None:
+        _compiled_gencv_graph = main_graph.compile()
+    return _compiled_gencv_graph

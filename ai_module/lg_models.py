@@ -171,18 +171,133 @@ class ProfileState(BaseModel):
         )
 
 class CVGenState(BaseModel):
-    """État global du workflow."""
-    head: CVHead
-    sections: Dict[str, str]
-    experiences: List[CVExperience]
-    education: List[CVEducation]
-    competences: Dict[str, List[str]]
-    skills_raw: str
-    langues: List[CVLanguage]
-    hobbies_raw: str
-    hobbies_refined: str
-    job_raw: str
-    job_refined: str
+    """État global du workflow de génération de CV."""
+    head: CVHead = Field(
+        default_factory=lambda: CVHead(
+            name="",
+            title_raw="",
+            title_generated="",
+            title_refined="",
+            mail="",
+            tel_raw="",
+            tel_refined=""
+        ),
+        description="En-tête du CV contenant les informations personnelles"
+    )
+    sections: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "experience": "Expérience Professionnelle",
+            "education": "Formation",
+            "skills": "Compétences",
+            "languages": "Langues",
+            "hobbies": "Centres d'Intérêt"
+        },
+        description="Titres des sections du CV"
+    )
+    experiences: List[CVExperience] = Field(
+        default_factory=list,
+        description="Liste des expériences professionnelles"
+    )
+    education: List[CVEducation] = Field(
+        default_factory=list,
+        description="Liste des formations"
+    )
+    competences: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Compétences organisées par catégorie"
+    )
+    skills_raw: str = Field(
+        default="",
+        description="Compétences brutes non structurées"
+    )
+    langues: List[CVLanguage] = Field(
+        default_factory=list,
+        description="Liste des langues maîtrisées"
+    )
+    langues_raw: str = Field(
+        default="",
+        description="Langues brutes non structurées"
+    )
+    hobbies_raw: str = Field(
+        default="",
+        description="Centres d'intérêt bruts"
+    )
+    hobbies_refined: str = Field(
+        default="",
+        description="Centres d'intérêt raffinés et traduits"
+    )
+    job_raw: str = Field(
+        default="",
+        description="Description brute du poste visé"
+    )
+    job_refined: str = Field(
+        default="",
+        description="Description raffinée du poste visé"
+    )
+    language_cv: str = Field(
+        default="",
+        description="Langue cible du CV (fr, en, etc.)"
+    )
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "CVGenState":
+        """
+        Crée une instance de CVGenState à partir d'un dictionnaire.
+        Utile pour convertir le résultat de invoke() en instance CVGenState.
+        
+        Args:
+            data (dict): Dictionnaire contenant les données du CV
+            
+        Returns:
+            CVGenState: Une nouvelle instance de CVGenState
+        """
+        # Initialiser les valeurs par défaut
+        head = CVHead(**data.get("head", {})) if isinstance(data.get("head"), dict) else data.get("head", CVHead(
+            name="",
+            title_raw="",
+            title_generated="",
+            title_refined="",
+            mail="",
+            tel_raw="",
+            tel_refined=""
+        ))
+        
+        experiences = []
+        if "experiences" in data:
+            experiences = [
+                CVExperience(**exp) if isinstance(exp, dict) else exp 
+                for exp in data["experiences"]
+            ]
+        
+        education = []
+        if "education" in data:
+            education = [
+                CVEducation(**edu) if isinstance(edu, dict) else edu 
+                for edu in data["education"]
+            ]
+        
+        langues = []
+        if "langues" in data:
+            langues = [
+                CVLanguage(**lang) if isinstance(lang, dict) else lang 
+                for lang in data["langues"]
+            ]
+
+        # Créer et retourner l'instance
+        return cls(
+            head=head,
+            sections=data.get("sections", {}),
+            experiences=experiences,
+            education=education,
+            competences=data.get("competences", {}),
+            skills_raw=data.get("skills_raw", ""),
+            langues=langues,
+            hobbies_raw=data.get("hobbies_raw", ""),
+            hobbies_refined=data.get("hobbies_refined", ""),
+            job_raw=data.get("job_raw", ""),
+            job_refined=data.get("job_refined", ""),
+            language_cv=data.get("language_cv", "")
+        )
 
     @classmethod
     def from_json(cls, data: dict) -> "CVGenState":
@@ -213,160 +328,104 @@ class CVGenState(BaseModel):
             hobbies_raw=data.get("hobbies_raw", ""),
             hobbies_refined=data.get("hobbies_refined", ""),
             job_raw=data.get("job_raw", ""),
-            job_refined=data.get("job_refined", "")
+            job_refined=data.get("job_refined", ""),
+            language_cv=data.get("language_cv", "")
         )
         
     @classmethod
     def from_user_document(cls, user_document, cv_name: str) -> Optional["CVGenState"]:
         """
-        Crée une instance de CVGenState à partir d'un UserDocument et d'un nom de CV.
+        Crée une nouvelle instance de CVGenState à partir d'un UserDocument et d'un nom de CV.
+        Cette méthode crée un nouveau CV en utilisant les données du profil et le job_raw du CV existant.
         
         Args:
             user_document: Instance de UserDocument contenant le profil et les CVs
-            cv_name: Nom du CV à utiliser
+            cv_name: Nom du CV à utiliser pour récupérer le job_raw
             
         Returns:
-            Instance de CVGenState ou None si le CV n'est pas trouvé
+            Instance de CVGenState
         """
-        # Récupérer le CV spécifié
-        cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
-        if not cv:
-            return None
-            
-        # Construire le Head à partir du profil et du CV
         profile = user_document.profile
+        
+        # Récupérer uniquement le job_raw du CV existant
+        cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
+        job_raw = cv.job_raw if cv and hasattr(cv, 'job_raw') else ""
+        
+        # Construire le Head à partir du profil
         head_data = {
-            "name": cv.cv_data.name or profile.head.name or "",
-            "title_raw": cv.cv_data.title or profile.head.title or "",
+            "name": profile.head.name or "",
+            "title_raw": profile.head.title or "",
             "title_generated": "",  # Champ à générer plus tard
-            "title_refined": cv.cv_data.title or profile.head.title or "",
-            "mail": cv.cv_data.mail or profile.head.mail or "",
-            "tel_raw": cv.cv_data.phone or profile.head.phone or "",
-            "tel_refined": cv.cv_data.phone or profile.head.phone or ""
+            "title_refined":  "",
+            "mail": profile.head.mail or "",
+            "tel_raw": profile.head.phone or "",
+            "tel_refined":  ""
         }
         head = CVHead(**head_data)
         
-        # Construire les sections
+        # Sections par défaut
         sections = {
-            "experience": cv.cv_data.sections_name.experience_section_name,
-            "education": cv.cv_data.sections_name.education_section_name,
-            "skills": cv.cv_data.sections_name.skills_section_name,
-            "languages": cv.cv_data.sections_name.languages_section_name,
-            "hobbies": cv.cv_data.sections_name.hobbies_section_name
+            "experience": "Expérience Professionnelle",
+            "education": "Formation",
+            "skills": "Compétences",
+            "languages": "Langues",
+            "hobbies": "Centres d'Intérêt"
         }
         
         # Convertir les expériences
         experiences = []
-        for idx, exp in enumerate(cv.cv_data.experiences or profile.experiences or []):
-            # Choisir la source des données (CV ou profil)
-            if hasattr(exp, 'company'):  # Expérience du CV
-                bullets = exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
-                exp_data = {
-                    "title_raw": exp.title or "",
-                    "title_refined": exp.title or "",
-                    "company_raw": exp.company or "",
-                    "company_refined": exp.company or "",
-                    "location_raw": exp.location or "",
-                    "location_refined": exp.location or "",
-                    "dates_raw": exp.dates or "",
-                    "dates_refined": exp.dates or "",
-                    "description_raw": " ".join(bullets) if bullets else "",
-                    "description_refined": " ".join(bullets) if bullets else "",
-                    "summary": "",
-                    "bullets": bullets,
-                    "weight": 1.0,
-                    "order": idx,
-                    "nb_bullets": len(bullets)
-                }
-            else:  # Expérience du profil
-                descriptions = exp.full_descriptions if hasattr(exp, 'full_descriptions') and exp.full_descriptions else []
-                bullets = exp.bullets if hasattr(exp, 'bullets') and exp.bullets else []
-                exp_data = {
-                    "title_raw": exp.title or "",
-                    "title_refined": exp.title or "",
-                    "company_raw": exp.company or "",
-                    "company_refined": exp.company or "",
-                    "location_raw": exp.location or "",
-                    "location_refined": exp.location or "",
-                    "dates_raw": exp.dates or "",
-                    "dates_refined": exp.dates or "",
-                    "description_raw": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
-                    "description_refined": " ".join(descriptions) if descriptions else " ".join(bullets) if bullets else "",
-                    "summary": "",
-                    "bullets": bullets,
-                    "weight": 1.0,
-                    "order": idx,
-                    "nb_bullets": len(bullets)
-                }
+        for idx, exp in enumerate(profile.experiences or []):
+            exp_data = {
+                "title_raw": exp.title or "",
+                "title_refined": "",
+                "company_raw": exp.company or "",
+                "company_refined":  "",
+                "location_raw": exp.location or "",
+                "location_refined": "",
+                "dates_raw": exp.dates or "",
+                "dates_refined": "",
+                "description_raw": exp.full_description or "",
+                "description_refined":  "",
+                "summary": "",
+                "bullets": [],
+                "weight": 0.0,
+                "order": 0,
+                "nb_bullets": 0
+            }
             experiences.append(CVExperience(**exp_data))
         
         # Convertir les formations
         education_list = []
-        for idx, edu in enumerate(cv.cv_data.educations or profile.educations or []):
-            # Choisir la source des données (CV ou profil)
-            if hasattr(edu, 'university'):  # Formation du CV
-                edu_data = {
-                    "degree_raw": edu.title or "",
-                    "degree_refined": edu.title or "",
-                    "institution_raw": edu.university or "",
-                    "institution_refined": edu.university or "",
-                    "location_raw": edu.location or "",
-                    "location_refined": edu.location or "",
-                    "dates_raw": edu.dates or "",
-                    "dates_refined": edu.dates or "",
-                    "description_raw": edu.description or "",
-                    "description_generated": "",
-                    "description_refined": edu.description or "",
-                    "summary": "",
-                    "weight": 1.0,
-                    "order": idx,
-                    "nb_mots": len(edu.description.split()) if edu.description else 0
-                }
-            else:  # Formation du profil
-                description = edu.full_description or edu.description or ""
-                edu_data = {
-                    "degree_raw": edu.title or "",
-                    "degree_refined": edu.title or "",
-                    "institution_raw": edu.university or "",
-                    "institution_refined": edu.university or "",
-                    "location_raw": edu.location or "",
-                    "location_refined": edu.location or "",
-                    "dates_raw": edu.dates or "",
-                    "dates_refined": edu.dates or "",
-                    "description_raw": description,
-                    "description_generated": "",
-                    "description_refined": description,
-                    "summary": "",
-                    "weight": 1.0,
-                    "order": idx,
-                    "nb_mots": len(description.split()) if description else 0
-                }
+        for idx, edu in enumerate(profile.educations or []):
+            description = edu.full_description or edu.description or ""
+            edu_data = {
+                "degree_raw": edu.title or "",
+                "degree_refined": "",
+                "institution_raw": edu.university or "",
+                "institution_refined": "",
+                "location_raw": "",
+                "location_refined":"",
+                "dates_raw": edu.dates or "",
+                "dates_refined":  "",
+                "description_raw": description,
+                "description_generated": "",
+                "description_refined": "",
+                "summary": "",
+                "weight": 0.0,
+                "order": 0,
+                "nb_mots": 0
+            }
             education_list.append(CVEducation(**edu_data))
         
         # Convertir les compétences
-        competences = {}
-        skills_raw = ""
-        if cv.cv_data.skills:
-            for skill in cv.cv_data.skills:
-                category = skill.category_name or "Général"
-                skill_items = skill.skills.split(',') if skill.skills else []
-                competences[category] = [item.strip() for item in skill_items]
-                skills_raw += skill.skills + ", " if skill.skills else ""
-        elif profile.skills:
-            competences = profile.skills or {}
-            skills_raw = ", ".join([", ".join(skills) for skills in profile.skills.values()]) if profile.skills else ""
+        competences =  {}
+        skills_raw = profile.skills or ""
             
         # Convertir les langues
         langues = []
-        if cv.cv_data.languages:
-            for lang in cv.cv_data.languages:
-                langues.append(CVLanguage(language=lang.language or "", level=lang.level or ""))
-        elif profile.languages:
-            for lang in profile.languages:
-                langues.append(CVLanguage(language=lang.get("language", ""), level=lang.get("level", "")))
-        
+        langues_raw = profile.languages or ""
         # Hobbies
-        hobbies_raw = cv.cv_data.hobbies or profile.hobbies or ""
+        hobbies_raw = profile.hobbies or ""
         
         # Construire l'instance GlobalState
         return cls(
@@ -377,10 +436,12 @@ class CVGenState(BaseModel):
             competences=competences,
             skills_raw=skills_raw.rstrip(", "),
             langues=langues,
+            langues_raw=langues_raw,
             hobbies_raw=hobbies_raw,
             hobbies_refined=hobbies_raw,
-            job_raw=cv.job_raw or "",
-            job_refined=""
+            job_raw=job_raw,
+            job_refined="",
+            language_cv=""
         )
 
     def to_json(self, filepath: str) -> None:
@@ -401,7 +462,8 @@ class CVGenState(BaseModel):
             "hobbies_raw": self.hobbies_raw,
             "hobbies_refined": self.hobbies_refined,
             "job_raw": self.job_raw,
-            "job_refined": self.job_refined
+            "job_refined": self.job_refined,
+            "language_cv": self.language_cv
         }
         
         with open(filepath, "w", encoding="utf-8") as f:

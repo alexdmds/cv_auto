@@ -28,3 +28,4 @@ python-dotenv==1.0.1
 pydantic==2.10.6
 aiohttp==3.11.14
 asyncio==3.4.3
+langdetect==1.0.9

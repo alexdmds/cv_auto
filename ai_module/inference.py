@@ -1,4 +1,4 @@
-from ai_module.chains_gen_cv.global_chain import compiled_gencv_graph
+from ai_module.chains_gen_cv.global_chain import get_compiled_gencv_graph
 from ai_module.lg_models import CVGenState, ProfileState
 from ai_module.chains_gen_profile.generate_profile_chain import create_profile_graph
 import logging
@@ -48,14 +48,17 @@ def generate_cv(state: CVGenState) -> CVGenState:
     logger.info("Démarrage de la génération du CV avec LangChain")
     
     try:
+        # Obtenir le graphe compilé (lazy loading)
+        compiled_gencv_graph = get_compiled_gencv_graph()
+        
         # Exécution du graphe LangChain
-        result = compiled_gencv_graph.invoke(state)
+        result_dict = compiled_gencv_graph.invoke(state)
         
-        # Le résultat est déjà un GlobalState
+        # Convertir le résultat en CVGenState
+        result = CVGenState.from_dict(result_dict)
+        
+        # Le résultat est déjà un CVGenState
         logger.info("Génération du CV terminée avec succès")
-        
-        # Définir l'état comme complété
-        result.status = "completed"
         
         return result
     except Exception as e:
