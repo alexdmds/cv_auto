@@ -52,7 +52,7 @@ def translate_cv(state: CVGenState) -> CVGenState:
         CVGenState: État du CV avec les traductions mises à jour
     """
 
-    llm = get_llm().with_structured_output(TranslationOutput)
+    llm = get_llm(model="gpt-4o-mini", temperature=0.8).with_structured_output(TranslationOutput)
     
     prompt = f"""Tu es un traducteur professionnel spécialisé dans les CV.
 Je vais te donner un CV à traduire en {state.language_cv}.
