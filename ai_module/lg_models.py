@@ -374,7 +374,7 @@ class CVGenState(BaseModel):
         
         # Convertir les expériences
         experiences = []
-        for idx, exp in enumerate(profile.experiences or []):
+        for exp in profile.experiences:
             exp_data = {
                 "title_raw": exp.title or "",
                 "title_refined": "",
@@ -384,7 +384,7 @@ class CVGenState(BaseModel):
                 "location_refined": "",
                 "dates_raw": exp.dates or "",
                 "dates_refined": "",
-                "description_raw": exp.full_description or "",
+                "description_raw": exp.full_descriptions or "",
                 "description_refined":  "",
                 "summary": "",
                 "bullets": [],
@@ -396,8 +396,7 @@ class CVGenState(BaseModel):
         
         # Convertir les formations
         education_list = []
-        for idx, edu in enumerate(profile.educations or []):
-            description = edu.full_description or edu.description or ""
+        for edu in profile.educations:
             edu_data = {
                 "degree_raw": edu.title or "",
                 "degree_refined": "",
@@ -407,7 +406,7 @@ class CVGenState(BaseModel):
                 "location_refined":"",
                 "dates_raw": edu.dates or "",
                 "dates_refined":  "",
-                "description_raw": description,
+                "description_raw": edu.full_descriptions or "",
                 "description_generated": "",
                 "description_refined": "",
                 "summary": "",

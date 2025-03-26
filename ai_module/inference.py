@@ -24,9 +24,11 @@ def generate_profile(profile_state: ProfileState) -> ProfileState:
         
         # Exécution du graphe
         result = profile_graph.invoke(profile_state)
+
+        #Convertir le résultat en ProfileState
+        result = ProfileState.from_dict(result)
         
         logger.info("Extraction du profil terminée avec succès")
-        logger.info(f"Informations extraites: head, experiences ({len(result.get('experiences', []))}), education ({len(result.get('education', []))})")
         
         return result
     except Exception as e:
@@ -63,9 +65,5 @@ def generate_cv(state: CVGenState) -> CVGenState:
         return result
     except Exception as e:
         logger.error(f"Erreur lors de la génération du CV: {str(e)}", exc_info=True)
-        
-        # En cas d'erreur, retourner l'état initial mais marquer comme échoué
-        state.status = "failed"
-        state.error_message = str(e)
-        
-        return state
+        # En cas d'erreur, on lève l'exception pour la gérer au niveau supérieur
+        raise
