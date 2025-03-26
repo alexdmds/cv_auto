@@ -29,7 +29,6 @@ def generate_profile(profile_state: ProfileState) -> ProfileState:
         result = ProfileState.from_dict(result)
         
         logger.info("Extraction du profil terminée avec succès")
-        logger.info(f"Informations extraites: head, experiences ({len(result.get('experiences', []))}), education ({len(result.get('education', []))})")
         
         return result
     except Exception as e:

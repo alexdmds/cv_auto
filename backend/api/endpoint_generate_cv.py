@@ -43,6 +43,15 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
             logger.warning(f"Utilisateur '{user_id}' non trouvé")
             return jsonify({"error": f"Utilisateur '{user_id}' introuvable"}), 404
         
+        # Vérifier si le CV existe et s'il a une fiche de poste
+        existing_cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
+        if existing_cv and not existing_cv.job_raw.strip():
+            logger.warning(f"CV '{cv_name}' trouvé mais sans fiche de poste")
+            return jsonify({
+                "error": "Impossible de générer le CV sans fiche de poste",
+                "message": "Veuillez fournir une fiche de poste pour ce CV avant de le générer"
+            }), 400
+        
         # Préparer la réponse de base
         response_data = {
             "user_id": user_document.id,

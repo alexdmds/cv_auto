@@ -27,7 +27,7 @@
                     "title": "Title on the CV",
                     "sections_name": {
                         "experience_section_name": "Name to give to the \"professional experience section\"",
-                        "Hobbies_section": "Name to give to \"hobbies section\"",
+                        "hobbies_section_name": "Name to give to \"hobbies section\"",
                         "languages_section_name": "Name to give to \"Language\" section",
                         "skills_section_name": "Name to give to the skills' section",
                         "education_section_name": "Name to give to the \"education section\""

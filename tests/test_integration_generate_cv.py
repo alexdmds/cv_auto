@@ -107,44 +107,39 @@ def test_generate_cv_integration():
     
     # Sauvegarder l'utilisateur dans Firestore
     user_doc.save()
+
+    # Utilisation du contexte d'application Flask
+    with app.app_context():
+        # Appel de l'endpoint
+        from backend.api.endpoint_generate_cv import generate_cv_endpoint
+        response, status_code = generate_cv_endpoint("test_user", "test_cv")
+        
+        # Vérification de la réponse HTTP
+        assert status_code == 200
+        assert "success" in response.json
+        assert response.json["success"] is True
+        
+        # Vérification des données de réponse
+        data = response.json["data"]
+        assert data["user_id"] == "test_user"
+        assert data["cv_name"] == "test_cv"
+        assert "timestamp" in data
+        assert "pdf_url" in data
+        
+        # Vérification des données dans Firestore
+        saved_user = UserDocument.from_firestore_id("test_user")
+        assert saved_user is not None
+        
+        # Trouver le CV mis à jour
+        cv = next((cv for cv in saved_user.cvs if cv.cv_name == "test_cv"), None)
+        assert cv is not None
+        
+        # Afficher le contenu du CV pour le debug
+        print("\nContenu du CV après génération:")
+        print(f"Title: {cv.cv_data.title}")
+        print(f"Experiences: {cv.cv_data.experiences}")
+        print(f"Educations: {cv.cv_data.educations}")
+        print(f"Skills: {cv.cv_data.skills}")
+        print(f"Languages: {cv.cv_data.languages}")
+        print(f"Hobbies: {cv.cv_data.hobbies}")
     
-    try:
-        # Utilisation du contexte d'application Flask
-        with app.app_context():
-            # Appel de l'endpoint
-            from backend.api.endpoint_generate_cv import generate_cv_endpoint
-            response, status_code = generate_cv_endpoint("test_user", "test_cv")
-            
-            # Vérification de la réponse HTTP
-            assert status_code == 200
-            assert "success" in response.json
-            assert response.json["success"] is True
-            
-            # Vérification des données de réponse
-            data = response.json["data"]
-            assert data["user_id"] == "test_user"
-            assert data["cv_name"] == "test_cv"
-            assert "timestamp" in data
-            assert "pdf_url" in data
-            
-            # Vérification des données dans Firestore
-            saved_user = UserDocument.from_firestore_id("test_user")
-            assert saved_user is not None
-            
-            # Trouver le CV mis à jour
-            cv = next((cv for cv in saved_user.cvs if cv.cv_name == "test_cv"), None)
-            assert cv is not None
-            
-            # Afficher le contenu du CV pour le debug
-            print("\nContenu du CV après génération:")
-            print(f"Title: {cv.cv_data.title}")
-            print(f"Experiences: {cv.cv_data.experiences}")
-            print(f"Educations: {cv.cv_data.educations}")
-            print(f"Skills: {cv.cv_data.skills}")
-            print(f"Languages: {cv.cv_data.languages}")
-            print(f"Hobbies: {cv.cv_data.hobbies}")
-            
-    finally:
-        # Nettoyage : supprimer l'utilisateur de test de Firestore
-        db = UserDocument.get_db()
-        db.collection(UserDocument.collection_name).document("test_user").delete()
