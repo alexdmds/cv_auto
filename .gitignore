@@ -52,3 +52,5 @@ serviceAccountKey.json
 .coverage
 htmlcov/
 .pytest_cache/
+
+output/

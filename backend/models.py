@@ -9,6 +9,16 @@ from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
 from pydantic import BaseModel, Field
 from .base_firestore import FirestoreModel
 from ai_module.lg_models import ProfileState
+from pathlib import Path
+from reportlab.platypus import SimpleDocTemplate
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from .cv_automation.gen_pdf.sections.header import create_header
+from .cv_automation.gen_pdf.sections.education import create_education_section
+from .cv_automation.gen_pdf.sections.experience import create_experience_section
+from .cv_automation.gen_pdf.sections.skills import create_skills_section
+from .cv_automation.gen_pdf.sections.hobbies import create_hobbies_section
+from PIL import Image
 # Définir des types génériques pour les classes de modèle
 T = TypeVar('T', bound='FirestoreModel')
 
@@ -61,6 +71,126 @@ class CVData(BaseModel):
     skills: List[SkillCV] = Field(default_factory=list)
     languages: List[LanguageCV] = Field(default_factory=list)
     hobbies: str = ""
+
+    def to_pdf_data(self) -> dict:
+        """Convertit les données du CV en format compatible avec le générateur de PDF"""
+        # Convertir les compétences en dictionnaire
+        skills_data = {}
+        for skill in self.skills:
+            if skill.category_name and skill.skills:
+                skills_data[skill.category_name] = skill.skills.split(", ")
+
+        # Convertir les langues en format attendu
+        languages_data = []
+        for lang in self.languages:
+            if lang.language and lang.level:
+                languages_data.append({
+                    "nom": lang.language,
+                    "niveau": lang.level
+                })
+
+        experiences_data = {
+            "intitule_section": self.sections_name.experience_section_name,
+            "experiences": [
+                {
+                    "post": exp.title,
+                    "company": exp.company,
+                    "dates": exp.dates,
+                    "location": exp.location,
+                    "bullets": exp.bullets
+                }
+                for exp in self.experiences if exp.title
+            ]
+        }
+
+        education_data = {
+            "intitule_section": self.sections_name.education_section_name,
+            "educations": [
+                {
+                    "etablissement": edu.university,
+                    "intitule": edu.title,
+                    "dates": edu.dates,
+                    "lieu": edu.location,
+                    "description": edu.description
+                }
+                for edu in self.educations if edu.title
+            ]
+        }
+
+        skills_section_data = {
+            "intitule_section": self.sections_name.skills_section_name,
+            "skills": skills_data,
+            "langues": languages_data
+        }
+
+        hobbies_data = {
+            "intitule_section": self.sections_name.hobbies_section_name,
+            "hobbies": self.hobbies
+        }
+
+        return {
+            "head": {
+                "name": self.name,
+                "general_title": self.title,
+                "email": self.mail,
+                "phone": self.phone
+            },
+            "experiences": experiences_data,
+            "education": education_data,
+            "skills": skills_section_data,
+            "hobbies": hobbies_data
+        }
+
+    def generate_pdf(self, output_path: str, photo_path: Optional[str] = None) -> str:
+        """
+        Génère un fichier PDF du CV.
+
+        Args:
+            output_path (str): Chemin où sauvegarder le PDF
+            photo_path (Optional[str]): Chemin vers la photo de profil. Si None, utilise une photo par défaut.
+
+        Returns:
+            str: Chemin du fichier PDF généré
+        """
+        # Convertir les données au format attendu par le générateur de PDF
+        data = self.to_pdf_data()
+
+        # Gérer la photo
+        if not photo_path:
+            ROOT_DIR = Path(__file__).resolve().parent
+            photo_path = str(ROOT_DIR / "cv_automation" / "gen_pdf" / "sections" / "photo_default.jpg")
+            if not Path(photo_path).exists():
+                # Si la photo par défaut n'existe pas, on crée une image vide
+                img = Image.new('RGB', (100, 100), color='white')
+                photo_path = str(Path(output_path).parent / "photo_default.jpg")
+                img.save(photo_path)
+        
+        # Créer le répertoire de sortie si nécessaire
+        output_dir = Path(output_path).parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Initialiser le document PDF
+        doc = SimpleDocTemplate(
+            output_path,
+            pagesize=A4,
+            rightMargin=1 * cm,
+            leftMargin=1 * cm,
+            topMargin=1 * cm,
+            bottomMargin=1 * cm
+        )
+        elements = []
+
+        # Générer les sections
+        elements += create_header(data, photo_path)
+        elements += create_experience_section(data)
+        elements += create_education_section(data)
+        elements += create_skills_section(data)
+        elements += create_hobbies_section(data)
+
+        # Générer le PDF
+        doc.build(elements)
+
+        return output_path
 
 class CV(BaseModel):
     """Structure complète d'un CV"""

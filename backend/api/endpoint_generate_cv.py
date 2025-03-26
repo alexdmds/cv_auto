@@ -4,6 +4,9 @@ from backend.models import UserDocument, CV
 from ai_module.lg_models import CVGenState
 from datetime import datetime
 from backend.config import load_config
+from pathlib import Path
+import firebase_admin
+from firebase_admin import storage
 config = load_config()
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,28 @@ if config.MOCK_OPENAI:
 else:
     from ai_module.inference import generate_cv
     logger.info("Utilisation de l'implémentation RÉELLE de generate_cv")
+
+
+def upload_to_firebase_storage(file_path: str, user_id: str, cv_name: str) -> str:
+    """
+    Upload un fichier vers Firebase Storage.
+    
+    Args:
+        file_path (str): Chemin local du fichier à uploader
+        user_id (str): ID de l'utilisateur
+        cv_name (str): Nom du CV
+        
+    Returns:
+        str: URL publique du fichier uploadé
+    """
+    bucket = storage.bucket(config.BUCKET_NAME)
+    storage_path = f"{user_id}/cvs/{cv_name}.pdf"
+    blob = bucket.blob(storage_path)
+    
+    blob.upload_from_filename(file_path)
+    blob.make_public()  # Rendre le fichier accessible publiquement
+    
+    return blob.public_url
 
 
 def generate_cv_endpoint(user_id: str, cv_name: str):
@@ -69,6 +94,32 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
         if not cv_info:
             logger.error(f"CV '{cv_name}' non trouvé pour mise à jour")
             return jsonify({"error": f"CV '{cv_name}' non trouvé pour mise à jour"}), 404
+        
+        # Générer le PDF et l'uploader directement vers Firebase Storage
+        try:
+            # Trouver le CV dans la liste des CVs
+            cv = next((cv for cv in user_document.cvs if cv.cv_name == cv_name), None)
+            if cv:
+                # Utiliser NamedTemporaryFile pour gérer automatiquement la suppression du fichier temporaire
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as tmp_file:
+                    # Générer le PDF directement dans le fichier temporaire
+                    generated_path = cv.cv_data.generate_pdf(tmp_file.name)
+                    logger.info(f"PDF généré temporairement")
+                    
+                    # Uploader vers Firebase Storage
+                    try:
+                        storage_url = upload_to_firebase_storage(generated_path, user_id, cv_name)
+                        logger.info(f"PDF uploadé vers Firebase Storage : {storage_url}")
+                        response_data["pdf_url"] = storage_url
+                    except Exception as storage_error:
+                        logger.error(f"Erreur lors de l'upload vers Firebase Storage: {str(storage_error)}", exc_info=True)
+                        response_data["storage_error"] = str(storage_error)
+            else:
+                logger.warning(f"CV '{cv_name}' non trouvé pour la génération du PDF")
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération du PDF: {str(e)}", exc_info=True)
+            response_data["pdf_error"] = str(e)
         
         # Sauvegarder explicitement l'utilisateur dans Firestore
         logger.info(f"Sauvegarde de l'utilisateur '{user_id}' avec le CV mis à jour dans Firestore")
