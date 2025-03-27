@@ -227,7 +227,7 @@ main_graph.add_edge(START, "summarize_job")
 main_graph.add_edge(START, "process_experiences")
 main_graph.add_edge(START, "process_education")
 main_graph.add_edge(START, "detect_language")
-
+main_graph.add_edge("detect_language", "translate_cv_node")
 main_graph.add_edge("summarize_job", "aggregate_results")
 main_graph.add_edge("process_experiences", "aggregate_results")
 main_graph.add_edge("process_education", "aggregate_results")
@@ -251,7 +251,6 @@ main_graph.add_edge("generate_title", "merge_results")
 
 # Ajout des connexions pour la traduction
 main_graph.add_edge("merge_results", "translate_cv_node")
-main_graph.add_edge("detect_language", "translate_cv_node")
 main_graph.add_edge("translate_cv_node", END)
 
 # Variable pour stocker le graphe compilé

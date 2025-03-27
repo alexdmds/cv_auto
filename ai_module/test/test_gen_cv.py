@@ -8,7 +8,7 @@ import json
 root_dir = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(root_dir)
 
-from ai_module.chains_gen_cv.global_chain import compiled_gencv_graph
+from ai_module.chains_gen_cv.global_chain import get_compiled_gencv_graph
 from ai_module.lg_models import CVGenState, CVExperience, CVEducation, CVHead
 
 class TestGenCV(unittest.TestCase):
@@ -28,9 +28,9 @@ class TestGenCV(unittest.TestCase):
                     title_refined="",
                     company_refined="",
                     summary="",
-                    location_raw="",
+                    location_raw="Paris",
                     location_refined="",
-                    dates_raw="",
+                    dates_raw="2020-2023",
                     dates_refined="",
                     description_refined="",
                     bullets=[],
@@ -47,9 +47,9 @@ class TestGenCV(unittest.TestCase):
                     degree_refined="",
                     institution_refined="",
                     summary="",
-                    location_raw="",
+                    location_raw="Lyon",
                     location_refined="",
-                    dates_raw="",
+                    dates_raw="2018-2020",
                     dates_refined="",
                     description_generated="",
                     description_refined="",
@@ -59,40 +59,43 @@ class TestGenCV(unittest.TestCase):
                 )
             ],
             "head": CVHead(
-                name="",
+                name="John Doe",
                 title_raw="Développeur Full Stack",
                 title_generated="",
                 title_refined="",
-                mail="",
-                tel_raw="",
+                mail="john@example.com",
+                tel_raw="+33123456789",
                 tel_refined=""
             ),
             "sections": {},
             "competences": {},
             "skills_raw": "Python, Django, React, SQL, Git, Docker",
             "langues": [],
-            "hobbies_raw": "",
+            "hobbies_raw": "Photographie, Randonnée",
             "hobbies_refined": "",
-            "job_refined": ""
+            "job_refined": "",
+            "language_cv": "",
+            "final_output": ""
         }
 
     def test_graph_compilation(self):
         """Teste si le graphe est correctement compilé"""
-        self.assertIsNotNone(compiled_gencv_graph)
-        self.assertTrue(hasattr(compiled_gencv_graph, 'invoke'))
+        graph = get_compiled_gencv_graph()
+        self.assertIsNotNone(graph)
+        self.assertTrue(hasattr(graph, 'invoke'))
 
     def test_chain_execution(self):
         """Teste l'exécution complète de la chaîne"""
-        # Création de l'état initial
         initial_state = CVGenState(**self.test_data)
-        
-        # Exécution de la chaîne et conversion du résultat
-        result_dict = compiled_gencv_graph.invoke(initial_state)
-        result = CVGenState.from_dict({**initial_state.model_dump(), **result_dict})
+        graph = get_compiled_gencv_graph()
+        result_dict = graph.invoke(initial_state)
+        result = CVGenState.from_dict(result_dict)
         
         # Vérifications des résultats
         self.assertIsNotNone(result)
+        self.assertTrue(isinstance(result, CVGenState))
         self.assertIsNotNone(result.job_refined)
+        self.assertIsNotNone(result.language_cv)
         self.assertIsNotNone(result.experiences)
         self.assertIsNotNone(result.education)
         self.assertIsNotNone(result.head.title_generated)
@@ -101,64 +104,90 @@ class TestGenCV(unittest.TestCase):
     def test_output_structure(self):
         """Teste la structure des sorties"""
         initial_state = CVGenState(**self.test_data)
-        result_dict = compiled_gencv_graph.invoke(initial_state)
-        result = CVGenState.from_dict({**initial_state.model_dump(), **result_dict})
+        graph = get_compiled_gencv_graph()
+        result_dict = graph.invoke(initial_state)
+        result = CVGenState.from_dict(result_dict)
+        
+        # Vérification de la langue détectée
+        self.assertIsNotNone(result.language_cv)
         
         # Vérification de la structure des expériences
-        for exp in result.experiences:
+        self.assertTrue(isinstance(result.experiences, list))
+        if result.experiences:
+            exp = result.experiences[0]
+            self.assertTrue(isinstance(exp, CVExperience))
             self.assertIsNotNone(exp.title_refined)
             self.assertIsNotNone(exp.company_refined)
             self.assertIsNotNone(exp.summary)
+            self.assertIsNotNone(exp.weight)
+            self.assertIsNotNone(exp.order)
         
         # Vérification de la structure des formations
-        for edu in result.education:
+        self.assertTrue(isinstance(result.education, list))
+        if result.education:
+            edu = result.education[0]
+            self.assertTrue(isinstance(edu, CVEducation))
             self.assertIsNotNone(edu.degree_refined)
             self.assertIsNotNone(edu.institution_refined)
             self.assertIsNotNone(edu.summary)
+            self.assertIsNotNone(edu.weight)
+            self.assertIsNotNone(edu.order)
         
         # Vérification du titre généré
+        self.assertTrue(isinstance(result.head, CVHead))
         self.assertIsNotNone(result.head.title_generated)
         self.assertTrue(len(result.head.title_generated) > 0)
         
         # Vérification des compétences
-        self.assertIsInstance(result.competences, dict)
+        self.assertTrue(isinstance(result.competences, dict))
         self.assertTrue(len(result.competences) > 0)
 
     def test_output_content(self):
         """Teste le contenu des sorties"""
         initial_state = CVGenState(**self.test_data)
-        result_dict = compiled_gencv_graph.invoke(initial_state)
+        graph = get_compiled_gencv_graph()
+        result_dict = graph.invoke(initial_state)
+        result = CVGenState.from_dict(result_dict)
         
-        # Fusion de tous les résultats intermédiaires
-        final_state = initial_state.model_dump()
-        for key, value in result_dict.items():
-            if isinstance(value, dict):
-                if key in final_state and isinstance(final_state[key], dict):
-                    final_state[key].update(value)
-                else:
-                    final_state[key] = value
-            else:
-                final_state[key] = value
-        
-        result = CVGenState.from_dict(final_state)
+        # Vérification de la langue
+        self.assertEqual(result.language_cv, 'fr')
         
         # Vérification que le résumé du poste contient des mots-clés pertinents
-        self.assertTrue(any(keyword in result.job_refined.lower() 
-                          for keyword in ['python', 'développeur', 'web']))
+        self.assertTrue(
+            any(keyword in result.job_refined.lower() 
+                for keyword in ['python', 'développeur', 'web']),
+            f"Le résumé du poste ne contient pas les mots-clés attendus. Contenu: {result.job_refined}"
+        )
         
         # Vérification que le titre généré est pertinent
-        self.assertTrue(any(keyword in result.head.title_generated.lower() 
-                          for keyword in ['développeur', 'full stack', 'python']))
+        self.assertTrue(
+            any(keyword in result.head.title_generated.lower() 
+                for keyword in ['développeur', 'full stack', 'python']),
+            f"Le titre généré ne contient pas les mots-clés attendus. Contenu: {result.head.title_generated}"
+        )
         
-        # Debug des compétences
-        print("\nCompétences générées:", result.competences)
-        print("Résultat complet:", result_dict)
-        all_skills = [skill.lower() for skills in result.competences.values() for skill in skills]
-        print("Toutes les compétences:", all_skills)
+        # Vérification des compétences
+        # Aplatir toutes les compétences en une seule liste
+        all_skills = []
+        for category, skills in result.competences.items():
+            if isinstance(skills, list):
+                all_skills.extend([skill.lower() for skill in skills])
+            elif isinstance(skills, str):
+                all_skills.append(skills.lower())
         
-        # Vérification que les compétences contiennent les technologies principales
-        self.assertTrue(any(keyword in all_skills 
-                          for keyword in ['python', 'django', 'react', 'sql']))
+        # Vérifier la présence d'au moins une compétence clé
+        key_skills = ['python', 'django', 'react', 'sql']
+        found_skills = [skill for skill in key_skills if any(skill in s for s in all_skills)]
+        self.assertTrue(
+            len(found_skills) > 0,
+            f"Aucune compétence clé trouvée parmi {key_skills}. Compétences trouvées: {all_skills}"
+        )
+        
+        # Vérification de la priorisation
+        if result.experiences:
+            exp = result.experiences[0]
+            self.assertIsNotNone(exp.weight)
+            self.assertIsNotNone(exp.order)
 
 if __name__ == '__main__':
     unittest.main()
