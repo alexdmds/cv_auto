@@ -1,24 +1,28 @@
-from langgraph.graph import StateGraph, START, END
-from typing import Dict, List
-from pydantic import BaseModel, Field
-from langchain_core.messages import SystemMessage, HumanMessage
-from ai_module.llm_config import get_llm
-from ai_module.lg_models import CVGenState, CVHead, CVExperience, CVEducation
+from typing import List, Optional
+from typing_extensions import TypedDict
+import operator
 import langdetect
 
+from langgraph.graph import StateGraph, START, END
+from langgraph.constants import Send
+from langgraph.checkpoint.memory import MemorySaver
+from ai_module.lg_models import CVGenState, CVExperience
+from ai_module.llm_config import get_llm
+from typing_extensions import Annotated
 ##############################################################################
-# 1. Définition des modèles de données
+# 1. Modèles de données
 ##############################################################################
 
-class SkillsOutput(BaseModel):
-    """Structure pour la sortie des compétences"""
-    competences: Dict[str, List[str]] = Field(
-        description="Dictionnaire des catégories de compétences avec leurs listes de compétences",
-        default_factory=dict
-    )
+class PrivateExpState(TypedDict):
+    """
+    État privé pour le sous-graphe de traitement d'une seule expérience.
+    """
+    experiences_raw: List[CVExperience]
+    experiences_with_summary: Annotated[List[CVExperience], operator.add]
+
 
 ##############################################################################
-# 2. Définition des noeuds du graphe
+# 2. Fonctions "nœuds" du graphe principal
 ##############################################################################
 
 def detect_language(state: CVGenState) -> dict:
@@ -29,190 +33,133 @@ def detect_language(state: CVGenState) -> dict:
 def summarize_job(state: CVGenState) -> dict:
     """Résume la description du poste."""
     llm = get_llm()
-    prompt = f"""
-    Fait un résumé du poste en 100 mots maximum :
-    {state.job_raw}
-    """
+    prompt = f"Fais un résumé du poste en 100 mots maximum:\n{state.job_raw}"
     response = llm.invoke(prompt)
     return {"job_refined": response.content}
 
-def process_experiences(state: CVGenState) -> dict:
-    """Traite et résume les expériences."""
-    llm = get_llm()
-    processed_exps = []
-    
-    for exp in state.experiences:
-        prompt = f"""
-        Résume cette expérience professionnelle de manière concise et percutante.
-        Titre: {exp.title_raw}
-        Entreprise: {exp.company_raw}
-        
-        Format attendu:
-        - Un titre raffiné (max 5 mots)
-        - Un nom d'entreprise raffiné (max 3 mots)
-        - Un résumé impactant (max 50 mots)
-        """
-        
-        response = llm.invoke(prompt)
-        
-        # Mise à jour de l'expérience
-        exp.title_refined = exp.title_raw  # À remplacer par le parsing de la réponse
-        exp.company_refined = exp.company_raw  # À remplacer par le parsing de la réponse
-        exp.summary = response.content
-        processed_exps.append(exp)
-    
-    return {"experiences": processed_exps}
+def summarize_exp_orch(state: CVGenState) -> PrivateExpState:
+    """
+    Orchestrateur pour résumer les expériences.
+    On ne fait que renvoyer la liste des expériences pour le routage.
+    """
+    return {"experiences_raw": state.experiences}
 
-def process_education(state: CVGenState) -> dict:
-    """Traite et résume les formations."""
-    llm = get_llm()
-    processed_edu = []
-    
-    for edu in state.education:
-        prompt = f"""
-        Résume cette formation de manière concise et percutante.
-        Diplôme: {edu.degree_raw}
-        Institution: {edu.institution_raw}
-        
-        Format attendu:
-        - Un diplôme raffiné (max 5 mots)
-        - Un nom d'institution raffiné (max 3 mots)
-        - Un résumé impactant (max 50 mots)
-        """
-        
-        response = llm.invoke(prompt)
-        
-        # Mise à jour de la formation
-        edu.degree_refined = edu.degree_raw  # À remplacer par le parsing de la réponse
-        edu.institution_refined = edu.institution_raw  # À remplacer par le parsing de la réponse
-        edu.summary = response.content
-        processed_edu.append(edu)
-    
-    return {"education": processed_edu}
+def route_experiences(state: PrivateExpState):
+    """
+    Route chaque expérience vers `exp_worker`.
+    Chaque envoi est indépendant => parallélisme par expérience.
+    """
+    return[
+        Send(
+            # Nom du nœud (sous-graphe) vers lequel on envoie
+            "exp_worker",
+            # Payload qu'on lui transmet
+            {"experience_raw": exp}
+        )
+        for exp in state['experiences_raw']
+    ]
 
-def generate_title(state: CVGenState) -> dict:
-    """Génère un titre professionnel adapté."""
-    llm = get_llm()
-    
-    prompt = f"""En te basant sur la fiche de poste suivante:
-{state.job_refined}
+def synth_sumup_exp(state: PrivateExpState) -> dict:
+    """
+    Reçoit en entrée un champ `experiences_with_summary`, qui est la concat
+    de toutes les expériences résumées. On les range ensuite dans le champ
+    `experiences`.
+    """
+    # Dans le mode de routing en parallèle, `state["experiences_with_summary"]`
+    # contient déjà la liste agrégée de toutes les expériences (gérée par langGraph).
+    return {
+        "experiences": state['experiences_with_summary']
+    }
 
-Et le titre actuel du candidat:
-{state.head.title_raw}
-
-Génère un titre professionnel concis et percutant qui:
-- Met en avant les compétences clés recherchées dans la fiche de poste
-- Garde les éléments pertinents du titre actuel
-- Est formulé de manière professionnelle
-- Fait maximum 10 mots
-
-Règles:
-- Ne pas inclure le nom du candidat
-- Ne pas inclure d'entreprises spécifiques
-- Rester factuel et éviter les adjectifs superflus
-- Se concentrer sur l'expertise technique principale
-"""
-
-    response = llm.invoke([
-        SystemMessage(content="Tu es un expert RH qui optimise les titres professionnels pour les CV."),
-        HumanMessage(content=prompt)
-    ])
-    
-    head = state.head
-    head.title_generated = response.content.strip()
-    
-    return {"head": head}
-
-def generate_skills(state: CVGenState) -> dict:
-    """Génère une liste structurée de compétences."""
-    llm = get_llm().with_structured_output(SkillsOutput)
-    
-    prompt = f"""Analyse les compétences brutes suivantes et la fiche de poste pour générer une liste structurée de compétences pertinentes pour le CV.
-
-Compétences brutes:
-{state.skills_raw}
-
-Fiche de poste:
-{state.job_refined}
-
-Instructions:
-- Regroupe les compétences en 2-3 catégories maximum (ex: "Compétences techniques", "Outils & Technologies", etc.)
-- Pour chaque catégorie, liste 4-6 compétences maximum
-- Garde uniquement les compétences les plus pertinentes pour le poste
-- Formule chaque compétence de manière concise (2-3 mots maximum)
-- Exclus les langues étrangères qui sont traitées séparément
-- Priorise les compétences techniques concrètes plutôt que les soft skills
-"""
-
-    response = llm.invoke(prompt)
-    
-    if not response.competences:
-        return {"competences": {"Compétences techniques": ["À compléter"]}}
-    
-    return {"competences": response.competences}
-
-def aggregate_results(state: CVGenState) -> dict:
-    """Agrège tous les résultats en une sortie finale cohérente."""
-    final_output = f"""
-ANALYSE COMPLÈTE DU PROFIL
-
-POSTE VISÉ
-----------
-{state.job_refined}
-
-EXPÉRIENCES
-----------
-"""
-    for exp in state.experiences:
-        final_output += f"\n{exp.title_refined} - {exp.company_refined}"
-        final_output += f"\n{exp.summary}\n"
-
-    final_output += "\nFORMATION\n--------\n"
-    for edu in state.education:
-        final_output += f"\n{edu.degree_refined} - {edu.institution_refined}"
-        final_output += f"\n{edu.summary}\n"
-
-    final_output += "\nCOMPÉTENCES\n-----------\n"
-    for category, skills in state.competences.items():
-        final_output += f"\n{category}:"
-        final_output += f"\n- {', '.join(skills)}\n"
-
-    return {"final_output": final_output}
+def agg_sum(state: CVGenState) -> dict:
+    """
+    Agglomère les infos finales (langue détectée, job résumé, expériences résumées).
+    Ici on ne fait qu’un simple "return", mais on pourrait formater la sortie.
+    """
+    return {
+        "language_cv": state.language_cv,
+        "job_refined": state.job_refined,
+        "experiences": state.experiences,
+    }
 
 ##############################################################################
-# 3. Construction du graphe
+# 3. Fonctions "nœuds" du sous-graphe (pour UNE expérience)
+##############################################################################
+
+def exp_worker(state: PrivateExpState) -> dict:
+    """
+    Traite une seule expérience, génère un résumé via LLM.
+    """
+    llm = get_llm()
+    exp = state["experience_raw"]
+    
+    prompt = (
+        f"Résume l'expérience suivante en 50 mots maximum:\n\n"
+        f"Poste : {exp.title_raw}\n"
+        f"Entreprise : {exp.company_raw}\n"
+        f"Lieu : {exp.location_raw}\n"
+        f"Dates : {exp.dates_raw}\n"
+        f"Description : {exp.description_raw}\n\n"
+        f"Ne donne que le résumé final."
+    )
+    
+    response = llm.invoke(prompt)
+    
+    # Mettre à jour le champ summary
+    updated_exp = exp
+    updated_exp.summary = response.content
+    
+    # Retourne la liste, même si c'est pour un seul élément,
+    # car langGraph va agréger tous ces retours en un seul champ experiences_with_summary
+    return {"experiences_with_summary": [updated_exp]}
+
+
+##############################################################################
+# 5. Construction et compilation du graphe principal
 ##############################################################################
 
 def create_cv_chain():
-    """Crée et retourne la chaîne de traitement du CV."""
+    """
+    Construit le graphe principal avec:
+      - 3 nœuds en parallèle au départ : detect_language, summarize_job, summarize_exp_orch
+      - route_experiences() pour router en parallèle vers le sous-graphe
+      - synth_sumup_exp pour consolider
+      - agg_sum pour la sortie finale
+    """
+    # Pour sauvegarder/reprendre l'état si besoin
+    memory = MemorySaver()
     
-    # Création du graphe
     chain = StateGraph(CVGenState)
     
-    # Ajout des noeuds
+    # Ajout des nœuds principaux
     chain.add_node("detect_language", detect_language)
     chain.add_node("summarize_job", summarize_job)
-    chain.add_node("process_experiences", process_experiences)
-    chain.add_node("process_education", process_education)
-    chain.add_node("generate_title", generate_title)
-    chain.add_node("generate_skills", generate_skills)
-    chain.add_node("aggregate_results", aggregate_results)
+    chain.add_node("summarize_exp_orch", summarize_exp_orch)
+    chain.add_node("exp_worker", exp_worker)
     
-    # Configuration des transitions
+    chain.add_node("synth_sumup_exp", synth_sumup_exp)
+    chain.add_node("agg_sum", agg_sum)
+
+    # 1) Au départ, on lance en parallèle ces trois nœuds
     chain.add_edge(START, "detect_language")
     chain.add_edge(START, "summarize_job")
-    chain.add_edge(START, "process_experiences")
-    chain.add_edge(START, "process_education")
+    chain.add_edge(START, "summarize_exp_orch")
     
-    chain.add_edge("summarize_job", "generate_title")
-    chain.add_edge("summarize_job", "generate_skills")
+    # 2) Orchestration des expériences vers le sous-graphe
+    chain.add_conditional_edges(
+        "summarize_exp_orch",
+        route_experiences,
+        ["exp_worker"]
+    )
     
-    chain.add_edge("process_experiences", "aggregate_results")
-    chain.add_edge("process_education", "aggregate_results")
-    chain.add_edge("generate_title", "aggregate_results")
-    chain.add_edge("generate_skills", "aggregate_results")
-    chain.add_edge("detect_language", "aggregate_results")
+    # 3) Lorsque chaque sous-graphe se termine, on va vers synth_sumup_exp
+    chain.add_edge("exp_worker", "synth_sumup_exp")
     
-    chain.add_edge("aggregate_results", END)
+    # 4) Quand detect_language, summarize_job et synth_sumup_exp sont terminés,
+    #    on passe à l'agrégation finale (agg_sum)
+    chain.add_edge(["detect_language", "summarize_job", "synth_sumup_exp"], "agg_sum")
     
-    return chain.compile()
+    # 5) Fin
+    chain.add_edge("agg_sum", END)
+    
+    return chain.compile(checkpointer=memory)
