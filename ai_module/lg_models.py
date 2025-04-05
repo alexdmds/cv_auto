@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 import json
+from uuid import uuid4
 
 
 #Classes pour la génération globale du profile
@@ -47,6 +48,7 @@ class CVHead(BaseModel):
     tel_refined: str
 
 class CVExperience(BaseModel):
+    exp_id: str = Field(default_factory=lambda: f"EXP_{uuid4().hex[:6]}", description="Identifiant unique de l'expérience")
     title_raw: str
     title_refined: str
     company_raw: str
@@ -65,6 +67,7 @@ class CVExperience(BaseModel):
 
     def __init__(self, **data):
         # Initialise les champs refined avec des valeurs par défaut vides
+        data.setdefault('exp_id', f"EXP_{uuid4().hex[:6]}")
         data.setdefault('title_refined', '')
         data.setdefault('company_refined', '')
         data.setdefault('location_refined', '')

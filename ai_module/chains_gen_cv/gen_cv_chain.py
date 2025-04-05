@@ -192,7 +192,7 @@ def select_exp(state: CVGenState) -> PrivateSelectExpState:
     llm = get_llm()
     
     experiences_text = "\n".join(
-        f"- **{exp.title_refined}** chez **{exp.company_refined}** à **{exp.location_refined}** ({exp.dates_refined})\n  Résumé: {exp.summary}"
+        f"- [ID: {exp.exp_id}] **{exp.title_refined}** chez **{exp.company_refined}** à **{exp.location_refined}** ({exp.dates_refined})\n  Résumé: {exp.summary}"
         for exp in state.experiences
     )
     
@@ -200,7 +200,7 @@ def select_exp(state: CVGenState) -> PrivateSelectExpState:
         f"Voici les expériences professionnelles disponibles pour le CV:\n\n"
         f"{experiences_text}\n\n"
         f"Poste visé : {state.job_refined}\n\n"
-        f"Veuillez sélectionner les expériences les plus pertinentes pour le poste visé, en attribuant un poids et un ordre pour le CV final."
+        f"Veuillez sélectionner les expériences les plus pertinentes pour le poste visé, en attribuant un poids et un ordre pour le CV final. Pour chaque expérience sélectionnée, mentionnez son ID."
     )
     
     response = llm.invoke(prompt)
@@ -222,8 +222,7 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
         """
         Expérience avec le nombre de bullets.
         """
-        title_raw: str = Field(description="Titre de l'expérience strictement identique à l'input")
-        company_raw: str = Field(description="Entreprise de l'expérience strictement identique à l'input")
+        exp_id: str = Field(description="Identifiant unique de l'expérience")
         nb_bullets: int = Field(description="Nombre de bullets à mettre pour cette expérience")
         order: int = Field(description="Ordre de l'expérience dans le CV")
 
@@ -240,15 +239,17 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
         f"Voici le choix des expériences pour le CV:\n\n"
         f"{state['markdown_selection']}\n\n"
         f"Le CV total doit comporter un maximum de 12 bullets.\n"
-        f"Veuillez donner l'ordre et le nombre de bullets à mettre pour chaque expérience en fonction de ce choix."
+        f"Veuillez donner l'ordre et le nombre de bullets à mettre pour chaque expérience en fonction de ce choix.\n"
+        f"Pour chaque expérience, utilisez son ID pour l'identifier."
     ) 
     response = llm.invoke(prompt)
 
     experiences_with_nb_bullets = []
     for exp in state['experiences_to_select']:
         for exp_with_bullets in response.experiences:
-            if exp.title_raw == exp_with_bullets.title_raw and exp.company_raw == exp_with_bullets.company_raw:
+            if exp.exp_id == exp_with_bullets.exp_id:
                 exp.nb_bullets = exp_with_bullets.nb_bullets
+                exp.order = exp_with_bullets.order
                 experiences_with_nb_bullets.append(exp)
                 break
     
@@ -261,7 +262,10 @@ def route_bullets(state: PrivateSelectExpState) -> dict:
     Route chaque expérience vers `give_bullets`.
     """
     return [
-        Send("give_bullets", {"experience_with_nb_bullets": exp})
+        Send("give_bullets", {
+            "experience_with_nb_bullets": exp,
+            "job_summary_private_exp": state['job_summary_private_exp']
+        })
         for exp in state['experiences_with_nb_bullets']
     ]
 
@@ -282,7 +286,7 @@ def give_bullets(state: PrivateSelectExpState) -> dict:
     exp = state['experience_with_nb_bullets']
     prompt = (
         f"Voici le résumé du poste et la description brute de l'expérience sélectionnée pour le CV:\n\n"
-        f"Résumé du poste:\n{state.job_summary_private_exp}\n\n"
+        f"Résumé du poste:\n{state['job_summary_private_exp']}\n\n"
         f"Titre: {exp.title_raw}\n"
         f"Entreprise: {exp.company_raw}\n"
         f"Description: {exp.description_raw}\n"
