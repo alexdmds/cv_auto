@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 import json
+from uuid import uuid4
 
 
 #Classes pour la génération globale du profile
@@ -47,6 +48,7 @@ class CVHead(BaseModel):
     tel_refined: str
 
 class CVExperience(BaseModel):
+    exp_id: str = Field(default_factory=lambda: f"EXP_{uuid4().hex[:6]}", description="Identifiant unique de l'expérience")
     title_raw: str
     title_refined: str
     company_raw: str
@@ -65,6 +67,7 @@ class CVExperience(BaseModel):
 
     def __init__(self, **data):
         # Initialise les champs refined avec des valeurs par défaut vides
+        data.setdefault('exp_id', f"EXP_{uuid4().hex[:6]}")
         data.setdefault('title_refined', '')
         data.setdefault('company_refined', '')
         data.setdefault('location_refined', '')
@@ -78,6 +81,7 @@ class CVExperience(BaseModel):
         super().__init__(**data)
 
 class CVEducation(BaseModel):
+    edu_id: str = Field(default_factory=lambda: f"EDU_{uuid4().hex[:6]}", description="Identifiant unique de l'éducation")
     degree_raw: str
     degree_refined: str
     institution_raw: str
@@ -96,6 +100,7 @@ class CVEducation(BaseModel):
 
     def __init__(self, **data):
         # Initialise les champs refined avec des valeurs par défaut vides
+        data.setdefault('edu_id', f"EDU_{uuid4().hex[:6]}")
         data.setdefault('degree_refined', '')
         data.setdefault('institution_refined', '')
         data.setdefault('location_refined', '')
@@ -105,7 +110,7 @@ class CVEducation(BaseModel):
         data.setdefault('summary', '')
         data.setdefault('weight', 0.0)
         data.setdefault('order', None)
-        data.setdefault('nb_mots', 0)  # Valeur par défaut pour nb_mots
+        data.setdefault('nb_mots', 0)
         super().__init__(**data)
 
 class CVLanguage(BaseModel):
@@ -398,6 +403,7 @@ class CVGenState(BaseModel):
         education_list = []
         for edu in profile.educations:
             edu_data = {
+                "edu_id": f"EDU_{uuid4().hex[:6]}",
                 "degree_raw": edu.title or "",
                 "degree_refined": "",
                 "institution_raw": edu.university or "",
