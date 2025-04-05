@@ -426,7 +426,7 @@ def synth_sumup_edu_description(state: PrivateSelectEduState) -> dict:
         "education": state['educations_with_description']
     }
 
-def create_cv_chain():
+def create_cv_chain() -> StateGraph:
     """
     Construit le graphe principal avec:
       - 3 nœuds en parallèle au départ : detect_language, summarize_job, summarize_exp_orch
@@ -434,8 +434,6 @@ def create_cv_chain():
       - synth_sumup_exp pour consolider
       - agg_sum pour la sortie finale
     """
-    # Pour sauvegarder/reprendre l'état si besoin
-    memory = MemorySaver()
     
     chain = StateGraph(CVGenState)
     
@@ -506,4 +504,4 @@ def create_cv_chain():
     chain.add_edge("write_edu_description", "synth_sumup_edu_description")
     chain.add_edge("synth_sumup_edu_description", END)
 
-    return chain.compile(checkpointer=memory)
+    return chain
