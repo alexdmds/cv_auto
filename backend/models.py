@@ -9,6 +9,17 @@ from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
 from pydantic import BaseModel, Field
 from .base_firestore import FirestoreModel
 from ai_module.lg_models import ProfileState
+from pathlib import Path
+from reportlab.platypus import SimpleDocTemplate
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from .cv_automation.gen_pdf.sections.header import create_header
+from .cv_automation.gen_pdf.sections.education import create_education_section
+from .cv_automation.gen_pdf.sections.experience import create_experience_section
+from .cv_automation.gen_pdf.sections.skills import create_skills_section
+from .cv_automation.gen_pdf.sections.hobbies import create_hobbies_section
+from ai_module.lg_models import CVGenState
+from PIL import Image
 # Définir des types génériques pour les classes de modèle
 T = TypeVar('T', bound='FirestoreModel')
 
@@ -62,18 +73,200 @@ class CVData(BaseModel):
     languages: List[LanguageCV] = Field(default_factory=list)
     hobbies: str = ""
 
+    def to_pdf_data(self) -> dict:
+        """Convertit les données du CV en format compatible avec le générateur de PDF"""
+        # Convertir les compétences en dictionnaire
+        skills_data = {}
+        for skill in self.skills:
+            if skill.category_name and skill.skills:
+                skills_data[skill.category_name] = skill.skills.split(", ")
+
+        # Convertir les langues en format attendu
+        languages_data = []
+        for lang in self.languages:
+            if lang.language and lang.level:
+                languages_data.append({
+                    "nom": lang.language,
+                    "niveau": lang.level
+                })
+
+        experiences_data = {
+            "intitule_section": self.sections_name.experience_section_name,
+            "experiences": [
+                {
+                    "post": exp.title,
+                    "company": exp.company,
+                    "dates": exp.dates,
+                    "location": exp.location,
+                    "bullets": exp.bullets
+                }
+                for exp in self.experiences if exp.title
+            ]
+        }
+
+        education_data = {
+            "intitule_section": self.sections_name.education_section_name,
+            "educations": [
+                {
+                    "etablissement": edu.university,
+                    "intitule": edu.title,
+                    "dates": edu.dates,
+                    "lieu": edu.location,
+                    "description": edu.description
+                }
+                for edu in self.educations if edu.title
+            ]
+        }
+
+        skills_section_data = {
+            "intitule_section": self.sections_name.skills_section_name,
+            "skills": skills_data,
+            "langues": languages_data
+        }
+
+        hobbies_data = {
+            "intitule_section": self.sections_name.hobbies_section_name,
+            "hobbies": self.hobbies
+        }
+
+        return {
+            "head": {
+                "name": self.name,
+                "general_title": self.title,
+                "email": self.mail,
+                "phone": self.phone
+            },
+            "experiences": experiences_data,
+            "education": education_data,
+            "skills": skills_section_data,
+            "hobbies": hobbies_data
+        }
+
+    def generate_pdf(self, output_path: str, photo_path: Optional[str] = None) -> str:
+        """
+        Génère un fichier PDF du CV.
+
+        Args:
+            output_path (str): Chemin où sauvegarder le PDF
+            photo_path (Optional[str]): Chemin vers la photo de profil. Si None, utilise une photo par défaut.
+
+        Returns:
+            str: Chemin du fichier PDF généré
+        """
+        # Convertir les données au format attendu par le générateur de PDF
+        data = self.to_pdf_data()
+
+        # Gérer la photo
+        if not photo_path:
+            ROOT_DIR = Path(__file__).resolve().parent
+            photo_path = str(ROOT_DIR / "cv_automation" / "gen_pdf" / "sections" / "photo_default.jpg")
+            if not Path(photo_path).exists():
+                # Si la photo par défaut n'existe pas, on crée une image vide
+                img = Image.new('RGB', (100, 100), color='white')
+                photo_path = str(Path(output_path).parent / "photo_default.jpg")
+                img.save(photo_path)
+        
+        # Créer le répertoire de sortie si nécessaire
+        output_dir = Path(output_path).parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Initialiser le document PDF
+        doc = SimpleDocTemplate(
+            output_path,
+            pagesize=A4,
+            rightMargin=1 * cm,
+            leftMargin=1 * cm,
+            topMargin=1 * cm,
+            bottomMargin=1 * cm
+        )
+        elements = []
+
+        # Générer les sections
+        elements += create_header(data, photo_path)
+        elements += create_experience_section(data)
+        elements += create_education_section(data)
+        elements += create_skills_section(data)
+        elements += create_hobbies_section(data)
+
+        # Générer le PDF
+        doc.build(elements)
+
+        return output_path
+
 class CV(BaseModel):
     """Structure complète d'un CV"""
     cv_name: str
-    job_raw: Optional[str] = None
+    job_raw: str = ""
     cv_data: CVData = Field(default_factory=CVData)
+
+    def update_from_cv_state(self, cv_state: "CVGenState") -> None:
+        """
+        Met à jour les données du CV à partir d'un CVGenState.
+        
+        Args:
+            cv_state (CVGenState): L'état du CV contenant les nouvelles données
+        """
+        # Mise à jour des informations de base
+        self.cv_data.name = cv_state.head.name
+        self.cv_data.title = cv_state.head.title_refined
+        self.cv_data.mail = cv_state.head.mail
+        self.cv_data.phone = cv_state.head.tel_refined
+        
+        # Mise à jour des noms de sections
+        self.cv_data.sections_name.experience_section_name = cv_state.sections.get("experience", "Expérience Professionnelle")
+        self.cv_data.sections_name.education_section_name = cv_state.sections.get("education", "Formation")
+        self.cv_data.sections_name.skills_section_name = cv_state.sections.get("skills", "Compétences")
+        self.cv_data.sections_name.languages_section_name = cv_state.sections.get("languages", "Langues")
+        self.cv_data.sections_name.hobbies_section_name = cv_state.sections.get("hobbies", "Centres d'intérêt")
+        
+        # Mise à jour des expériences
+        self.cv_data.experiences = [
+            ExperienceCV(
+                title=exp.title_refined,
+                company=exp.company_refined,
+                dates=exp.dates_refined,
+                location=exp.location_refined,
+                bullets=exp.bullets or []
+            ) for exp in cv_state.experiences
+        ]
+        
+        # Mise à jour des formations
+        self.cv_data.educations = [
+            EducationCV(
+                title=edu.degree_refined,
+                university=edu.institution_refined,
+                dates=edu.dates_refined,
+                location=edu.location_refined,
+                description=edu.description_refined
+            ) for edu in cv_state.education
+        ]
+        
+        # Mise à jour des compétences
+        self.cv_data.skills = [
+            SkillCV(
+                category_name=category,
+                skills=", ".join(skills)
+            ) for category, skills in cv_state.competences.items()
+        ]
+        
+        # Mise à jour des langues
+        self.cv_data.languages = [
+            LanguageCV(
+                language=lang.language,
+                level=lang.level
+            ) for lang in cv_state.langues
+        ]
+        
+        # Mise à jour des centres d'intérêt et du poste
+        self.cv_data.hobbies = cv_state.hobbies_refined
+        self.job_raw = cv_state.job_raw
 
 # ====== Classes pour le profil ======
 
 class EducationProfile(BaseModel):
     """Structure pour les données d'éducation dans un profil"""
     title: Optional[str] = None
-    full_description: Optional[str] = None
+    full_descriptions: Optional[str] = None
     dates: Optional[str] = None
     university: Optional[str] = None
 
@@ -98,14 +291,14 @@ class Profile(BaseModel):
     head: HeadProfile = Field(default_factory=HeadProfile)
     educations: List[EducationProfile] = Field(default_factory=list)
     experiences: List[ExperienceProfile] = Field(default_factory=list)
-    languages: Optional[Union[str, List[Dict[str, str]]]] = None
-    skills: Optional[Union[str, Dict[str, List[str]]]] = None
+    languages: Optional[str] = None
+    skills: Optional[str] = None  # Modifié pour être une chaîne simple
     hobbies: Optional[str] = None
 
 # ====== Documents Firestore ======
 
 class UserDocument(FirestoreModel):
-    """Modèle pour la collection 'users'"""
+    """Modèle pour la collection 'users' dans Firestore"""
     collection_name = "users"
     id: str = Field(default="", description="ID de l'utilisateur")
     cvs: List[CV] = Field(default_factory=list)
@@ -122,210 +315,114 @@ class UserDocument(FirestoreModel):
         Returns:
             Optional[UserDocument]: L'objet UserDocument construit ou None si le document n'existe pas
         """
-        # Initialiser la connexion Firestore
         db = cls.get_db()
         doc_ref = db.collection(cls.collection_name).document(user_id)
         doc = doc_ref.get()
         
-        if not doc.exists:
+        if not doc.exists or not (raw_data := doc.to_dict()):
             return None
-        
-        # Récupérer et prétraiter les données brutes de Firestore
-        raw_data = doc.to_dict()
-        if not raw_data:
-            return None
-        
-        # Créer une copie des données pour ne pas modifier l'original
-        processed_data = dict(raw_data)
-        
-        # Traiter les données du profil si elles existent
-        if "profile" in processed_data:
-            profile = processed_data["profile"]
             
-            # Traiter les expériences
-            if "experiences" in profile and profile["experiences"]:
-                for exp in profile["experiences"]:
-                    # Ne plus convertir full_descriptions en liste
-                    if "full_descriptions" in exp and isinstance(exp["full_descriptions"], list):
-                        # Si c'est une liste, prendre le premier élément ou une chaîne vide
-                        exp["full_descriptions"] = exp["full_descriptions"][0] if exp["full_descriptions"] else ""
-            
-            # Traiter les compétences
-            if "skills" in profile and isinstance(profile["skills"], str):
-                # Si skills est une chaîne, créer un dictionnaire par défaut
-                profile["skills"] = {"General": [profile["skills"]]}
-            
-            # Traiter les langues
-            if "languages" in profile and isinstance(profile["languages"], str):
-                # Si languages est une chaîne, créer une liste avec un dictionnaire par défaut
-                profile["languages"] = [{"language": profile["languages"], "level": ""}]
-        
         try:
-            # Créer l'instance sans ajouter l'ID comme champ
-            instance = cls(**processed_data)
-            # Définir l'ID directement sur l'instance
+            instance = cls(**raw_data)
             instance.id = user_id
             return instance
         except Exception as e:
             print(f"Erreur lors de la construction de l'objet UserDocument: {e}")
             return None
 
+    def update_from_profile_state(self, profile_state: "ProfileState") -> "UserDocument":
+        """
+        Met à jour l'instance avec les données d'un ProfileState.
+        
+        Args:
+            profile_state (ProfileState): L'état du profil à convertir
+            
+        Returns:
+            UserDocument: L'instance mise à jour
+        """
+        # Mise à jour des informations de base
+        self.profile.head.name = profile_state.head.name
+        self.profile.head.title = profile_state.head.general_title
+        self.profile.head.mail = profile_state.head.email
+        self.profile.head.phone = profile_state.head.phone
+        
+        # Mise à jour des expériences
+        self.profile.experiences = [
+            ExperienceProfile(
+                title=exp.intitule,
+                company=exp.etablissement,
+                dates=exp.dates,
+                location=exp.lieu,
+                full_descriptions=exp.description
+            ) for exp in profile_state.experiences
+        ]
+        
+        # Mise à jour des formations
+        self.profile.educations = [
+            EducationProfile(
+                title=edu.intitule,
+                university=edu.etablissement,
+                dates=edu.dates,
+                full_descriptions=edu.description
+            ) for edu in profile_state.education
+        ]
+        
+        # Mise à jour des compétences, langues et hobbies
+        self.profile.skills = profile_state.head.skills
+        self.profile.languages = profile_state.head.langues
+        self.profile.hobbies = profile_state.head.hobbies
+        
+        return self
+
     @classmethod
     def from_profile_state(cls, profile_state: "ProfileState", user_id: str) -> "UserDocument":
         """
-        Crée une instance de UserDocument à partir d'un ProfileState.
+        Met à jour ou crée une instance de UserDocument à partir d'un ProfileState.
         
         Args:
             profile_state (ProfileState): L'état du profil à convertir
             user_id (str): L'identifiant de l'utilisateur
             
         Returns:
-            UserDocument: Une nouvelle instance de UserDocument
+            UserDocument: L'instance de UserDocument mise à jour ou créée
         """
-        # Créer le profil de base
-        profile = Profile(
-            head=HeadProfile(
-                name=profile_state.head.name,
-                title=profile_state.head.general_title,
-                mail=profile_state.head.email,
-                phone=profile_state.head.phone,
-                linkedin_url=""  # Champ obligatoire selon le schéma
-            )
-        )
+        # Récupérer l'instance existante ou en créer une nouvelle
+        instance = cls.from_firestore_id(user_id)
+        if not instance:
+            instance = cls(id=user_id)
         
-        # Convertir les expériences
-        profile.experiences = []
-        for exp in profile_state.experiences:
-            profile.experiences.append(ExperienceProfile(
-                title=exp.intitule,
-                company=exp.etablissement,
-                dates=exp.dates,
-                location=exp.lieu,
-                full_descriptions=exp.description
-            ))
-        
-        # Convertir les formations
-        profile.educations = []
-        for edu in profile_state.education:
-            profile.educations.append(EducationProfile(
-                title=edu.intitule,
-                university=edu.etablissement,
-                dates=edu.dates,
-                full_description=edu.description
-            ))
-        
-        # Traiter les compétences - maintenant en tant que chaîne de caractères
-        if profile_state.head.skills:
-            profile.skills = profile_state.head.skills  # Garder en tant que chaîne
-        
-        # Traiter les langues - maintenant en tant que chaîne de caractères
-        if profile_state.head.langues:
-            # Conserver la chaîne brute au lieu de la convertir en liste
-            profile.languages = profile_state.head.langues
-        
-        # Traiter les hobbies
-        if profile_state.head.hobbies:
-            profile.hobbies = profile_state.head.hobbies
-        
-        # Créer et retourner le UserDocument
-        return cls(
-            id=user_id,
-            profile=profile,
-            cvs=[]  # Liste vide de CVs par défaut
-        )
-    
-    def update_cv_from_global_state(self, cv_name: str, result_state, save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
+        # Mettre à jour l'instance avec les données du ProfileState
+        return instance.update_from_profile_state(profile_state)
+
+    def update_cv_from_cv_state(self, cv_name: str, cv_state: "CVGenState", save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
         """
-        Met à jour un CV existant avec les données provenant d'un GlobalState
+        Met à jour un CV existant avec les données provenant d'un CVGenState
         
         Args:
             cv_name (str): Nom du CV à mettre à jour
-            result_state: Instance de GlobalState contenant les résultats du traitement
+            cv_state (CVGenState): État du CV contenant les nouvelles données
             save_to_firestore (bool): Si True, sauvegarde immédiatement les modifications dans Firestore
             
         Returns:
             Optional[Dict[str, Any]]: Informations sur la mise à jour ou None si le CV n'a pas été trouvé
         """
-        # Trouver le CV correspondant au nom fourni
         cv_index = next((i for i, cv in enumerate(self.cvs) if cv.cv_name == cv_name), None)
         if cv_index is None:
             return None
-        
-        # Récupérer le CV existant
+            
         cv = self.cvs[cv_index]
+        cv.update_from_cv_state(cv_state)
         
-        # Mise à jour des informations de base du CV
-        cv.cv_data.name = result_state.head.name
-        cv.cv_data.title = result_state.head.title_refined
-        cv.cv_data.mail = result_state.head.mail
-        cv.cv_data.phone = result_state.head.tel_refined
-        
-        # Mise à jour des noms de sections
-        if result_state.sections:
-            cv.cv_data.sections_name.experience_section_name = result_state.sections.get("experience", "Expérience Professionnelle")
-            cv.cv_data.sections_name.education_section_name = result_state.sections.get("education", "Formation")
-            cv.cv_data.sections_name.skills_section_name = result_state.sections.get("skills", "Compétences")
-            cv.cv_data.sections_name.languages_section_name = result_state.sections.get("languages", "Langues")
-            cv.cv_data.sections_name.hobbies_section_name = result_state.sections.get("hobbies", "Centres d'intérêt")
-        
-        # Mise à jour des expériences
-        if result_state.experiences:
-            cv.cv_data.experiences = []
-            for exp in result_state.experiences:
-                cv.cv_data.experiences.append(ExperienceCV(
-                    title=exp.title_refined,
-                    company=exp.company_refined,
-                    dates=exp.dates_refined,
-                    location=exp.location_refined,
-                    bullets=exp.bullets or []
-                ))
-        
-        # Mise à jour des formations
-        if result_state.education:
-            cv.cv_data.educations = []
-            for edu in result_state.education:
-                cv.cv_data.educations.append(EducationCV(
-                    title=edu.degree_refined,
-                    university=edu.institution_refined,
-                    dates=edu.dates_refined,
-                    location=edu.location_refined,
-                    description=edu.description_refined
-                ))
-        
-        # Mise à jour des compétences
-        if result_state.competences:
-            cv.cv_data.skills = []
-            for category_name, skills_list in result_state.competences.items():
-                skills_str = ", ".join(skills_list)
-                cv.cv_data.skills.append(SkillCV(
-                    category_name=category_name,
-                    skills=skills_str
-                ))
-        
-        # Mise à jour des langues
-        if result_state.langues:
-            cv.cv_data.languages = []
-            for lang in result_state.langues:
-                cv.cv_data.languages.append(LanguageCV(
-                    language=lang.language,
-                    level=lang.level
-                ))
-        
-        # Mise à jour des hobbies
-        if result_state.hobbies_refined:
-            cv.cv_data.hobbies = result_state.hobbies_refined
-        
-        # Mise à jour de la description du poste
-        if result_state.job_refined:
-            cv.job_raw = result_state.job_refined
-        
-        # Sauvegarder dans Firestore si demandé
         if save_to_firestore:
             self.save()
-        
-        # Retourner des informations sur la mise à jour
+            
+        return self._create_update_info(cv)
+
+    @staticmethod
+    def _create_update_info(cv: CV) -> Dict[str, Any]:
+        """Crée le dictionnaire d'informations sur la mise à jour"""
         return {
-            "cv_name": cv_name,
+            "cv_name": cv.cv_name,
             "updated": True,
             "name": cv.cv_data.name,
             "title": cv.cv_data.title,
@@ -336,7 +433,7 @@ class UserDocument(FirestoreModel):
             "hobbies_updated": bool(cv.cv_data.hobbies),
             "job_updated": bool(cv.job_raw)
         }
-    
+
 class CallDocument(FirestoreModel):
     """Modèle pour la collection 'calls'"""
     collection_name = "calls"

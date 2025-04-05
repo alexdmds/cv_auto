@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+Tous les documents créés dans Firestore Database sont dans le schéma et doivent être dans le schéma défini ici :
+[firestore_schema.json](mdc:firestore_schema.json)
+
+Assure toi que tout les documents sont récupérés et écrits strictement dans le format attendu.

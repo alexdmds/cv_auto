@@ -112,8 +112,8 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --set-env-vars="ENV=${{ steps.env.outputs.environment }}" \
-            --update-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest"
+            --set-env-vars="ENV=${{ steps.env.outputs.environment }},LANGSMITH_TRACING=true,LANGSMITH_ENDPOINT=https://api.smith.langchain.com,LANGSMITH_PROJECT=backend-dev" \
+            --update-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest,LANGSMITH_API_KEY=LANGSMITH_API_KEY:latest"
 
       - name: Test Health Endpoint (Dev Only)
         if: github.ref != 'refs/heads/main'

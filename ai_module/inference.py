@@ -1,4 +1,4 @@
-from ai_module.chains_gen_cv.global_chain import compiled_gencv_graph
+from ai_module.chains_gen_cv.gen_cv_chain import create_cv_chain
 from ai_module.lg_models import CVGenState, ProfileState
 from ai_module.chains_gen_profile.generate_profile_chain import create_profile_graph
 import logging
@@ -24,9 +24,11 @@ def generate_profile(profile_state: ProfileState) -> ProfileState:
         
         # Exécution du graphe
         result = profile_graph.invoke(profile_state)
+
+        #Convertir le résultat en ProfileState
+        result = ProfileState.from_dict(result)
         
         logger.info("Extraction du profil terminée avec succès")
-        logger.info(f"Informations extraites: head, experiences ({len(result.get('experiences', []))}), education ({len(result.get('education', []))})")
         
         return result
     except Exception as e:
@@ -48,21 +50,19 @@ def generate_cv(state: CVGenState) -> CVGenState:
     logger.info("Démarrage de la génération du CV avec LangChain")
     
     try:
-        # Exécution du graphe LangChain
+        # Obtenir le graphe compilé (lazy loading)
+        compiled_gencv_graph = create_cv_chain().compile()
+        
         result = compiled_gencv_graph.invoke(state)
+                
+        # Convertir le résultat en CVGenState
+        result = CVGenState.from_dict(result)
         
-        # Le résultat est déjà un GlobalState
+        # Le résultat est déjà un CVGenState
         logger.info("Génération du CV terminée avec succès")
-        
-        # Définir l'état comme complété
-        result.status = "completed"
         
         return result
     except Exception as e:
         logger.error(f"Erreur lors de la génération du CV: {str(e)}", exc_info=True)
-        
-        # En cas d'erreur, retourner l'état initial mais marquer comme échoué
-        state.status = "failed"
-        state.error_message = str(e)
-        
-        return state
+        # En cas d'erreur, on lève l'exception pour la gérer au niveau supérieur
+        raise
