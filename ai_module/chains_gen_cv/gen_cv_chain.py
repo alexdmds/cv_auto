@@ -426,6 +426,115 @@ def synth_sumup_edu_description(state: PrivateSelectEduState) -> dict:
         "education": state['educations_with_description']
     }
 
+def translate_and_harmonize_exp(state: CVGenState) -> dict:
+    """
+    Traduit et harmonise les expériences en fonction de la langue du CV.
+    """
+
+    class ExperienceWithTranslation(BaseModel):
+        """
+        Expérience avec la traduction et l'harmonisation.
+        """
+        exp_id: str = Field(description="Identifiant unique de l'expérience")
+        title_refined: str = Field(description="Titre de l'expérience traduit et harmonisé")
+        company_refined: str = Field(description="Entreprise de l'expérience traduit et harmonisé")
+        location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé")
+        dates_refined: str = Field(description="Dates de l'expérience traduit et harmonisé")
+        bullets: List[str] = Field(description="Bullets de l'expérience traduits et harmonisés")
+    
+    class OutputTranslation(BaseModel):
+        """
+        Sortie de la LLM pour la traduction et l'harmonisation.
+        """
+        experiences: List[ExperienceWithTranslation]
+
+    llm = get_llm(temperature=0.8).with_structured_output(OutputTranslation)
+
+    experiences_text = "\n".join(
+        f"- [ID: {exp.exp_id}] **{exp.title_refined}** chez **{exp.company_refined}** à **{exp.location_refined}** ({exp.dates_refined})\n  Résumé: {exp.summary}"
+        for exp in state.experiences
+    )
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici les expériences professionnelles disponibles pour le CV:\n\n"
+        f"{experiences_text}\n\n"
+        f"Veuillez traduire et harmoniser les expériences pour le CV en fonction de la langue du CV. "
+        f"Retournez les champs traduits et harmonisés entre eux."
+    )
+    
+    response = llm.invoke(prompt)
+
+    experiences_with_translation = []
+    for exp in state.experiences:
+        for translated_exp in response.experiences:
+            if exp.exp_id == translated_exp.exp_id:
+                exp.title_refined = translated_exp.title_refined
+                exp.company_refined = translated_exp.company_refined
+                exp.location_refined = translated_exp.location_refined
+                exp.dates_refined = translated_exp.dates_refined
+                exp.bullets = translated_exp.bullets
+                experiences_with_translation.append(exp)
+                break
+
+    return {
+        "experiences": experiences_with_translation
+    }
+
+def translate_and_harmonize_edu(state: CVGenState) -> dict:
+    """
+    Traduit et harmonise les éducations en fonction de la langue du CV.
+    """
+    class EducationWithTranslation(BaseModel):
+        """
+        Éducation avec la traduction et l'harmonisation.
+        """
+        edu_id: str = Field(description="Identifiant unique de l'éducation")
+        degree_refined: str = Field(description="Diplôme traduit et harmonisé")
+        institution_refined: str = Field(description="Institution traduite et harmonisée")
+        location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé")
+        dates_refined: str = Field(description="Dates de l'éducation traduites et harmonisées")
+        description_refined: str = Field(description="Description générée de l'éducation traduite et harmonisée")
+    
+    class OutputTranslation(BaseModel):
+        """
+        Sortie de la LLM pour la traduction et l'harmonisation.
+        """
+        educations: List[EducationWithTranslation]
+
+    llm = get_llm(temperature=0.8).with_structured_output(OutputTranslation)
+
+    educations_text = "\n".join(
+        f"- [ID: {edu.edu_id}] **{edu.degree_refined}** à **{edu.institution_refined}** à **{edu.location_refined}** ({edu.dates_refined})\n  Description: {edu.description_generated}"
+        for edu in state.education
+    )
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici les éducations disponibles pour le CV:\n\n"
+        f"{educations_text}\n\n"
+        f"Veuillez traduire et harmoniser les éducations pour le CV en fonction de la langue du CV. "
+        f"Retournez les champs traduits et harmonisés entre eux."
+    )
+    
+    response = llm.invoke(prompt)
+
+    educations_with_translation = []
+    for edu in state.education:
+        for translated_edu in response.educations:
+            if edu.edu_id == translated_edu.edu_id:
+                edu.degree_refined = translated_edu.degree_refined
+                edu.institution_refined = translated_edu.institution_refined
+                edu.location_refined = translated_edu.location_refined
+                edu.dates_refined = translated_edu.dates_refined
+                edu.description_refined = translated_edu.description_refined
+                educations_with_translation.append(edu)
+                break
+
+    return {
+        "education": educations_with_translation
+    }
+    
 def create_cv_chain() -> StateGraph:
     """
     Construit le graphe principal avec:
@@ -456,6 +565,9 @@ def create_cv_chain() -> StateGraph:
     chain.add_node("select_edu_and_give_nb_mots", select_edu_and_give_nb_mots)
     chain.add_node("write_edu_description", write_edu_description)
     chain.add_node("synth_sumup_edu_description", synth_sumup_edu_description)
+
+    chain.add_node("translate_and_harmonize_exp", translate_and_harmonize_exp)
+    chain.add_node("translate_and_harmonize_edu", translate_and_harmonize_edu)
 
     # 1) Au départ, on lance en parallèle ces trois nœuds
     chain.add_edge(START, "detect_language")
@@ -493,8 +605,6 @@ def create_cv_chain() -> StateGraph:
 
     chain.add_edge("write_bullets", "synth_sumup_bullets")
 
-    chain.add_edge("synth_sumup_bullets", END)
-
     chain.add_edge("agg_sum", "select_edu_and_give_nb_mots")
     chain.add_conditional_edges(
         "select_edu_and_give_nb_mots",
@@ -502,6 +612,11 @@ def create_cv_chain() -> StateGraph:
         ["write_edu_description"]
     )
     chain.add_edge("write_edu_description", "synth_sumup_edu_description")
-    chain.add_edge("synth_sumup_edu_description", END)
+
+    chain.add_edge("synth_sumup_edu_description", "translate_and_harmonize_edu")
+    chain.add_edge("translate_and_harmonize_edu", END)
+
+    chain.add_edge("synth_sumup_bullets", "translate_and_harmonize_exp")
+    chain.add_edge("translate_and_harmonize_exp", END)
 
     return chain
