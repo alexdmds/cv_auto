@@ -38,6 +38,15 @@ class PrivateSelectExpState(TypedDict):
     experiences_with_nb_bullets: List[CVExperience]
     experiences_with_bullets: Annotated[List[CVExperience], operator.add]
 
+class PrivateSelectEduState(TypedDict):
+    """
+    État privé pour le sous-graphe de sélection des éducations.
+    """
+    educations_to_select: List[CVEducation]
+    educations_with_nb_mots: List[CVEducation]
+    job_summary_private_edu: str
+    educations_with_description: Annotated[List[CVEducation], operator.add]
+
 ##############################################################################
 # 2. Fonctions "nœuds" du graphe principal
 ##############################################################################
@@ -200,7 +209,9 @@ def select_exp(state: CVGenState) -> PrivateSelectExpState:
         f"Voici les expériences professionnelles disponibles pour le CV:\n\n"
         f"{experiences_text}\n\n"
         f"Poste visé : {state.job_refined}\n\n"
-        f"Veuillez sélectionner les expériences les plus pertinentes pour le poste visé, en attribuant un poids et un ordre pour le CV final. Pour chaque expérience sélectionnée, mentionnez son ID."
+        f"Veuillez sélectionner les expériences les plus pertinentes pour le poste visé, en étant sélectif car l'espace est limité. "
+        f"Les expériences doivent être listées par ordre chronologique décroissant, sauf si un argument solide justifie un autre ordre. "
+        f"Pour chaque expérience sélectionnée, mentionnez son ID."
     )
     
     response = llm.invoke(prompt)
@@ -224,7 +235,7 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
         """
         exp_id: str = Field(description="Identifiant unique de l'expérience")
         nb_bullets: int = Field(description="Nombre de bullets à mettre pour cette expérience")
-        order: int = Field(description="Ordre de l'expérience dans le CV")
+        order: Optional[int] = Field(description="Ordre de l'expérience dans le CV", default=None)
 
     class OutputBullets(BaseModel):
         """
@@ -232,13 +243,13 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
         """
         experiences: List[ExperienceWithNbBullets]
 
-
     llm = get_llm().with_structured_output(OutputBullets)
     
     prompt = (
         f"Voici le choix des expériences pour le CV:\n\n"
         f"{state['markdown_selection']}\n\n"
-        f"Le CV total doit comporter un maximum de 12 bullets.\n"
+        f"Le CV total doit comporter exactement 12 bullets répartis entre les expériences sélectionnées.\n"
+        f"Si une expérience a un poids trop faible, préférez la mettre à 0 plutôt que de lui attribuer seulement 1 bullet.\n"
         f"Veuillez donner l'ordre et le nombre de bullets à mettre pour chaque expérience en fonction de ce choix.\n"
         f"Pour chaque expérience, utilisez son ID pour l'identifier."
     ) 
@@ -246,12 +257,18 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
 
     experiences_with_nb_bullets = []
     for exp in state['experiences_to_select']:
+        matched = False
         for exp_with_bullets in response.experiences:
             if exp.exp_id == exp_with_bullets.exp_id:
                 exp.nb_bullets = exp_with_bullets.nb_bullets
                 exp.order = exp_with_bullets.order
                 experiences_with_nb_bullets.append(exp)
+                matched = True
                 break
+        if not matched:
+            exp.nb_bullets = 0
+            exp.order = None
+            experiences_with_nb_bullets.append(exp)
     
     return {
         "experiences_with_nb_bullets": experiences_with_nb_bullets,
@@ -260,16 +277,17 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
 def route_bullets(state: PrivateSelectExpState) -> dict:
     """
     Route chaque expérience vers `give_bullets`.
+    On ne route pas les expériences ayant nb_bullets égal à 0.
     """
     return [
-        Send("give_bullets", {
+        Send("write_bullets", {
             "experience_with_nb_bullets": exp,
             "job_summary_private_exp": state['job_summary_private_exp']
         })
-        for exp in state['experiences_with_nb_bullets']
+        for exp in state['experiences_with_nb_bullets'] if exp.nb_bullets > 0
     ]
 
-def give_bullets(state: PrivateSelectExpState) -> dict:
+def write_bullets(state: PrivateSelectExpState) -> dict:
     """
     Donne les bullets à mettre dans une seule expérience et identifie chaque expérience retournée aux expériences de base.
     """
@@ -311,6 +329,102 @@ def synth_sumup_bullets(state: PrivateSelectExpState) -> dict:
         "experiences": state['experiences_with_bullets']
     }
 
+def select_edu_and_give_nb_mots(state: CVGenState) -> PrivateSelectEduState:
+    """
+    Sélectionne les éducations à inclure dans le CV et retourne un markdown avec les choix d'éducations.
+    """
+    llm = get_llm()
+    
+    educations_text = "\n".join(
+        f"- [ID: {edu.edu_id}] **{edu.degree_refined}** à **{edu.institution_refined}** à **{edu.location_refined}** ({edu.dates_refined})\n  Résumé: {edu.summary}"
+        for edu in state.education
+    )
+    
+    prompt = (
+        f"Voici les formations disponibles pour le CV:\n\n"
+        f"{educations_text}\n\n"
+        f"Poste visé : {state.job_refined}\n\n"
+        f"Veuillez sélectionner les formations les plus pertinentes pour le poste visé, en attribuant un nb de mots et un ordre pour le CV final. "
+        f"Si une formation n'est pas pertinente, attribuez-lui 0 mots et une place 'null' sur le CV. Pour chaque formation sélectionnée, mentionnez son ID."
+    )
+
+    class EduWithNbMots(BaseModel):
+        """
+        Éducation avec le nombre de mots à mettre dans chaque éducation.
+        """
+        edu_id: str = Field(description="Identifiant unique de l'éducation")
+        nb_mots: int = Field(description="Nombre de mots à mettre pour cette éducation, entre 30 et 70. 0 si la formation n'est pas pertinente.")
+        order: Optional[int] = Field(description="Ordre de l'éducation dans le CV, peut être null")
+
+    class OutputEduWithNbMots(BaseModel):
+        """
+        Sortie de la LLM pour le nombre de mots à mettre dans chaque éducation.
+        """
+        education: List[EduWithNbMots]
+
+    llm = get_llm().with_structured_output(OutputEduWithNbMots)
+
+    response = llm.invoke(prompt)
+
+    education_with_nb_mots = []
+    for edu in state.education:
+        for edu_with_nb_mots in response.education:
+            if edu.edu_id == edu_with_nb_mots.edu_id:
+                edu.nb_mots = edu_with_nb_mots.nb_mots
+                edu.order = edu_with_nb_mots.order
+                education_with_nb_mots.append(edu)
+                break
+
+    return {
+        "educations_with_nb_mots": education_with_nb_mots,
+        "job_summary_private_edu": state.job_refined
+    }
+
+def route_education(state: PrivateSelectEduState) -> dict:
+    """
+    Route chaque éducation vers `write_edu_description`.
+    On ne route pas les edu ayant nb_mots égal à 0.
+    """
+    return [
+        Send("write_edu_description", {
+            "education_with_nb_mots": edu,
+            "job_summary_private_edu": state['job_summary_private_edu']
+        })
+        for edu in state['educations_with_nb_mots'] if edu.nb_mots > 0
+    ]
+
+def write_edu_description(state: PrivateSelectEduState) -> dict:
+    """
+    Génère la description de l'éducation en fonction du résumé du poste et de la description brute de l'éducation et du nombre de mots à mettre.
+    """
+    llm = get_llm()
+
+    edu = state['education_with_nb_mots']
+
+    prompt = (
+        f"Voici le résumé du poste et la description brute de l'éducation sélectionnée pour le CV:\n\n"
+        f"Résumé du poste:\n{state['job_summary_private_edu']}\n\n"
+        f"Description: {edu.description_raw}\n"
+        f"Nombre de mots: {edu.nb_mots}\n\n"
+        f"Veuillez générer la description de l'éducation pour le CV en fonction du nombre de mots spécifié. Donne uniquement la description, sans aucun commentaire."
+    )
+
+    response = llm.invoke(prompt)
+
+    edu.description_generated = response.content
+    return {
+        "educations_with_description": [edu],
+    }
+
+def synth_sumup_edu_description(state: PrivateSelectEduState) -> dict:
+    """
+    Reçoit en entrée un champ `educations_with_description`, qui est la concat
+    de toutes les éducations avec les descriptions générées. On les range ensuite dans le champ
+    `education`.
+    """
+    return {
+        "education": state['educations_with_description']
+    }
 
 def create_cv_chain():
     """
@@ -338,9 +452,12 @@ def create_cv_chain():
 
     chain.add_node("select_exp", select_exp)
     chain.add_node("give_nb_bullets", give_nb_bullets)
-    chain.add_node("give_bullets", give_bullets)
+    chain.add_node("write_bullets", write_bullets)
     chain.add_node("synth_sumup_bullets", synth_sumup_bullets)
 
+    chain.add_node("select_edu_and_give_nb_mots", select_edu_and_give_nb_mots)
+    chain.add_node("write_edu_description", write_edu_description)
+    chain.add_node("synth_sumup_edu_description", synth_sumup_edu_description)
 
     # 1) Au départ, on lance en parallèle ces trois nœuds
     chain.add_edge(START, "detect_language")
@@ -373,11 +490,20 @@ def create_cv_chain():
     chain.add_conditional_edges(
         "give_nb_bullets",
         route_bullets,
-        ["give_bullets"]
+        ["write_bullets"]
     )
 
-    chain.add_edge("give_bullets", "synth_sumup_bullets")
+    chain.add_edge("write_bullets", "synth_sumup_bullets")
 
     chain.add_edge("synth_sumup_bullets", END)
-    
+
+    chain.add_edge("agg_sum", "select_edu_and_give_nb_mots")
+    chain.add_conditional_edges(
+        "select_edu_and_give_nb_mots",
+        route_education,
+        ["write_edu_description"]
+    )
+    chain.add_edge("write_edu_description", "synth_sumup_edu_description")
+    chain.add_edge("synth_sumup_edu_description", END)
+
     return chain.compile(checkpointer=memory)
