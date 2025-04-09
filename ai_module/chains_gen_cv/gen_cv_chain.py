@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from typing_extensions import TypedDict
 import operator
 import langdetect
@@ -435,23 +435,23 @@ def translate_and_harmonize_exp(state: CVGenState) -> dict:
         """
         Expérience avec la traduction et l'harmonisation.
         """
-        exp_id: str = Field(description="Identifiant unique de l'expérience")
-        title_refined: str = Field(description="Titre de l'expérience traduit et harmonisé")
-        company_refined: str = Field(description="Entreprise de l'expérience traduit et harmonisé")
-        location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé")
-        dates_refined: str = Field(description="Dates de l'expérience traduit et harmonisé")
-        bullets: List[str] = Field(description="Bullets de l'expérience traduits et harmonisés")
-    
+        exp_id: str = Field(description="Identifiant unique de l'expérience inchangé")
+        title_refined: str = Field(description="Titre de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        company_refined: str = Field(description="Entreprise de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        dates_refined: str = Field(description="Dates de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        bullets: List[str] = Field(description="Bullets de l'expérience traduits et harmonisés, retournés dans la langue attendue")
     class OutputTranslation(BaseModel):
         """
         Sortie de la LLM pour la traduction et l'harmonisation.
         """
         experiences: List[ExperienceWithTranslation]
 
-    llm = get_llm(temperature=0.8).with_structured_output(OutputTranslation)
+    llm = get_llm(temperature=0.5).with_structured_output(OutputTranslation)
 
     experiences_text = "\n".join(
-        f"- [ID: {exp.exp_id}] **{exp.title_refined}** chez **{exp.company_refined}** à **{exp.location_refined}** ({exp.dates_refined})\n  Résumé: {exp.summary}"
+        f"- [ID: {exp.exp_id}] **{exp.title_raw}** chez **{exp.company_raw}** à **{exp.location_raw}** ({exp.dates_raw})\n"
+        f"  Bullets:\n" + "\n".join(f"    - {bullet}" for bullet in exp.bullets)
         for exp in state.experiences
     )
 
@@ -460,7 +460,7 @@ def translate_and_harmonize_exp(state: CVGenState) -> dict:
         f"Voici les expériences professionnelles disponibles pour le CV:\n\n"
         f"{experiences_text}\n\n"
         f"Veuillez traduire et harmoniser les expériences pour le CV en fonction de la langue du CV. "
-        f"Retournez les champs traduits et harmonisés entre eux."
+        f"Il faut que tout soit retourné dans la langue attendue."
     )
     
     response = llm.invoke(prompt)
@@ -489,23 +489,22 @@ def translate_and_harmonize_edu(state: CVGenState) -> dict:
         """
         Éducation avec la traduction et l'harmonisation.
         """
-        edu_id: str = Field(description="Identifiant unique de l'éducation")
-        degree_refined: str = Field(description="Diplôme traduit et harmonisé")
-        institution_refined: str = Field(description="Institution traduite et harmonisée")
-        location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé")
-        dates_refined: str = Field(description="Dates de l'éducation traduites et harmonisées")
-        description_refined: str = Field(description="Description générée de l'éducation traduite et harmonisée")
-    
+        edu_id: str = Field(description="Identifiant unique de l'éducation inchangé")
+        degree_refined: str = Field(description="Diplôme traduit et harmonisé, retourné dans la langue attendue")
+        institution_refined: str = Field(description="Institution traduite et harmonisée, retournée dans la langue attendue")
+        location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé, retourné dans la langue attendue")
+        dates_refined: str = Field(description="Dates de l'éducation traduites et harmonisées, retournées dans la langue attendue")
+        description_refined: str = Field(description="Description générée de l'éducation traduite et harmonisée, retournée dans la langue attendue")
     class OutputTranslation(BaseModel):
         """
         Sortie de la LLM pour la traduction et l'harmonisation.
         """
         educations: List[EducationWithTranslation]
 
-    llm = get_llm(temperature=0.8).with_structured_output(OutputTranslation)
+    llm = get_llm(temperature=0.5).with_structured_output(OutputTranslation)
 
     educations_text = "\n".join(
-        f"- [ID: {edu.edu_id}] **{edu.degree_refined}** à **{edu.institution_refined}** à **{edu.location_refined}** ({edu.dates_refined})\n  Description: {edu.description_generated}"
+        f"- [ID: {edu.edu_id}] **{edu.degree_raw}** à **{edu.institution_raw}** à **{edu.location_raw}** ({edu.dates_raw})\n  Description: {edu.description_generated}"
         for edu in state.education
     )
 
@@ -514,12 +513,11 @@ def translate_and_harmonize_edu(state: CVGenState) -> dict:
         f"Voici les éducations disponibles pour le CV:\n\n"
         f"{educations_text}\n\n"
         f"Veuillez traduire et harmoniser les éducations pour le CV en fonction de la langue du CV. "
-        f"Retournez les champs traduits et harmonisés entre eux."
+        f"Il faut que tout soit retourné dans la langue attendue."
     )
     
     response = llm.invoke(prompt)
 
-    educations_with_translation = []
     for edu in state.education:
         for translated_edu in response.educations:
             if edu.edu_id == translated_edu.edu_id:
@@ -528,13 +526,212 @@ def translate_and_harmonize_edu(state: CVGenState) -> dict:
                 edu.location_refined = translated_edu.location_refined
                 edu.dates_refined = translated_edu.dates_refined
                 edu.description_refined = translated_edu.description_refined
-                educations_with_translation.append(edu)
                 break
 
     return {
-        "education": educations_with_translation
+        "education": state.education
     }
-    
+
+def give_title(state: CVGenState) -> dict:
+    """
+    Génère un titre pour le CV adapté pour le candidat et la fiche de poste dans la bonne langue.
+    """
+    llm = get_llm(temperature=0.8)
+
+    experiences_text = "\n".join(
+        f"- Titre: {exp.title_refined}\n  Entreprise: {exp.company_refined}\n  Résumé: {exp.summary}\n"
+        for exp in state.experiences
+    )
+
+    education_text = "\n".join(
+        f"- Titre: {edu.degree_refined}\n  Institution: {edu.institution_refined}\n  Résumé: {edu.description_generated}\n"
+        for edu in state.education
+    )
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici les informations sur le candidat:\n"
+        f"Nom: {state.head.name}\n"
+        f"Compétences: {state.skills_raw}\n"
+        f"Langues: {state.langues_raw}\n"
+        f"Centres d'intérêt: {state.hobbies_raw}\n\n"
+        f"Expériences professionnelles:\n{experiences_text}\n"
+        f"Formations:\n{education_text}\n"
+        f"Voici la fiche de poste:\n{state.job_raw}\n\n"
+        f"Veuillez générer un titre de 10 mots maximum pour le CV adapté pour le candidat et la fiche de poste dans la langue spécifiée. Il faut être adapté au poste mais rester fidèle au profil du candidat."
+        f"Donner seulement le titre, sans aucun commentaire."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.head.title_refined = response.content
+
+    return {
+        "head": state.head
+    }
+
+def give_phone(state: CVGenState) -> dict:
+    """
+    Traduit le numéro de téléphone en fonction de la langue et le met en format international si nécessaire.
+    """
+    llm = get_llm(temperature=0.8)
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Numéro de téléphone brut: {state.head.tel_raw}\n\n"
+        f"Veuillez traduire le numéro de téléphone en fonction de la langue spécifiée et le mettre en format international si nécessaire."
+        f"Donner seulement le numéro de téléphone, sans aucun commentaire."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.head.tel_refined = response.content
+
+    return {
+        "head": state.head
+    }
+
+def translate_sections(state: CVGenState) -> dict:
+    """
+    Traduit les titres des sections du CV en fonction de la langue spécifiée.
+    """
+    llm = get_llm(temperature=0.8)
+
+    class SectionsOutput(BaseModel):
+        """
+        Sortie de la LLM pour les titres des sections du CV.
+        """
+        experience_section_name: str = Field(description="Titre de la section expérience professionnelle")
+        skills_section_name: str = Field(description="Titre de la section compétences")
+        education_section_name: str = Field(description="Titre de la section éducation")
+        languages_section_name: str = Field(description="Titre de la section langues")
+        hobbies_section_name: str = Field(description="Titre de la section centres d'intérêt")
+
+    llm = llm.with_structured_output(SectionsOutput)
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici les titres des sections du CV à traduire:\n"
+        f"Expérience professionnelle: {state.sections['experience']}\n"
+        f"Compétences: {state.sections['skills']}\n"
+        f"Éducation: {state.sections['education']}\n"
+        f"Langues: {state.sections['languages']}\n"
+        f"Centres d'intérêt: {state.sections['hobbies']}\n\n"
+        f"Veuillez traduire ces titres en fonction de la langue spécifiée."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.sections['experience'] = response.experience_section_name
+    state.sections['skills'] = response.skills_section_name
+    state.sections['education'] = response.education_section_name
+    state.sections['languages'] = response.languages_section_name
+    state.sections['hobbies'] = response.hobbies_section_name
+
+    return {
+        "sections": state.sections
+    }
+
+def translate_langues(state: CVGenState) -> dict:
+    """
+    Traduit la liste des langues à partir de la chaîne brute langues_raw en fonction de la langue spécifiée.
+    """
+    llm = get_llm(temperature=0.8)
+
+    class LanguesOutput(BaseModel):
+        """
+        Sortie de la LLM pour les langues du CV.
+        """
+        langues: List[str] = Field(description="Liste des langues maîtrisées et leur niveau")
+
+    llm = llm.with_structured_output(LanguesOutput)
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici la description brute des langues à traduire:\n"
+        f"{state.langues_raw}\n\n"
+        f"Veuillez traduire et structurer cette description en fonction de la langue spécifiée."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.langues = response.langues
+
+    return {
+        "langues": state.langues
+    }
+
+def generate_hobbies_text(state: CVGenState) -> dict:
+    """
+    Génère un petit texte sur les hobbies pour le CV, dans la langue attendue pour le CV,
+    en fonction de la fiche de poste et de hobbies_raw.
+    """
+    llm = get_llm(temperature=0.8)
+
+    class HobbiesOutput(BaseModel):
+        """
+        Sortie de la LLM pour les hobbies du CV.
+        """
+        hobbies_text: str = Field(description="Texte généré pour les hobbies")
+
+    llm = llm.with_structured_output(HobbiesOutput)
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici la description brute des hobbies à traduire:\n"
+        f"{state.hobbies_raw}\n\n"
+        f"Voici la description du poste visé:\n"
+        f"{state.job_raw}\n\n"
+        f"Veuillez générer un petit texte sur les hobbies en fonction de la langue spécifiée et de la fiche de poste."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.hobbies_refined = response.hobbies_text
+
+    return {
+        "hobbies_refined": state.hobbies_refined
+    }
+
+def generate_skills_text(state: CVGenState) -> dict:
+    """
+    Génère un texte structuré sur les compétences pour le CV, dans la langue attendue pour le CV,
+    en fonction de la fiche de poste, des compétences brutes, des expériences et de leurs résumés, 
+    ainsi que des formations et de leurs résumés.
+    """
+    llm = get_llm(temperature=0.8)
+
+    class SkillsOutput(BaseModel):
+        """
+        Sortie de la LLM pour les compétences du CV.
+        """
+        competences: Dict[str, List[str]] = Field(description="Compétences organisées par catégorie")
+
+    llm = llm.with_structured_output(SkillsOutput)
+
+    prompt = (
+        f"Langue attendue: {state.language_cv}\n\n"
+        f"Voici la description brute des compétences à traduire:\n"
+        f"{state.skills_raw}\n\n"
+        f"Voici la description du poste visé:\n"
+        f"{state.job_raw}\n\n"
+        f"Voici les expériences professionnelles et leurs résumés:\n"
+        f"{[exp.summary for exp in state.experiences]}\n\n"
+        f"Voici les formations académiques et leurs résumés:\n"
+        f"{[edu.summary for edu in state.education]}\n\n"
+        f"Veuillez générer un texte structuré sur les compétences en fonction de la langue spécifiée, de la fiche de poste, des compétences brutes, des expériences et de leurs résumés, ainsi que des formations et de leurs résumés."
+    )
+
+    response = llm.invoke(prompt)
+
+    state.competences = response.competences
+
+    return {
+        "competences": state.competences
+    }
+
+
+
 def create_cv_chain() -> StateGraph:
     """
     Construit le graphe principal avec:
@@ -568,6 +765,12 @@ def create_cv_chain() -> StateGraph:
 
     chain.add_node("translate_and_harmonize_exp", translate_and_harmonize_exp)
     chain.add_node("translate_and_harmonize_edu", translate_and_harmonize_edu)
+
+    chain.add_node("translate_sections", translate_sections)
+    chain.add_node("give_title", give_title)
+    chain.add_node("give_phone", give_phone)
+
+    chain.add_node("generate_hobbies_text", generate_hobbies_text)
 
     # 1) Au départ, on lance en parallèle ces trois nœuds
     chain.add_edge(START, "detect_language")
@@ -618,5 +821,14 @@ def create_cv_chain() -> StateGraph:
 
     chain.add_edge("synth_sumup_bullets", "translate_and_harmonize_exp")
     chain.add_edge("translate_and_harmonize_exp", END)
+
+    chain.add_edge("agg_sum", "translate_sections")
+    chain.add_edge("translate_sections", "give_title")
+    chain.add_edge("give_title", "give_phone")
+    chain.add_edge("give_phone", END)
+
+    chain.add_edge("agg_sum", "generate_hobbies_text")
+    chain.add_edge("generate_hobbies_text", END)
+
 
     return chain
