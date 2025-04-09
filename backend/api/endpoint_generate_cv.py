@@ -95,7 +95,7 @@ def generate_cv_endpoint(user_id: str, cv_name: str):
                 tmp_file = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
                 try:
                     # Générer le PDF directement dans le fichier temporaire
-                    generated_path = cv.cv_data.generate_pdf(tmp_file.name)
+                    generated_path = cv.cv_data.generate_pdf(tmp_file.name, user_id=user_id)
                     logger.info(f"PDF généré temporairement")
                     
                     # Uploader vers Firebase Storage

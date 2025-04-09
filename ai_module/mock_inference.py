@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any
-from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExperience, GlobalEducation, CVExperience, CVEducation
+from ai_module.lg_models import ProfileState, CVGenState, GeneralInfo, GlobalExperience, GlobalEducation, CVExperience, CVEducation, CVLanguage
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +109,10 @@ def generate_cv(state: CVGenState) -> CVGenState:
         logger.warning("L'état n'a pas d'attribut 'head'")
         return state
     
-    # Modification du titre - champ connu pour exister
+    # Modification des informations d'en-tête
     state.head.title_refined = "Développeur Full Stack Senior | Expert Python & JavaScript"
+    state.head.mail = "jean.dupont@email.com"
+    state.head.tel_refined = "+33 6 12 34 56 78"
     
     # Modification des compétences - champ connu pour exister
     if hasattr(state, 'competences'):
@@ -119,6 +121,14 @@ def generate_cv(state: CVGenState) -> CVGenState:
             "Backend": ["Python", "Django", "FastAPI", "SQL"],
             "DevOps": ["Docker", "CI/CD", "AWS", "Git"]
         }
+    
+    # Ajout des langues
+    if hasattr(state, 'langues'):
+        state.langues = [
+            CVLanguage(language="Français", level="Natif"),
+            CVLanguage(language="Anglais", level="Courant"),
+            CVLanguage(language="Espagnol", level="Intermédiaire")
+        ]
     
     # Création des expériences
     if hasattr(state, 'experiences'):
