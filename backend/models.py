@@ -1,8 +1,10 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from firebase_admin import storage
 import json
 import os
+import tempfile
 from datetime import datetime, UTC
 from google.cloud.firestore_v1._helpers import DatetimeWithNanoseconds
 from typing import Dict, List, Any, Optional, ClassVar, Type, TypeVar, Union
@@ -142,13 +144,14 @@ class CVData(BaseModel):
             "hobbies": hobbies_data
         }
 
-    def generate_pdf(self, output_path: str, photo_path: Optional[str] = None) -> str:
+    def generate_pdf(self, output_path: str, photo_path: Optional[str] = None, user_id: Optional[str] = None) -> str:
         """
         Génère un fichier PDF du CV.
 
         Args:
             output_path (str): Chemin où sauvegarder le PDF
-            photo_path (Optional[str]): Chemin vers la photo de profil. Si None, utilise une photo par défaut.
+            photo_path (Optional[str]): Chemin vers la photo de profil. Si None, tente de récupérer depuis Firebase Storage
+            user_id (Optional[str]): ID de l'utilisateur pour récupérer la photo depuis Firebase Storage
 
         Returns:
             str: Chemin du fichier PDF généré
@@ -157,6 +160,22 @@ class CVData(BaseModel):
         data = self.to_pdf_data()
 
         # Gérer la photo
+        if not photo_path and user_id:
+            try:
+                # Initialiser Firebase Storage
+                bucket = storage.bucket("cv-generator-447314.firebasestorage.app")
+                storage_path = f"{user_id}/profil/photo.jpg"
+                blob = bucket.blob(storage_path)
+
+                # Créer un fichier temporaire pour stocker la photo
+                with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_photo:
+                    blob.download_to_filename(temp_photo.name)
+                    photo_path = temp_photo.name
+            except Exception as e:
+                print(f"Erreur lors de la récupération de la photo depuis Firebase Storage: {e}")
+                # En cas d'erreur, utiliser la photo par défaut
+                photo_path = None
+
         if not photo_path:
             ROOT_DIR = Path(__file__).resolve().parent
             photo_path = str(ROOT_DIR / "cv_automation" / "gen_pdf" / "sections" / "photo_default.jpg")
@@ -190,6 +209,13 @@ class CVData(BaseModel):
 
         # Générer le PDF
         doc.build(elements)
+
+        # Nettoyer le fichier temporaire de la photo si nécessaire
+        if user_id and photo_path and photo_path.endswith('.jpg') and 'temp' in photo_path.lower():
+            try:
+                os.unlink(photo_path)
+            except Exception as e:
+                print(f"Erreur lors de la suppression du fichier temporaire de la photo: {e}")
 
         return output_path
 
