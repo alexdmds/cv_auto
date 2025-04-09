@@ -6,7 +6,7 @@ import langdetect
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 from langgraph.checkpoint.memory import MemorySaver
-from ai_module.lg_models import CVGenState, CVExperience, CVEducation
+from ai_module.lg_models import CVGenState, CVExperience, CVEducation, CVLanguage
 from ai_module.llm_config import get_llm
 from typing_extensions import Annotated
 from pydantic import BaseModel, Field
@@ -638,11 +638,18 @@ def translate_langues(state: CVGenState) -> dict:
     """
     llm = get_llm(temperature=0.8)
 
+    class LanguageOutput(BaseModel):
+        """
+        Structure pour une langue dans la sortie LLM
+        """
+        language: str = Field(description="Nom de la langue dans la langue spécifiée")
+        level: str = Field(description="Niveau de maîtrise dans la langue spécifiée")
+
     class LanguesOutput(BaseModel):
         """
         Sortie de la LLM pour les langues du CV.
         """
-        langues: List[str] = Field(description="Liste des langues maîtrisées et leur niveau")
+        langues: List[LanguageOutput] = Field(description="Liste des langues maîtrisées et leur niveau")
 
     llm = llm.with_structured_output(LanguesOutput)
 
@@ -650,12 +657,14 @@ def translate_langues(state: CVGenState) -> dict:
         f"Langue attendue: {state.language_cv}\n\n"
         f"Voici la description brute des langues à traduire:\n"
         f"{state.langues_raw}\n\n"
-        f"Veuillez traduire et structurer cette description en fonction de la langue spécifiée."
+        f"Veuillez traduire et structurer cette description en fonction de la langue spécifiée. "
+        f"Pour chaque langue, donnez son nom et son niveau de maîtrise."
     )
 
     response = llm.invoke(prompt)
 
-    state.langues = response.langues
+    # Convertir les LanguageOutput en CVLanguage
+    state.langues = [CVLanguage(language=lang.language, level=lang.level) for lang in response.langues]
 
     return {
         "langues": state.langues
