@@ -701,17 +701,21 @@ def generate_skills_text(state: CVGenState) -> dict:
     """
     llm = get_llm(temperature=0.8)
 
+    class Skill(BaseModel):
+        name: str = Field(description="Nom de la compétence dans la langue spécifiée")
+        items: List[str] = Field(description="Liste des items de la compétence dans la langue spécifiée. 1 item est un ou deux mots maximum.")
+
     class SkillsOutput(BaseModel):
         """
         Sortie de la LLM pour les compétences du CV.
         """
-        competences: Dict[str, List[str]] = Field(description="Compétences organisées par catégorie")
+        competences: List[Skill] = Field(description="Liste des compétences dans la langue spécifiée pour le CV")
 
     llm = llm.with_structured_output(SkillsOutput)
 
     prompt = (
         f"Langue attendue: {state.language_cv}\n\n"
-        f"Voici la description brute des compétences à traduire:\n"
+        f"Voici la description brute des compétences:\n"
         f"{state.skills_raw}\n\n"
         f"Voici la description du poste visé:\n"
         f"{state.job_raw}\n\n"
@@ -719,17 +723,16 @@ def generate_skills_text(state: CVGenState) -> dict:
         f"{[exp.summary for exp in state.experiences]}\n\n"
         f"Voici les formations académiques et leurs résumés:\n"
         f"{[edu.summary for edu in state.education]}\n\n"
-        f"Veuillez générer un texte structuré sur les compétences en fonction de la langue spécifiée, de la fiche de poste, des compétences brutes, des expériences et de leurs résumés, ainsi que des formations et de leurs résumés."
+        f"Génère les compétences dans la langue spécifiée les plus pertinentes pour le poste visé. Cela apparaitra sur le CV.Il faut être concis (max 4 catégories, cela peut être moins). Il faut que chaque item soit un ou deux mots maximum."
     )
 
     response = llm.invoke(prompt)
 
-    state.competences = response.competences
+    state.competences = {skill.name: skill.items for skill in response.competences}
 
     return {
         "competences": state.competences
     }
-
 
 
 def create_cv_chain() -> StateGraph:
@@ -771,7 +774,9 @@ def create_cv_chain() -> StateGraph:
     chain.add_node("give_phone", give_phone)
 
     chain.add_node("generate_hobbies_text", generate_hobbies_text)
+    chain.add_node("generate_skills_text", generate_skills_text)
 
+    chain.add_node("translate_langues", translate_langues)
     # 1) Au départ, on lance en parallèle ces trois nœuds
     chain.add_edge(START, "detect_language")
     chain.add_edge(START, "summarize_job")
@@ -829,6 +834,12 @@ def create_cv_chain() -> StateGraph:
 
     chain.add_edge("agg_sum", "generate_hobbies_text")
     chain.add_edge("generate_hobbies_text", END)
+
+    chain.add_edge("agg_sum", "generate_skills_text")
+    chain.add_edge("generate_skills_text", END)
+
+    chain.add_edge("agg_sum", "translate_langues")
+    chain.add_edge("translate_langues", END)
 
 
     return chain
