@@ -343,6 +343,7 @@ def select_edu_and_give_nb_mots(state: CVGenState) -> PrivateSelectEduState:
         f"{educations_text}\n\n"
         f"Poste visé : {state.job_refined}\n\n"
         f"Veuillez sélectionner les formations les plus pertinentes pour le poste visé, en attribuant un nb de mots et un ordre pour le CV final. "
+        f"Rester concis, le CV étant limité, privilégier de faibles nombres de mots."
         f"Si une formation n'est pas pertinente, attribuez-lui 0 mots et une place 'null' sur le CV. Pour chaque formation sélectionnée, mentionnez son ID."
     )
 
@@ -351,7 +352,7 @@ def select_edu_and_give_nb_mots(state: CVGenState) -> PrivateSelectEduState:
         Éducation avec le nombre de mots à mettre dans chaque éducation.
         """
         edu_id: str = Field(description="Identifiant unique de l'éducation")
-        nb_mots: int = Field(description="Nombre de mots à mettre pour cette éducation, entre 30 et 70. 0 si la formation n'est pas pertinente.")
+        nb_mots: int = Field(description="Nombre de mots à mettre pour cette éducation, entre 10 et 50. 0 si la formation n'est pas pertinente.")
         order: Optional[int] = Field(description="Ordre de l'éducation dans le CV, peut être null")
 
     class OutputEduWithNbMots(BaseModel):
