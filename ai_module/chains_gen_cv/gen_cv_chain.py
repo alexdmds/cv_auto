@@ -295,19 +295,17 @@ def write_bullets(state: PrivateSelectExpState) -> dict:
         """
         Expérience avec les bullets générées.
         """
-        bullets: List[str] = Field(description="Liste des bullets pour cette expérience")
+        bullets: List[str] = Field(description="Liste des bullets pour cette expérience (25 mots max par bullet)")
 
     llm = get_llm().with_structured_output(ExperienceWithBullets)
     
     exp = state['experience_with_nb_bullets']
     prompt = (
-        f"Voici le résumé du poste et la description brute de l'expérience sélectionnée pour le CV:\n\n"
+        f"Tu es un rédacteur de CV professionnel. Ta mission est de rédiger {exp.nb_bullets} bullet points pour le CV d'un candidat en fonction de son expérience et du poste visé. Sois factuel, concis et assure-toi que chaque bullet tienne sur une ligne.\n\n"
         f"Résumé du poste:\n{state['job_summary_private_exp']}\n\n"
         f"Titre: {exp.title_raw}\n"
         f"Entreprise: {exp.company_raw}\n"
         f"Description: {exp.description_raw}\n"
-        f"Nombre de bullets: {exp.nb_bullets}\n\n"
-        f"Veuillez générer les bullets pour cette expérience en fonction du nombre de bullets spécifié."
     )
 
     response = llm.invoke(prompt)
