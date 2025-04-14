@@ -246,7 +246,7 @@ def give_nb_bullets(state: PrivateSelectExpState) -> dict:
     prompt = (
         f"Voici le choix des expériences pour le CV:\n\n"
         f"{state['markdown_selection']}\n\n"
-        f"Le CV total doit comporter exactement 12 bullets répartis entre les expériences sélectionnées.\n"
+        f"Le CV total doit comporter entre 9 et 12 bullets répartis entre les expériences sélectionnées.\n"
         f"Si une expérience a un poids trop faible, préférez la mettre à 0 plutôt que de lui attribuer seulement 1 bullet.\n"
         f"Veuillez donner l'ordre et le nombre de bullets à mettre pour chaque expérience en fonction de ce choix.\n"
         f"Pour chaque expérience, utilisez son ID pour l'identifier."
