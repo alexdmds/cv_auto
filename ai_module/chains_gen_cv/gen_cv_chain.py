@@ -201,17 +201,15 @@ def select_exp(state: CVGenState) -> PrivateSelectExpState:
     llm = get_llm()
     
     experiences_text = "\n".join(
-        f"- [ID: {exp.exp_id}] **{exp.title_refined}** chez **{exp.company_refined}** à **{exp.location_refined}** ({exp.dates_refined})\n  Résumé: {exp.summary}"
+        f"- [ID: {exp.exp_id}] **{exp.title_raw}** chez **{exp.company_raw}** à **{exp.location_raw}** ({exp.dates_raw})\n  Résumé: {exp.summary}"
         for exp in state.experiences
     )
     
     prompt = (
+        f"Tu es un assistant pour la rédaction d'un CV. Sélectionne les expériences les plus pertinentes pour le poste visé, en étant sélectif, car l'espace est limité. Liste les expériences par ordre chronologique décroissant, sauf si un argument fort justifie un autre ordre. Pour chaque expérience, indique son ID, l'ordre retenu et son importance. Retourne une liste concise des expériences à inclure dans le CV."
         f"Voici les expériences professionnelles disponibles pour le CV:\n\n"
         f"{experiences_text}\n\n"
         f"Poste visé : {state.job_refined}\n\n"
-        f"Veuillez sélectionner les expériences les plus pertinentes pour le poste visé, en étant sélectif car l'espace est limité. "
-        f"Les expériences doivent être listées par ordre chronologique décroissant, sauf si un argument solide justifie un autre ordre. "
-        f"Pour chaque expérience sélectionnée, mentionnez son ID."
     )
     
     response = llm.invoke(prompt)
@@ -439,7 +437,7 @@ def translate_and_harmonize_exp(state: CVGenState) -> dict:
         title_refined: str = Field(description="Titre de l'expérience traduit et harmonisé, retourné dans la langue attendue")
         company_refined: str = Field(description="Entreprise de l'expérience traduit et harmonisé, retourné dans la langue attendue")
         location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé, retourné dans la langue attendue")
-        dates_refined: str = Field(description="Dates de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        dates_refined: str = Field(description="Dates de l'expérience retournées dans la langue attendue avec seulement les mois et années")
         bullets: List[str] = Field(description="Bullets de l'expérience traduits et harmonisés, retournés dans la langue attendue")
     class OutputTranslation(BaseModel):
         """
@@ -493,7 +491,7 @@ def translate_and_harmonize_edu(state: CVGenState) -> dict:
         degree_refined: str = Field(description="Diplôme traduit et harmonisé, retourné dans la langue attendue")
         institution_refined: str = Field(description="Institution traduite et harmonisée, retournée dans la langue attendue")
         location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé, retourné dans la langue attendue")
-        dates_refined: str = Field(description="Dates de l'éducation traduites et harmonisées, retournées dans la langue attendue")
+        dates_refined: str = Field(description="Années seulement de l'éducation")
         description_refined: str = Field(description="Description générée de l'éducation traduite et harmonisée, retournée dans la langue attendue")
     class OutputTranslation(BaseModel):
         """
@@ -686,13 +684,13 @@ def generate_hobbies_text(state: CVGenState) -> dict:
     llm = llm.with_structured_output(HobbiesOutput)
 
     prompt = (
+        f"Tu es un assistant qui rédige un court paragraphe sur les hobbies pour un CV. En te basant sur la langue attendue, la fiche de poste et les infos sur le candidat, liste des éléments concis, factuels et professionnels. Sois sélectif et évite le verbiage, en restant sous 50 mots."
+        f"Il ne faut marquer que les éléments sans explications additionnelles."
+        f"Donne uniquement le texte généré."
         f"Langue attendue: {state.language_cv}\n\n"
-        f"Voici la description brute des hobbies à traduire:\n"
-        f"{state.hobbies_raw}\n\n"
-        f"Voici la description du poste visé:\n"
-        f"{state.job_raw}\n\n"
-        f"Veuillez générer un petit texte sur les hobbies en fonction de la langue spécifiée et de la fiche de poste."
-    )
+        f"Fiche de poste: {state.job_refined}\n\n"
+        f"Informations sur les hobbies du candidat: {state.hobbies_raw}\n\n"
+        )
 
     response = llm.invoke(prompt)
 
