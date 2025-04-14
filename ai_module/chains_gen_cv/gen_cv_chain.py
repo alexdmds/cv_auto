@@ -435,7 +435,7 @@ def translate_and_harmonize_exp(state: CVGenState) -> dict:
         exp_id: str = Field(description="Identifiant unique de l'expérience inchangé")
         title_refined: str = Field(description="Titre de l'expérience traduit et harmonisé, retourné dans la langue attendue")
         company_refined: str = Field(description="Entreprise de l'expérience traduit et harmonisé, retourné dans la langue attendue")
-        location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé, retourné dans la langue attendue")
+        location_refined: str = Field(description="Lieu de l'expérience traduit et harmonisé, retourné dans la langue attendue. str vide si lieu non renseigné.")
         dates_refined: str = Field(description="Dates de l'expérience retournées dans la langue attendue avec seulement les mois et années")
         bullets: List[str] = Field(description="Bullets de l'expérience traduits et harmonisés, retournés dans la langue attendue")
     class OutputTranslation(BaseModel):
@@ -489,7 +489,7 @@ def translate_and_harmonize_edu(state: CVGenState) -> dict:
         edu_id: str = Field(description="Identifiant unique de l'éducation inchangé")
         degree_refined: str = Field(description="Diplôme traduit et harmonisé, retourné dans la langue attendue")
         institution_refined: str = Field(description="Institution traduite et harmonisée, retournée dans la langue attendue")
-        location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé, retourné dans la langue attendue")
+        location_refined: str = Field(description="Lieu de l'éducation traduit et harmonisé, retourné dans la langue attendue. str vide si lieu non renseigné.")
         dates_refined: str = Field(description="Années seulement de l'éducation")
         description_refined: str = Field(description="Description générée de l'éducation traduite et harmonisée, retournée dans la langue attendue")
     class OutputTranslation(BaseModel):

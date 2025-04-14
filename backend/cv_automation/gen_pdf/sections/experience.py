@@ -62,9 +62,14 @@ def create_experience_section(data):
         ]))
         elements.append(table)
 
+        if exp['location']:
+            company_location_text = f"{exp['company']} - {exp['location']}"
+        else:
+            company_location_text = exp['company']
+        
         table_data = [
             [   
-                Paragraph(f"{exp['company']} - {exp['location']}", company_style),
+                Paragraph(company_location_text, company_style),
                 elements.append(Spacer(0, 0))
             ]
         ]
