@@ -113,6 +113,9 @@ def generate_cv(state: CVGenState) -> CVGenState:
     state.head.title_refined = "Développeur Full Stack Senior | Expert Python & JavaScript"
     state.head.mail = "jean.dupont@email.com"
     state.head.tel_refined = "+33 6 12 34 56 78"
+
+    state.job_refined = "Résumé de la fiche de poste : Développeur Full Stack Senior | Expert Python & JavaScript"
+    state.language_cv = "fr"
     
     # Modification des compétences - champ connu pour exister
     if hasattr(state, 'competences'):
