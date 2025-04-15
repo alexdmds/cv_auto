@@ -1,10 +1,12 @@
 import logging
 import time
+import os
 from backend.config import load_config
 from dotenv import load_dotenv
 from backend.models import ProfileDocument, CVDocument
 from ai_module.lg_models import CVGenState
 from flask import jsonify
+from backend.utils.utils_gcs import upload_to_firebase_storage
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -58,9 +60,24 @@ def generate_cv_endpoint(user_id: str, cv_id: str):
         # Sauvegarde synchrone
         cv_document.save()
         
+        # Générer le PDF
+        output_dir = os.path.join("temp", user_id, "cvs")
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{cv_document.cv_name}.pdf")
+        
+        # Générer le PDF
+        cv_document.cv_data.generate_pdf(output_path, user_id=user_id)
+        
+        # Upload du PDF vers GCS
+        cv_url = upload_to_firebase_storage(output_path, user_id, cv_id)
+        
+        # Mettre à jour l'URL du CV dans le document
+        cv_document.cv_url = cv_url
+        cv_document.save()
+        
         execution_time = time.time() - start_time
         logger.info(f"CV généré et sauvegardé pour l'utilisateur {user_id} en {execution_time:.2f} secondes")
-        return jsonify({"success": True, "execution_time": execution_time}), 200
+        return jsonify({"success": True, "execution_time": execution_time, "cv_url": cv_url}), 200
         
     except Exception as e:
         execution_time = time.time() - start_time

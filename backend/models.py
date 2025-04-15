@@ -868,19 +868,53 @@ class CVDataNew(BaseModel):
 
         return output_path
 
-class CVNew(BaseModel):
-    """Structure complète d'un CV (nouvelle version)"""
-    cv_name: str
+class CVDocument(FirestoreModel):
+    """Modèle pour la collection 'cvs' dans Firestore"""
+    collection_name = "cvs"
+    id: str = Field(default="", description="ID du CV")
+    user_id: str
+    cv_url: Optional[str] = None
     job_raw: str = ""
     job_sumup: str = ""
+    cv_name: str
     cv_data: CVDataNew = Field(default_factory=CVDataNew)
 
-    def update_from_cv_state(self, cv_state: "CVGenState") -> None:
+    @classmethod
+    def from_firestore_id(cls, cv_id: str) -> Optional["CVDocument"]:
         """
-        Met à jour les données du CV à partir d'un CVGenState.
+        Construit un objet CVDocument directement à partir d'un ID Firestore.
         
         Args:
-            cv_state (CVGenState): L'état du CV contenant les nouvelles données
+            cv_id (str): L'identifiant du document dans Firestore
+            
+        Returns:
+            Optional[CVDocument]: L'objet CVDocument construit ou None si le document n'existe pas
+        """
+        db = cls.get_db()
+        doc_ref = db.collection(cls.collection_name).document(cv_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists or not (raw_data := doc.to_dict()):
+            return None
+            
+        try:
+            instance = cls(**raw_data)
+            instance.id = cv_id
+            return instance
+        except Exception as e:
+            print(f"Erreur lors de la construction de l'objet CVDocument: {e}")
+            return None
+
+    def update_from_cv_state(self, cv_state: "CVGenState", save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
+        """
+        Met à jour un CV avec les données provenant d'un CVGenState
+        
+        Args:
+            cv_state (CVGenState): État du CV contenant les nouvelles données
+            save_to_firestore (bool): Si True, sauvegarde immédiatement les modifications dans Firestore
+            
+        Returns:
+            Optional[Dict[str, Any]]: Informations sur la mise à jour
         """
         # Mise à jour des informations de base
         self.cv_data.name = cv_state.head.name
@@ -936,69 +970,7 @@ class CVNew(BaseModel):
         # Mise à jour des centres d'intérêt et du poste
         self.cv_data.hobbies = cv_state.hobbies_refined
         self.job_raw = cv_state.job_raw
-
-class CVDocument(FirestoreModel):
-    """Modèle pour la collection 'cvs' dans Firestore"""
-    collection_name = "cvs"
-    id: str = Field(default="", description="ID du CV")
-    user_id: str
-    cv_url: Optional[str] = None
-    job_raw: str = ""
-    job_sumup: str = ""
-    cv_name: str
-    cv_data: CVDataNew = Field(default_factory=CVDataNew)
-
-    @classmethod
-    def from_firestore_id(cls, cv_id: str) -> Optional["CVDocument"]:
-        """
-        Construit un objet CVDocument directement à partir d'un ID Firestore.
-        
-        Args:
-            cv_id (str): L'identifiant du document dans Firestore
-            
-        Returns:
-            Optional[CVDocument]: L'objet CVDocument construit ou None si le document n'existe pas
-        """
-        db = cls.get_db()
-        doc_ref = db.collection(cls.collection_name).document(cv_id)
-        doc = doc_ref.get()
-        
-        if not doc.exists or not (raw_data := doc.to_dict()):
-            return None
-            
-        try:
-            instance = cls(**raw_data)
-            instance.id = cv_id
-            return instance
-        except Exception as e:
-            print(f"Erreur lors de la construction de l'objet CVDocument: {e}")
-            return None
-
-    def update_from_cv_state(self, cv_state: "CVGenState", save_to_firestore: bool = True) -> Optional[Dict[str, Any]]:
-        """
-        Met à jour un CV avec les données provenant d'un CVGenState
-        
-        Args:
-            cv_state (CVGenState): État du CV contenant les nouvelles données
-            save_to_firestore (bool): Si True, sauvegarde immédiatement les modifications dans Firestore
-            
-        Returns:
-            Optional[Dict[str, Any]]: Informations sur la mise à jour
-        """
-        # Créer un objet CV temporaire pour la mise à jour
-        cv = CVNew(
-            cv_name=self.cv_name,
-            job_raw=self.job_raw,
-            job_sumup=self.job_sumup,
-            cv_data=self.cv_data
-        )
-        
-        # Mettre à jour le CV
-        cv.update_from_cv_state(cv_state)
-        
-        # Mettre à jour les attributs de l'instance
-        self.cv_data = cv.cv_data
-        self.job_raw = cv.job_raw
+        self.job_sumup = cv_state.job_refined
         
         if save_to_firestore:
             self.save()
@@ -1033,16 +1005,16 @@ class CVDocument(FirestoreModel):
         Returns:
             CVDocument: L'instance de CVDocument créée
         """
-        # Créer un objet CV temporaire pour la conversion
-        cv = CVNew(cv_name=cv_name)
-        cv.update_from_cv_state(cv_state)
-        
         # Créer l'instance de CVDocument
         instance = cls(
             user_id=user_id,
             cv_name=cv_name,
-            job_raw=cv.job_raw,
-            cv_data=cv.cv_data
+            job_raw=cv_state.job_raw,
+            job_sumup=cv_state.job_refined,
+            cv_data=CVDataNew()
         )
+        
+        # Mettre à jour les données du CV
+        instance.update_from_cv_state(cv_state, save_to_firestore=False)
         
         return instance
