@@ -1,7 +1,10 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field
 import json
 from uuid import uuid4
+
+if TYPE_CHECKING:
+    from backend.models import ProfileDocument
 
 
 #Classes pour la génération globale du profile
@@ -445,6 +448,114 @@ class CVGenState(BaseModel):
             hobbies_raw=hobbies_raw,
             hobbies_refined=hobbies_raw,
             job_raw=job_raw,
+            job_refined="",
+            language_cv=""
+        )
+
+    @classmethod
+    def from_profile_document(cls, profile_document: "ProfileDocument", cv_name: str, job_raw: str = "") -> Optional["CVGenState"]:
+        """
+        Crée une nouvelle instance de CVGenState à partir d'un ProfileDocument et d'un nom de CV.
+        Cette méthode crée un nouveau CV en utilisant les données du profil.
+        
+        Args:
+            profile_document: Instance de ProfileDocument contenant les données du profil
+            cv_name: Nom du CV à générer
+            job_raw: Description brute du poste visé
+            
+        Returns:
+            Instance de CVGenState
+        """
+        # Construire le Head à partir du profil
+        head_data = {
+            "name": profile_document.head.name or "",
+            "title_raw": profile_document.head.title or "",
+            "title_generated": "",  # Champ à générer plus tard
+            "title_refined": "",
+            "mail": profile_document.head.mail or "",
+            "tel_raw": profile_document.head.phone or "",
+            "tel_refined": ""
+        }
+        head = CVHead(**head_data)
+        
+        # Sections par défaut
+        sections = {
+            "experience": "Expérience Professionnelle",
+            "education": "Formation",
+            "skills": "Compétences",
+            "languages": "Langues",
+            "hobbies": "Centres d'Intérêt"
+        }
+        
+        # Convertir les expériences
+        experiences = []
+        for exp in profile_document.experiences:
+            exp_data = {
+                "title_raw": exp.title or "",
+                "title_refined": "",
+                "company_raw": exp.company or "",
+                "company_refined": "",
+                "location_raw": exp.location or "",
+                "location_refined": "",
+                "dates_raw": exp.dates or "",
+                "dates_refined": "",
+                "description_raw": exp.description or "",
+                "description_refined": "",
+                "summary": "",
+                "bullets": [],
+                "weight": 0.0,
+                "order": 0,
+                "nb_bullets": 0
+            }
+            experiences.append(CVExperience(**exp_data))
+        
+        # Convertir les formations
+        education_list = []
+        for edu in profile_document.educations:
+            edu_data = {
+                "edu_id": f"EDU_{uuid4().hex[:6]}",
+                "degree_raw": edu.title or "",
+                "degree_refined": "",
+                "institution_raw": edu.university or "",
+                "institution_refined": "",
+                "location_raw": "",
+                "location_refined": "",
+                "dates_raw": edu.dates or "",
+                "dates_refined": "",
+                "description_raw": edu.description or "",
+                "description_generated": "",
+                "description_refined": "",
+                "summary": "",
+                "weight": 0.0,
+                "order": 0,
+                "nb_mots": 0
+            }
+            education_list.append(CVEducation(**edu_data))
+        
+        # Convertir les compétences
+        competences = {}
+        skills_raw = profile_document.skills or ""
+            
+        # Convertir les langues
+        langues = []
+        langues_raw = profile_document.languages or ""
+        
+        # Hobbies
+        hobbies_raw = profile_document.hobbies or ""
+        
+        # Construire l'instance GlobalState
+        return cls(
+            head=head,
+            sections=sections,
+            experiences=experiences,
+            education=education_list,
+            competences=competences,
+            skills_raw=skills_raw.rstrip(", "),
+            langues=langues,
+            langues_raw=langues_raw,
+            hobbies_raw=hobbies_raw,
+            hobbies_refined=hobbies_raw,
+            job_raw=job_raw,  # Utilisation du job_raw fourni en argument
             job_refined="",
             language_cv=""
         )

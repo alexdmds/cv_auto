@@ -1005,10 +1005,10 @@ class CVDocument(FirestoreModel):
             
         return self._create_update_info()
 
-    @staticmethod
-    def _create_update_info() -> Dict[str, Any]:
+    def _create_update_info(self) -> Dict[str, Any]:
         """Crée le dictionnaire d'informations sur la mise à jour"""
         return {
+            "cv_name": self.cv_name,
             "updated": True,
             "name": self.cv_data.name,
             "title": self.cv_data.title,
