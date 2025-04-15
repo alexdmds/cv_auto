@@ -29,6 +29,12 @@ curl -X POST "http://localhost:8080/api/generate-profile" \
   -H "Content-Type: application/json" \
   -v
 
+curl -X POST "http://localhost:8080/api/v2/generate-profile" \
+  -H "Content-Type: application/json" \
+  -v
+
+
+
 curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-profile" \
   -H "Content-Type: application/json" \
   -v
