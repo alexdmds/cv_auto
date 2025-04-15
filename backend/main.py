@@ -3,6 +3,8 @@ from flask_cors import CORS
 import logging
 from backend.api.endpoint__generate_profile import generate_profile_endpoint
 from backend.api.endpoint_generate_cv import generate_cv_endpoint
+from backend.api2.gen_profile2 import generate_profile_endpoint as generate_profile_endpoint_v2
+from backend.api2.gen_cv2 import generate_cv_endpoint as generate_cv_endpoint_v2
 from backend.config import configure_logging, load_config
 from backend.auth import auth_required
 from backend.decorators import check_rate_limit
@@ -46,18 +48,35 @@ def health_check():
 @auth_required
 @check_rate_limit
 def generate_profile():
-    """Génère un profil pour l'utilisateur authentifié"""
+    """Génère un profil pour l'utilisateur authentifié (version 1)"""
     user_id = request.user_id  # Injecté par le décorateur auth_required
     return generate_profile_endpoint(user_id)
+
+@app.route('/api/v2/generate-profile', methods=['POST'])
+@auth_required
+@check_rate_limit
+def generate_profile_v2():
+    """Génère un profil pour l'utilisateur authentifié (version 2)"""
+    user_id = request.user_id  # Injecté par le décorateur auth_required
+    return generate_profile_endpoint_v2(user_id)
 
 @app.route('/api/generate-cv', methods=['POST'])
 @auth_required
 @check_rate_limit
 def generate_cv():
-    """Génère un CV pour l'utilisateur authentifié"""
+    """Génère un CV pour l'utilisateur authentifié (version 1)"""
     user_id = request.user_id  # Injecté par le décorateur auth_required
     cv_name = request.json.get('cv_name')
     return generate_cv_endpoint(user_id, cv_name)
+
+@app.route('/api/v2/generate-cv', methods=['POST'])
+@auth_required
+@check_rate_limit
+def generate_cv_v2():
+    """Génère un CV pour l'utilisateur authentifié (version 2)"""
+    user_id = request.user_id  # Injecté par le décorateur auth_required
+    cv_name = request.json.get('cv_name')
+    return generate_cv_endpoint_v2(user_id, cv_name)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

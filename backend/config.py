@@ -29,11 +29,13 @@ class BaseConfig:
     ENV = None
     OPENAI_API_KEY = None
     CHECK_AUTH = True  # Valeur par défaut
+    CHECK_RATE_LIMIT = True
 
 class LocalConfig(BaseConfig):
     ENV = "local"
-    MOCK_OPENAI = False
+    MOCK_OPENAI = True
     CHECK_AUTH = False  # Désactive l'authentification en dev
+    CHECK_RATE_LIMIT = False
 
 class DevConfig(BaseConfig):
     ENV = "dev"
