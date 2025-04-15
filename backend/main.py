@@ -75,8 +75,8 @@ def generate_cv():
 def generate_cv_v2():
     """Génère un CV pour l'utilisateur authentifié (version 2)"""
     user_id = request.user_id  # Injecté par le décorateur auth_required
-    cv_name = request.json.get('cv_name')
-    return generate_cv_endpoint_v2(user_id, cv_name)
+    cv_id = request.json.get('cv_id')
+    return generate_cv_endpoint_v2(user_id, cv_id)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
