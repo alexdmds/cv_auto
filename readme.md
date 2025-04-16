@@ -49,7 +49,7 @@ curl -X POST \
   http://localhost:8080/api/v2/generate-cv \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer test-token' \
-  -d '{"cv_name": "test_cv"}'
+  -d '{"cv_id": "test_cv"}'
 
 curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-cv" \
 -H "Content-Type: application/json" \
