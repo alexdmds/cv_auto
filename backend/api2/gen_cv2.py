@@ -3,7 +3,7 @@ import time
 import os
 from backend.config import load_config
 from dotenv import load_dotenv
-from backend.models import ProfileDocument, CVDocument
+from backend.models import ProfileDocument, CVDocument, CallDocument, UsageDocument
 from ai_module.lg_models import CVGenState
 from flask import jsonify
 from backend.utils.utils_gcs import upload_to_firebase_storage
@@ -32,6 +32,11 @@ def generate_cv_endpoint(user_id: str, cv_id: str):
     """
     start_time = time.time()
     try:
+
+    # Créer un document d'appel et incrémenter l'usage
+        CallDocument.create_call(user_id, "generate_cv_v2")
+        usage_doc = UsageDocument.get_or_create(user_id)
+        usage_doc.increment_usage()
         logger.info(f"Génération du CV {cv_id} pour l'utilisateur {user_id}")
 
         # Récupérer le profil existant
