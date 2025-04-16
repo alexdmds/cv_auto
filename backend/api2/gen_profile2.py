@@ -3,7 +3,7 @@ import time
 from backend.config import load_config
 from dotenv import load_dotenv
 from backend.utils.utils_gcs2 import get_concatenated_text_files
-from backend.models import ProfileDocument
+from backend.models import ProfileDocument, CallDocument, UsageDocument
 from ai_module.lg_models import ProfileState
 from flask import jsonify
 
@@ -31,6 +31,11 @@ def generate_profile_endpoint(user_id: str):
     start_time = time.time()
     try:
         logger.info(f"Génération du profil pour l'utilisateur {user_id}")
+
+        # Enregistrer l'appel et mettre à jour l'utilisation en parallèle
+        CallDocument.create_call(user_id, "generate_profile_v2")
+        usage_doc = UsageDocument.get_or_create(user_id)
+        usage_doc.increment_usage()
 
         # Récupérer le profil existant pour l'URL LinkedIn si disponible
         profile_document = ProfileDocument.from_firestore_id(user_id)
