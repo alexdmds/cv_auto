@@ -54,3 +54,5 @@ htmlcov/
 .pytest_cache/
 
 output/
+
+temp/
