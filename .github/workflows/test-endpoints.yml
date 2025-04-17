@@ -24,11 +24,18 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r backend/requirements.txt
-        
+
+    - name: Set up Google Cloud credentials
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
+      run: |
+        echo "${{ secrets.GCP_SA_KEY }}" > service-account.json
+
     - name: Make test script executable
       run: chmod +x tests/test_endpoints.sh
       
     - name: Run endpoint tests
       env:
         PYTHONPATH: ${{ github.workspace }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
       run: ./tests/test_endpoints.sh 
