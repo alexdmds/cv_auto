@@ -8,6 +8,8 @@
 
 CV Generator est une application web sophistiquée qui automatise la création de CV personnalisés à partir de descriptions de postes. Utilisant l'intelligence artificielle, l'application analyse les offres d'emploi et génère des CV optimisés et adaptés à chaque position.
 
+lien du front : https://cv-generator-plateform.lovable.app/
+
 ## ✨ Fonctionnalités
 
 - 🤖 Génération automatique de CV basée sur l'analyse des offres d'emploi
