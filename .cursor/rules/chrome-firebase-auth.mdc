@@ -1,0 +1,124 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+D'après la documentation, voici l'approche claire que nous devons suivre :
+
+1. **Installation et Configuration des Dépendances**
+```bash
+# Créer package.json
+npm init -y
+
+# Installer Firebase et les outils de build
+npm install firebase@10.8.0 webpack webpack-cli --save-dev
+```
+
+2. **Structure des Fichiers**
+```
+mon-extension/
+├── manifest.json
+├── package.json
+├── webpack.config.js
+├── src/
+│   ├── popup/
+│   │   ├── popup.html
+│   │   └── popup.js
+│   └── scripts/
+│       ├── firebase-init.js
+│       ├── background.js
+│       └── content.js
+└── dist/  (créé par webpack)
+```
+
+3. **Configuration du Manifest (manifest.json)**
+```json
+{
+  "manifest_version": 3,
+  "permissions": ["identity", "storage", "activeTab"],
+  "oauth2": {
+    "client_id": "votre-client-id",
+    "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com wss://*.firebaseio.com"
+  }
+}
+```
+
+4. **Configuration de Webpack (webpack.config.js)**
+```javascript
+const path = require('path');
+
+module.exports = {
+  mode: 'production',
+  entry: {
+    popup: './src/popup/popup.js',
+    background: './src/scripts/background.js',
+    content: './src/scripts/content.js'
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].bundle.js'
+  }
+};
+```
+
+5. **Initialisation de Firebase (firebase-init.js)**
+```javascript
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithCredential, GoogleAuthProvider } from 'firebase/auth/web-extension';
+import { getFirestore } from 'firebase/firestore/lite';
+
+const firebaseConfig = { /* votre config */ };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+export { auth, db, GoogleAuthProvider, signInWithCredential };
+```
+
+6. **Authentification (popup.js)**
+```javascript
+import { auth, GoogleAuthProvider, signInWithCredential } from './firebase-init.js';
+
+function handleAuth() {
+  chrome.identity.getAuthToken({ interactive: true }, async (token) => {
+    if (chrome.runtime.lastError || !token) {
+      console.error("Erreur token:", chrome.runtime.lastError);
+      return;
+    }
+    try {
+      const credential = GoogleAuthProvider.credential(null, token);
+      const userCred = await signInWithCredential(auth, credential);
+      console.log("Connecté:", userCred.user);
+    } catch (error) {
+      console.error("Erreur auth:", error);
+    }
+  });
+}
+```
+
+7. **HTML (popup.html)**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <!-- Contenu -->
+  <script src="../dist/popup.bundle.js"></script>
+</body>
+</html>
+```
+
+Points clés à retenir :
+1. Utiliser `firebase/auth/web-extension` au lieu de `firebase/auth` standard
+2. Utiliser `firebase/firestore/lite` pour éviter les problèmes de WebSocket
+3. Ne PAS charger Firebase depuis un CDN
+4. Utiliser webpack pour bundler tous les modules
+5. Garder une CSP stricte avec uniquement `'self'` pour `script-src`
+6. Utiliser `chrome.identity` pour l'authentification plutôt que `signInWithPopup`
+
+Cette approche devrait résoudre les problèmes de CSP et assurer une intégration correcte de Firebase dans l'extension MV3.

@@ -24,6 +24,12 @@ wheels/
 .installed.cfg
 *.egg
 
+# Node.js
+node_modules/
+**/node_modules/
+dist/
+*.bundle.js
+
 # Environnements virtuels
 venv/
 ENV/
@@ -55,4 +61,4 @@ htmlcov/
 
 output/
 
-temp/
+temp/node_modules/

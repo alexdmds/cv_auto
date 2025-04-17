@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "CV Form Filler",
+  "version": "1.0",
+  "description": "Connecte à Firebase et complète automatiquement les formulaires de CV",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsMiQ5KQhTVW2xaoQQsJeTJMLOk63KutkpOZWqE69aaIL5A1g4YRfIuNx2JkTrJQZcFmXo/IlIiONH4yRcHbLB8+5xMnQHM60uy9N2YRCX9ouAwnjLmcSCM+gvMJouNHrL+sF7AIRyEF7grNTHeylGEhdatZPNufFEPk95TI7GaZDwE5wn8V4vkG6mGu2WARMx1uwG6+RBkcizNC3l6gLQ7XaCxV+n0l9EFuWn0bf1qdu5gdgNHq3WeQldpYFCda1S+iTh58wN8KnLLzEAA62O+EBMM5fWWbS99L98yTW6WIqGHVF+y6YcwnarFetGUBfxryQLJOvmc/i1tpieRN1WQIDAQAB",
+  "permissions": [
+    "storage",
+    "identity",
+    "activeTab"
+  ],
+  "oauth2": {
+    "client_id": "177360827241-uklr2cgf1a9t5jbng9aab2l7ergjvujj.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+  "host_permissions": [
+    "https://*.firebaseio.com/",
+    "https://*.firebaseapp.com/",
+    "https://*.googleapis.com/"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com wss://*.firebaseio.com"
+  },
+  "background": {
+    "service_worker": "dist/background-bundle.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content-bundle.js"]
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": [
+      "dist/*",
+      "popup/*",
+      "styles/*"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+} 
