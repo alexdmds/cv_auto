@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from backend.models import ProfileDocument, CVDocument, CallDocument, UsageDocument
 from ai_module.lg_models import CVGenState
 from flask import jsonify
-from backend.utils.utils_gcs import upload_to_firebase_storage
+from backend.utils.utils_gcs2 import upload_to_firebase_storage
 
 load_dotenv()
 logger = logging.getLogger(__name__)

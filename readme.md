@@ -1,68 +1,100 @@
+# CV Generator - Générateur Automatique de CV
 
-rm -rf venv
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+## 🚀 À Propos
+
+CV Generator est une application web sophistiquée qui automatise la création de CV personnalisés à partir de descriptions de postes. Utilisant l'intelligence artificielle, l'application analyse les offres d'emploi et génère des CV optimisés et adaptés à chaque position.
+
+## ✨ Fonctionnalités
+
+- 🤖 Génération automatique de CV basée sur l'analyse des offres d'emploi
+- 📝 Personnalisation intelligente du contenu selon le poste
+- 🌐 Support multilingue pour la génération de CV
+- 🔒 Système d'authentification sécurisé
+- 📊 Interface utilisateur intuitive
+- 🔄 Gestion des profils et historique des CV générés
+- 🎨 Mise en page professionnelle et personnalisable
+
+## 🛠️ Architecture Technique
+
+- **Backend**: Python/Flask
+- **Base de données**: Firestore
+- **Frontend**: HTML/CSS/JavaScript
+- **Déploiement**: Google Cloud Platform
+- **Conteneurisation**: Docker
+
+## 🚀 Installation
+
+1. Cloner le repository :
+```bash
+git clone https://github.com/votre-username/CV_auto.git
+cd CV_auto
+```
+
+2. Créer et activer l'environnement virtuel :
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
 
-L’attribut alignment prend les valeurs suivantes :
-	•	0 : Alignement à gauche.
-	•	1 : Alignement centré.
-	•	2 : Alignement à droite.
-	•	4 : Justifié (aligné des deux côtés).
+3. Installer les dépendances :
+```bash
+cd backend
+pip install -r requirements.txt
+```
 
-gsutil -m cp -r ./frontend/* gs://frontend_cv_generator/
+4. Configurer les variables d'environnement :
+```bash
+cp .env.example .env
+# Éditer .env avec vos configurations
+```
 
+## 🏗️ Structure du Projet
 
-###### DANS backend
+```
+CV_auto/
+├── backend/           # API Flask et logique métier
+├── frontend/         # Interface utilisateur
+├── ai_module/        # Module d'IA pour l'analyse
+├── scripts/          # Scripts utilitaires
+└── firestore_schema.json  # Schéma de la base de données
+```
+
+## 📝 Utilisation
+
+1. Déployer le backend :
+```bash
 gcloud builds submit --tag europe-west9-docker.pkg.dev/cv-generator-447314/backend-cv-automation/backend-flask:v1
-
 gcloud run deploy backend-flask \
     --image europe-west9-docker.pkg.dev/cv-generator-447314/backend-cv-automation/backend-flask:v1 \
     --platform managed \
     --region europe-west9 \
-    --allow-unauthenticated \
-    --service-account backend-flask@cv-generator-447314.iam.gserviceaccount.com \
-    --set-env-vars ENV=prod
+    --allow-unauthenticated
+```
 
-###### TEST backend
+## 🔒 Sécurité
 
-curl -X POST "http://localhost:8080/api/generate-profile" \
-  -H "Content-Type: application/json" \
-  -v
+- Authentification utilisateur
+- Validation des données
+- Protection contre les injections
+- Gestion sécurisée des tokens
 
-curl -X POST "http://localhost:8080/api/v2/generate-profile" \
-  -H "Content-Type: application/json" \
-  -v
+## 🤝 Contribution
 
+Les contributions sont les bienvenues ! N'hésitez pas à :
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
+## 📄 License
 
-curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-profile" \
-  -H "Content-Type: application/json" \
-  -v
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-curl -X POST \
-  http://localhost:8080/api/generate-cv \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer test-token' \
-  -d '{"cv_name": "cv_test"}'
+## 📞 Support
 
-curl -X POST \
-  http://localhost:8080/api/v2/generate-cv \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer test-token' \
-  -d '{"cv_id": "test_cv"}'
-
-curl -X POST "https://cv-generator-api-dev-177360827241.europe-west1.run.app/api/generate-cv" \
--H "Content-Type: application/json" \
--H "Authorization: Bearer test-token" \
--d '{"cv_name": "cv_test"}'
-
-## MCP
-
-mcp-langgraph-sse
-
-uvx --from mcpdoc mcpdoc \
-  --urls LangGraph:https://langchain-ai.github.io/langgraph/llms.txt \
-  --transport sse \
-  --port 8082 \
-  --host localhost \
-  --follow-redirects
+Pour toute question ou problème, veuillez ouvrir une issue sur GitHub.
